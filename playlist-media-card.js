@@ -13,23 +13,64 @@ class PlaylistMediaCard extends HTMLElement {
     style.setAttribute("id", "umc_style");
 
     style.textContent = `
-              .song_title {
-                  font-weight: bold;
-                  font-size: 12px;
+                li {
+                  border: 1px solid #ccc;
                 }
-                .song_artist {
-                  font-style: italic;
-                  font-size: 10px;
+
+                .playlist-items{
+                  list-style-type: none
                 }
-                .song_album {
-                  font-size: 10px;
+
+                .inner-item{
+                  display: grid;
+                  grid-template-columns: 55px auto 50px;
+                  grid-gap: 5px;
+                  grid-auto-rows: auto;
                 }
-                img{
-                  border: 1px solid #ddd;
-                  border-radius: 4px;
-                  padding: 5px;
-                  width: 64px;
-                  height: 64px;
+                .thumb_img{
+                  width: 50px;
+                  height: 50px;
+                  display: block;
+                  background-size: cover;
+                }
+
+                .thumbnail {
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 4;
+                  border: 1px solid orange;
+                }
+
+                .title{
+                  border: 1px solid red;
+                  grid-column-start: 2;
+                  grid-column-end: end;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                }
+
+                .album{
+                  border: 1px solid green;
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 2;
+                  grid-row-end: 3;
+                }
+                .genre{
+                  border: 1px solid yellow;
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                }
+                .duration{
+                  border: 1px solid black;
+                  grid-column-start: 3;
+                  grid-column-end: end;
+                  grid-row-start: 2;
+                  grid-row-end: 3;
+                  text-align: right;
                 }
           `;
 
@@ -45,11 +86,16 @@ class PlaylistMediaCard extends HTMLElement {
       const item = key => json[count][key];
       this.content.innerHTML += `
         <div>
-          <ul>
+          <ul class="playlist-items">
             <li>
               <div class="inner-item">
-
-                <div class="meta">${item("label")}</div>
+                <div class="thumbnail">
+                  <div class="thumb_img" style="background-image: url('${item("thumbnail")}')"></div>
+                </div>
+                <div class="title">${item("label")}</div>
+                <div class="album">${item("album")}</div>
+                <div class="genre">${item("genre")}</div>
+                <div class="duration">${new Date(item("duration") * 1000).toISOString().substr(11, 8)}</div>
               </div>
             </li>
           </ul>
