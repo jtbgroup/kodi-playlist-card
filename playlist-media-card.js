@@ -18,7 +18,7 @@ class PlaylistMediaCard extends HTMLElement {
                 // }
                 .playerType{
                   width: 100%;
-                  height: 30px;
+                  height: 50px;
                   text-align: right;
                   font-weight: bold;
                   font-size: 18px;
@@ -27,7 +27,7 @@ class PlaylistMediaCard extends HTMLElement {
                 .inner-item{
                   display: grid;
                   grid-template-columns: 65px 1fr auto auto;
-                  grid-gap: 4px;
+                  grid-gap: 3px;
                   grid-auto-rows: auto;
                 }
 
@@ -53,6 +53,7 @@ class PlaylistMediaCard extends HTMLElement {
                   background-size: cover;
                   width: 65px;
                   height: 65px;
+                  color: BLACK;
                 }
 
                 .titleCell{
@@ -62,8 +63,8 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-row-end: 2;
                   font-weight: bold;
                   font-size: 14px;
-                  background: rgb(230,230,230);
-                  background: linear-gradient(90deg, rgba(230,230,230,1) 10%, rgba(255,255,255,1) 90%);
+                  // background: rgb(230,230,230);
+                  // background: linear-gradient(90deg, rgba(230,230,230,1) 10%, rgba(255,255,255,1) 90%);
                 }
                 .genreCell{
                   grid-column-start: 2;
@@ -116,8 +117,6 @@ class PlaylistMediaCard extends HTMLElement {
     //const max = Math.min(json.length - 1, this.config.max || 5);
 
     this.content.innerHTML = ``;
-
-    // const playerEntity = json[0]["playerEntity"];
 
     if (playerType == "video") {
       this.content.innerHTML += `<div class="playerType"><ha-icon icon="mdi:movie"></ha-icon> Playlist</div>`;
@@ -172,6 +171,8 @@ class PlaylistMediaCard extends HTMLElement {
         }
       }
       this._bindButtons(this.card, this._hass, this.config, kodi_entity_id);
+    } else {
+      this.content.innerHTML += `<div class="playerType">No playlist found</div>`;
     }
     this.appendChild(style);
   }
@@ -190,9 +191,6 @@ class PlaylistMediaCard extends HTMLElement {
           playerid: 0,
           to: posn,
         });
-        hass.callService("homeassistant", "update_entity", {
-          entity_id: config.entity,
-        });
       });
     }
 
@@ -203,7 +201,6 @@ class PlaylistMediaCard extends HTMLElement {
       let removeButton = removeButtons[i];
       removeButton.addEventListener("click", function (source) {
         const posn = parseInt(removeButton.getAttribute("position"));
-        // hass.callService("notify", "persistent_notification", { title: "hello", message: "removed "+kodi_entity_id });
         hass.callService("kodi", "call_method", {
           entity_id: kodi_entity_id,
           method: "Playlist.Remove",
