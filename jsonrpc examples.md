@@ -19,6 +19,7 @@ filter:
   id: "AudioLibrary.GetAlbums"
   type: "method"
 
+
 ## Application get properties
 ### http call
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["volume"]}, "id": 1}
@@ -33,6 +34,7 @@ entity_id: media_player.kodi
 method: Application.GetProperties
 properties:
   - volume
+
 
 ## Get Playlist items
 ### http call
@@ -54,6 +56,7 @@ properties:
 limits:
   start: 0
 
+
 ## Open a playlist in random mode
 ### http call
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.Open","id":"1609497939295","params":{"partymode": "special://profile/playlists/music/Playlist Quiet.xsp"}}
@@ -71,6 +74,7 @@ entity_id: media_player.kodi
 method: Player.Open
 item:
 	- partymode: "special://profile/playlists/music/Playlist Quiet.xsp"
+
 
 ## Next item in the playlist
 ### http call
@@ -93,6 +97,7 @@ method: Player.GoTo
 playerid: 0
 to: 2 // position is 0 based
 
+
 ## Remove item in the playlist
 ### http call
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.Remove","id":"1609497939295","params":{"playerid": 0, "positionid": 3}}
@@ -103,6 +108,7 @@ method: Player.GoTo
 playerid: 0
 to: 2 // position is 0 based
 
+
 ## Get Players
 ### http call
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.GetPlayers","id":"1609497939295"} 
@@ -112,6 +118,11 @@ http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.GetPl
 entity_id: media_player.raspberrypi
 method: Player.GetPlayers
 
+
+## Get Active Players
+### http call
+http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.GetActivePlayers"} 
+
 ## Player pause
 ### http call
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.PlayPause", "params":{playerid":"1"}} 
@@ -120,6 +131,7 @@ http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.PlayP
 entity_id: media_player.raspberrypi
 method: Player.PlayPause
 playerid: 0
+
 
 ## Recent added videos
 ### HA service call
