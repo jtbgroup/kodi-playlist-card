@@ -21,12 +21,11 @@ You can perform some actions directly from the card like removing an item from t
 
 1. Install the custom component [Kodi Media Sensors](https://github.com/jtbgroup/kodi-media-sensors).
 2. Install the card using HACS
-3. Reference the new card in lovelace
+3. Reference the new resouce in lovelace
 
 ```
-resources:
-- url: hacsfiles/kodi-playlist-card/kodi-playlist-card.js
-  type: Javascript module
+  - url: hacsfiles/kodi-playlist-card/kodi-playlist-card.js
+  	type: Javascript module
 ```
 
 
