@@ -1,7 +1,8 @@
 # Playlist-Media-Card
 
 This card displays the playlist running on the kodi entity. The refresh is automatic based on events triggered by the entity. 
-This card is intented to be an alternative to an iframe containing chorus
+
+This card is intented to be an alternative to an iframe containing Chorus.
 
 
 | Playlist Audio | Playlist Video
