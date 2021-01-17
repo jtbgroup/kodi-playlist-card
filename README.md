@@ -3,11 +3,10 @@
 This card displays the playlist running on the kodi entity. The refresh is automatic based on events triggered by the entity. 
 This card is intented to be an alternative to an iframe containing chorus
 
-| Poster View | Fan Art View
-| ---- | ---- 
-| <img src="https://imgur.com/gKHbplv.jpg" alt="Screenshot 1" width="250"> | <img src="https://i.imgur.com/noB7Hub.jpg" alt="Screenshot 1" width="250"> 
 
-<br/>
+| Playlist Audio | Playlist Video
+| ---- | ---- 
+[Playlist Audio](https://github.com/jtbgroup/playlist-media-card/tree/master/assets/playlist_audio.png) | [Playlist Video](https://github.com/jtbgroup/playlist-media-card/tree/master/assets/playlist_vodeo.png)
 
 
 **Requires a custom-component:**<br/>
