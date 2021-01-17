@@ -1,6 +1,6 @@
 {
-  "name": "Playlist Media Card",
+  "name": "Kodi Playlist Card",
   "content_in_root": true,
-  "filename": "playlist-media-card.js",
+  "filename": "kodi-playlist-card.js",
   "render_readme": true
 }
