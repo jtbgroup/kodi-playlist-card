@@ -24,15 +24,15 @@ You can perform some actions directly from the card like removing an item from t
 3. Reference the new resouce in lovelace
 
 ```
-  - url: hacsfiles/kodi-playlist-card/kodi-playlist-card.js
-  	type: Javascript module
+- url: hacsfiles/kodi-playlist-card/kodi-playlist-card.js
+  type: Javascript module
 ```
 
 
 4. Create a Manual Card and add the following lines
 
 ```
-  - type: custom:kodi-playlist-card
-    entity: sensor.kodi_playlist
+- type: custom:kodi-playlist-card
+  entity: sensor.kodi_playlist
 ```
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
