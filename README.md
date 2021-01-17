@@ -12,7 +12,7 @@ This card is intented to be an alternative to an iframe containing chorus
 | <img src="https://github.com/jtbgroup/playlist-media-card/tree/master/assets/playlist_audio.png" alt="Screenshot 1" width="250"> | <img src="https://i.imgur.com/noB7Hub.jpg" alt="Screenshot 1" width="250"> 
 
 
-![Kodi Recently Added Media](https://raw.githubusercontent.com/jtbgroup/playlist-media-card/tree/master/assets/playlist_audio.png)
+![Kodi Recently Added Media](https://raw.githubusercontent.com/jtbgroup/playlist-media-card/master/assets/playlist_audio.png)
 
 ![Kodi Recently Added Media](https://raw.githubusercontent.com/boralyl/kodi-recently-added/master/assets/example.png)
 
