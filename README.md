@@ -19,9 +19,9 @@ You can perform some actions directly from the card like removing an item from t
 
 ## Installation:
 
-1. Install the custom component by following it's instructions using HACS.
-2.  Install the card using HACS
-3.  Reference the new card in lovelace
+1. Install the custom component [Kodi Media Sensors](https://github.com/jtbgroup/kodi-media-sensors).
+2. Install the card using HACS
+3. Reference the new card in lovelace
 
 ```
 resources:
