@@ -225,4 +225,4 @@ class PlaylistMediaCard extends HTMLElement {
     return 1;
   }
 }
-customElements.define("playlist-media-card", PlaylistMediaCard);
+customElements.define("kodi-playlist-card", PlaylistMediaCard);
