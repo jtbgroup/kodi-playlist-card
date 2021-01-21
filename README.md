@@ -1,4 +1,4 @@
-# Playlist-Media-Card
+# Kodo-Playlist-Card
 
 This card displays the playlist running on the kodi entity. The refresh is automatic based on events triggered by the entity. 
 
