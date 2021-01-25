@@ -128,17 +128,48 @@ http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.GetAc
 http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"Player.PlayPause", "params":{playerid":"1"}} 
 
 ### HA service call
-entity_id: media_player.raspberrypi
+entity_id: media_player.kodi
 method: Player.PlayPause
 playerid: 0
 
 
 ## Recent added videos
 ### HA service call
-entity_id: media_player.raspberrypi
+entity_id: media_player.kodi
 method: VideoLibrary.GetRecentlyAddedMovies
 properties: 
-	- title
-	- year
-	- file
-	- lastplayed
+	  - title
+      - file
+      - year
+      - lastplayed
+
+## Search song
+### http call
+http://192.168.1.12:8080/jsonrpc?request={"jsonrpc":"2.0","method":"AudioLibrary.GetSongs","id":"1611465047410","params":{"properties":["title","file","thumbnail","artist","artistid","album","albumid","lastplayed","track","year","duration"],"limits":{"start":0,"end":21},"sort":{"method":"track","order":"ascending","ignorearticle":true},"filter":{"operator":"contains","field":"title","value":"karma"}}}
+
+### HA service call
+entity_id: media_player.kodi
+method: AudioLibrary.GetSongs
+properties: 
+  - title
+  - file
+  - thumbnail
+  - artist
+  - artistid
+  - album
+  - albumid
+  - lastplayed
+  - track
+  - year
+  - duration   
+limits:
+	start: 0
+	end: 21 
+sort:
+  method: track
+  order: ascending
+  ignorearticle: true
+filter:
+	operator: contains
+	field: title
+	value: karma
