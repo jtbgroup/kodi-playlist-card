@@ -176,11 +176,13 @@ class PlaylistMediaCard extends HTMLElement {
       row = document.createElement("div");
       row.setAttribute("class", "inner-item");
 
-      thumbnailDiv = document.createElement("div");
-      thumbnailDiv.setAttribute("class", "thumbnailCell");
-      url = "background-image: url('" + item("thumbnail") + "')";
-      thumbnailDiv.setAttribute("style", "url");
-      row.appendChild(thumbnailDiv);
+      if (this._config.show_thumbnail) {
+        thumbnailDiv = document.createElement("div");
+        thumbnailDiv.setAttribute("class", "thumbnailCell");
+        url = "background-image: url('" + item("thumbnail") + "')";
+        thumbnailDiv.setAttribute("style", "url");
+        row.appendChild(thumbnailDiv);
+      }
 
       titleDiv = document.createElement("div");
       titleDiv.setAttribute("class", "titleCell");
@@ -215,11 +217,13 @@ class PlaylistMediaCard extends HTMLElement {
       let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
 
-      let thumbnailDiv = document.createElement("div");
-      thumbnailDiv.setAttribute("class", "thumbnailCell");
-      let url = "background-image: url('" + item("thumbnail") + "')";
-      thumbnailDiv.setAttribute("style", url);
-      row.appendChild(thumbnailDiv);
+      if (this._config.show_thumbnail) {
+        let thumbnailDiv = document.createElement("div");
+        thumbnailDiv.setAttribute("class", "thumbnailCell");
+        let url = "background-image: url('" + item("thumbnail") + "')";
+        thumbnailDiv.setAttribute("style", url);
+        row.appendChild(thumbnailDiv);
+      }
 
       let thumbnailPlayDiv = document.createElement("ha-icon");
       thumbnailPlayDiv.setAttribute("class", "thumbnailPlayCell");
@@ -281,6 +285,7 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   remove(kodi_entity_id, posn) {
+    alert(kodi_entity_id);
     this._hass.callService("kodi", "call_method", {
       entity_id: kodi_entity_id,
       method: "Playlist.Remove",

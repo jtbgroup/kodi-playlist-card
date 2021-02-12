@@ -30,10 +30,13 @@ You can perform some actions directly from the card like removing an item from t
 ```
 
 
-4. Create a Manual Card and add the following lines
+## Card options:
 
 ```
-- type: custom:kodi-playlist-card
-  entity: sensor.kodi_playlist
+| Name | Type | Default | Since | Description |
+|------|------|---------|-------|-------------|
+| type | string	| **required** | v1.0.0 | `custom:kodi-playlist-card` |
+| entity | string | **required** | v1.0.0 |  `sensor.kodi_playlist` |
+| show_thumbnail | boolean | optional | v1.2.0 | Default = false. Set to true if you want to show the thumbnails coming from kodi. Attention you can get problems when mixing http and https content; if so, leave it to false. |
 ```
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
