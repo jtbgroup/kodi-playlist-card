@@ -285,7 +285,6 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   remove(kodi_entity_id, posn) {
-    alert(kodi_entity_id);
     this._hass.callService("kodi", "call_method", {
       entity_id: kodi_entity_id,
       method: "Playlist.Remove",
