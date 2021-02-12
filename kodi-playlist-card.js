@@ -169,32 +169,31 @@ class PlaylistMediaCard extends HTMLElement {
   fillVideoPlaylist(max, json, kodi_entity_id) {
     this.playerTypeDiv.innerHTML = `Movie Playlist <ha-icon icon="mdi:movie"></ha-icon>`;
     this.content.innerHTML = "";
-    this.content.innerHTML = `<div class="playerType"><ha-icon icon="mdi:movie"></ha-icon> Playlist</div>`;
     for (let count = 1; count <= max; count++) {
       const item = (key) => json[count][key];
 
-      row = document.createElement("div");
+      let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
 
       if (this._config.show_thumbnail) {
-        thumbnailDiv = document.createElement("div");
+        let thumbnailDiv = document.createElement("div");
         thumbnailDiv.setAttribute("class", "thumbnailCell");
-        url = "background-image: url('" + item("thumbnail") + "')";
+        let url = "background-image: url('" + item("thumbnail") + "')";
         thumbnailDiv.setAttribute("style", "url");
         row.appendChild(thumbnailDiv);
       }
 
-      titleDiv = document.createElement("div");
+      let titleDiv = document.createElement("div");
       titleDiv.setAttribute("class", "titleCell");
       titleDiv.innerHTML = item("label");
       row.appendChild(titleDiv);
 
-      genreDiv = document.createElement("div");
+      let genreDiv = document.createElement("div");
       genreDiv.setAttribute("class", "genreCell");
       genreDiv.innerHTML = item("genre") ? item("genre") : "undefined";
       row.appendChild(genreDiv);
 
-      trashIcon = document.createElement("ha-icon");
+      let trashIcon = document.createElement("ha-icon");
       trashIcon.setAttribute("class", "removeCell");
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () =>
@@ -285,6 +284,7 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   remove(kodi_entity_id, posn) {
+    alert(kodi_entity_id);
     this._hass.callService("kodi", "call_method", {
       entity_id: kodi_entity_id,
       method: "Playlist.Remove",
