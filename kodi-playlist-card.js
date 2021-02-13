@@ -171,7 +171,6 @@ class PlaylistMediaCard extends HTMLElement {
     this.content.innerHTML = "";
     for (let count = 1; count <= max; count++) {
       const item = (key) => json[count][key];
-
       let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
 
@@ -185,7 +184,7 @@ class PlaylistMediaCard extends HTMLElement {
 
       let titleDiv = document.createElement("div");
       titleDiv.setAttribute("class", "titleCell");
-      titleDiv.innerHTML = item("label");
+      titleDiv.innerHTML = item("title") + " (" + item("year") + ")";
       row.appendChild(titleDiv);
 
       let genreDiv = document.createElement("div");
@@ -193,17 +192,21 @@ class PlaylistMediaCard extends HTMLElement {
       genreDiv.innerHTML = item("genre") ? item("genre") : "undefined";
       row.appendChild(genreDiv);
 
-      let trashIcon = document.createElement("ha-icon");
-      trashIcon.setAttribute("class", "removeCell");
-      trashIcon.setAttribute("icon", "mdi:delete");
-      trashIcon.addEventListener("click", () =>
-        this.remove(kodi_entity_id, count - 1)
-      );
-      row.appendChild(trashIcon);
+      if (count > 1) {
+        let trashIcon = document.createElement("ha-icon");
+        trashIcon.setAttribute("class", "removeCell");
+        trashIcon.setAttribute("icon", "mdi:delete");
+        trashIcon.addEventListener("click", () =>
+          this.remove(kodi_entity_id, count - 1, 1)
+        );
+        row.appendChild(trashIcon);
+      }
 
       if (count < max) {
         row.appendChild(document.createElement("br"));
       }
+
+      this.content.appendChild(row);
     }
     // this._bindButtons(this.card, this._hass, this.config, kodi_entity_id);
   }
@@ -234,7 +237,7 @@ class PlaylistMediaCard extends HTMLElement {
 
       let titleDiv = document.createElement("div");
       titleDiv.setAttribute("class", "titleCell");
-      titleDiv.innerHTML = item("label");
+      titleDiv.innerHTML = item("artist") + " - " + item("title");
       row.appendChild(titleDiv);
 
       let genreDiv = document.createElement("div");
@@ -244,7 +247,7 @@ class PlaylistMediaCard extends HTMLElement {
 
       let albumDiv = document.createElement("div");
       albumDiv.setAttribute("class", "albumCell");
-      albumDiv.innerHTML = item("album");
+      albumDiv.innerHTML = item("album") + " (" + item("year") + ")";
       row.appendChild(albumDiv);
 
       let durationDiv = document.createElement("div");
@@ -254,13 +257,15 @@ class PlaylistMediaCard extends HTMLElement {
         .substr(11, 8);
       row.appendChild(durationDiv);
 
-      let trashIcon = document.createElement("ha-icon");
-      trashIcon.setAttribute("class", "removeCell");
-      trashIcon.setAttribute("icon", "mdi:delete");
-      trashIcon.addEventListener("click", () =>
-        this.remove(kodi_entity_id, count - 1)
-      );
-      row.appendChild(trashIcon);
+      if (count > 1) {
+        let trashIcon = document.createElement("ha-icon");
+        trashIcon.setAttribute("class", "removeCell");
+        trashIcon.setAttribute("icon", "mdi:delete");
+        trashIcon.addEventListener("click", () =>
+          this.remove(kodi_entity_id, count - 1, 0)
+        );
+        row.appendChild(trashIcon);
+      }
 
       if (count - 1 < max) {
         this.content.appendChild(document.createElement("br"));
@@ -283,11 +288,11 @@ class PlaylistMediaCard extends HTMLElement {
     });
   }
 
-  remove(kodi_entity_id, posn) {
+  remove(kodi_entity_id, posn, player) {
     this._hass.callService("kodi", "call_method", {
       entity_id: kodi_entity_id,
       method: "Playlist.Remove",
-      playlistid: 0,
+      playlistid: player,
       position: posn,
     });
     this._hass.callService("homeassistant", "update_entity", {
