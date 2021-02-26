@@ -90,7 +90,7 @@ not ok
 entity_id: media_player.kodi
 method: Player.Open
 item:
-	- partymode: "special://profile/playlists/music/Playlist Quiet.xsp"
+   - partymode: "special://profile/playlists/music/Playlist Quiet.xsp"
 ```
 
 ## Next item in the playlist
@@ -172,10 +172,10 @@ playerid: 0
 entity_id: media_player.kodi
 method: VideoLibrary.GetRecentlyAddedMovies
 properties: 
-	  - title
-      - file
-      - year
-      - lastplayed
+  - title
+  - file
+  - year
+  - lastplayed
 ```
 
 ## Search song
