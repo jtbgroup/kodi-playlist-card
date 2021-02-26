@@ -13,12 +13,13 @@ method: JSONRPC.Introspect
 item: {"filter":{"id":"AudioLibrary.GetAlbums", "type": "method"}}
 
 ### HA service call
+```
 entity_id: media_player.kodi
 method: JSONRPC.Introspect
 filter:
   id: "AudioLibrary.GetAlbums"
   type: "method"
-
+```
 
 ## Application get properties
 ### http call
