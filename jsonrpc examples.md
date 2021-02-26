@@ -1,6 +1,7 @@
 # JSON RPC examples for Kodi
 
 These are examples of json rpc queries to interact with Kodi media player. There are examples for the http request and for calling the service **call_method** from Home Assistant integration.
+
 Home assistant event listener: **kodi_call_method_result**
 
 
