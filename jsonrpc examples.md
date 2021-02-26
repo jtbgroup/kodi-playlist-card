@@ -201,14 +201,14 @@ properties:
   - year
   - duration   
 limits:
-	start: 0
-	end: 21 
+  start: 0
+  end: 21 
 sort:
   method: track
   order: ascending
   ignorearticle: true
 filter:
-	operator: contains
-	field: title
-	value: karma
+  operator: contains
+  field: title
+  value: karma
 ```
