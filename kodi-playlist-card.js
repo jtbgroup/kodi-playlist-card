@@ -1,6 +1,7 @@
 class PlaylistMediaCard extends HTMLElement {
   setConfig(config) {
     this._config = config;
+    this.cardSize = 1;
 
     // Example configuration:
     //
@@ -60,6 +61,10 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-template-columns: 65px 1fr auto auto;
                   grid-gap: 3px;
                   grid-auto-rows: auto;
+                  margin-top: 20px;
+                  margin-bottom: 20px;
+                  margin-left: 10px;
+                  margin-right: 10px;
                 }
 
                 .thumbnailCell{
@@ -70,21 +75,15 @@ class PlaylistMediaCard extends HTMLElement {
                   display: block;
                   background-size: contain;
                   background-repeat: no-repeat;
+                  background-color: #9b9595;
                   width: 65px;
                   height: 65px;
                 }
 
                 .thumbnailPlayCell{
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 4;
-                  background-color: rgba(255, 255, 255, .4);
                   display: block;
-                  background-size: cover;
                   width: 65px;
                   height: 65px;
-                  color: BLACK;
                 }
 
                 .titleCell{
@@ -130,10 +129,22 @@ class PlaylistMediaCard extends HTMLElement {
                   width: 30px;
                 }
 
+
+                .thumbnailPlayCell{
+                  display: block;
+                  color: black;
+                  background-color: rgb(250, 250, 250, 0.4)
+                }
+
                 .removeCell:hover, .thumbnailPlayCell:hover{
                   color: red;
                 }
+
           `;
+  }
+
+  getCardSize() {
+    return this.cardSize;
   }
 
   set hass(hass) {
@@ -146,12 +157,16 @@ class PlaylistMediaCard extends HTMLElement {
     });
 
     const entity = this._config.entity;
+    if (!hass.states[entity]) {
+      return;
+    }
     let data = hass.states[entity].attributes.data;
     const json =
       typeof data == "object"
         ? hass.states[entity].attributes.data
         : JSON.parse(hass.states[entity].attributes.data);
     const max = json.length - 1;
+    this.cardSize = max + 1;
     const playerType = json[0]["player_type"].toLowerCase();
     const kodi_entity_id = json[0]["kodi_entity_id"];
     //const max = Math.min(json.length - 1, this.config.max || 5);
@@ -202,10 +217,6 @@ class PlaylistMediaCard extends HTMLElement {
         row.appendChild(trashIcon);
       }
 
-      if (count < max) {
-        row.appendChild(document.createElement("br"));
-      }
-
       this.content.appendChild(row);
     }
     // this._bindButtons(this.card, this._hass, this.config, kodi_entity_id);
@@ -219,13 +230,13 @@ class PlaylistMediaCard extends HTMLElement {
       let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
 
-      if (this._config.show_thumbnail) {
-        let thumbnailDiv = document.createElement("div");
-        thumbnailDiv.setAttribute("class", "thumbnailCell");
+      let thumbnailDiv = document.createElement("div");
+      thumbnailDiv.setAttribute("class", "thumbnailCell");
+      if (this._config.show_thumbnail && item("thumbnail") != "") {
         let url = "background-image: url('" + item("thumbnail") + "')";
         thumbnailDiv.setAttribute("style", url);
-        row.appendChild(thumbnailDiv);
       }
+      row.appendChild(thumbnailDiv);
 
       let thumbnailPlayDiv = document.createElement("ha-icon");
       thumbnailPlayDiv.setAttribute("class", "thumbnailPlayCell");
@@ -233,7 +244,7 @@ class PlaylistMediaCard extends HTMLElement {
       thumbnailPlayDiv.addEventListener("click", () =>
         this.goTo(kodi_entity_id, count - 1)
       );
-      row.appendChild(thumbnailPlayDiv);
+      thumbnailDiv.appendChild(thumbnailPlayDiv);
 
       let titleDiv = document.createElement("div");
       titleDiv.setAttribute("class", "titleCell");
@@ -265,10 +276,6 @@ class PlaylistMediaCard extends HTMLElement {
           this.remove(kodi_entity_id, count - 1, 0)
         );
         row.appendChild(trashIcon);
-      }
-
-      if (count - 1 < max) {
-        this.content.appendChild(document.createElement("br"));
       }
 
       this.content.appendChild(row);
