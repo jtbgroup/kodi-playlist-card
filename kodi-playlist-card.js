@@ -1,4 +1,6 @@
 class PlaylistMediaCard extends HTMLElement {
+  BACKGROUND_BASIC_COLOR = "#9b9595";
+
   setConfig(config) {
     this._config = config;
     this.cardSize = 1;
@@ -75,7 +77,7 @@ class PlaylistMediaCard extends HTMLElement {
                   display: block;
                   background-size: contain;
                   background-repeat: no-repeat;
-                  background-color: #9b9595;
+                  background-color: ${this.BACKGROUND_BASIC_COLOR};
                   width: 65px;
                   height: 65px;
                 }
@@ -160,21 +162,27 @@ class PlaylistMediaCard extends HTMLElement {
     if (!hass.states[entity]) {
       return;
     }
+
+    let meta = hass.states[entity].attributes.meta;
+    const json_meta = typeof meta == "object" ? meta : JSON.parse(meta);
+    let kodi_entity_id = json_meta[0]["kodi_entity_id"];
+    // this._sensor_entity_id = json_meta[0]["sensor_entity_id"];
+    const playerType = json_meta[0]["playlisttype"].toLowerCase();
+
     let data = hass.states[entity].attributes.data;
     const json =
       typeof data == "object"
         ? hass.states[entity].attributes.data
         : JSON.parse(hass.states[entity].attributes.data);
-    const max = json.length - 1;
+    let items = json[0]["items"];
+    const max = items.length;
     this.cardSize = max + 1;
-    const playerType = json[0]["player_type"].toLowerCase();
-    const kodi_entity_id = json[0]["kodi_entity_id"];
     //const max = Math.min(json.length - 1, this.config.max || 5);
 
     if (playerType == "video") {
-      this.fillVideoPlaylist(max, json);
+      this.fillVideoPlaylist(max, items);
     } else if (playerType == "audio") {
-      this.fillAudioPlaylist(max, json, kodi_entity_id);
+      this.fillAudioPlaylist(max, items, kodi_entity_id);
     } else {
       this.playerTypeDiv.innerHTML = `<div class="playerType">No playlist found</div>`;
       this.content.innerHTML = "";
@@ -184,7 +192,7 @@ class PlaylistMediaCard extends HTMLElement {
   fillVideoPlaylist(max, json, kodi_entity_id) {
     this.playerTypeDiv.innerHTML = `Movie Playlist <ha-icon icon="mdi:movie"></ha-icon>`;
     this.content.innerHTML = "";
-    for (let count = 1; count <= max; count++) {
+    for (let count = 0; count < max; count++) {
       const item = (key) => json[count][key];
       let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
@@ -212,7 +220,7 @@ class PlaylistMediaCard extends HTMLElement {
         trashIcon.setAttribute("class", "removeCell");
         trashIcon.setAttribute("icon", "mdi:delete");
         trashIcon.addEventListener("click", () =>
-          this.remove(kodi_entity_id, count - 1, 1)
+          this.remove(kodi_entity_id, count, 1)
         );
         row.appendChild(trashIcon);
       }
@@ -225,7 +233,7 @@ class PlaylistMediaCard extends HTMLElement {
   fillAudioPlaylist(max, json, kodi_entity_id) {
     this.playerTypeDiv.innerHTML = `Audio Playlist <ha-icon icon="mdi:music"></ha-icon>`;
     this.content.innerHTML = "";
-    for (let count = 1; count <= max; count++) {
+    for (let count = 0; count < max; count++) {
       const item = (key) => json[count][key];
       let row = document.createElement("div");
       row.setAttribute("class", "inner-item");
@@ -242,7 +250,7 @@ class PlaylistMediaCard extends HTMLElement {
       thumbnailPlayDiv.setAttribute("class", "thumbnailPlayCell");
       thumbnailPlayDiv.setAttribute("icon", "mdi:play");
       thumbnailPlayDiv.addEventListener("click", () =>
-        this.goTo(kodi_entity_id, count - 1)
+        this.goTo(kodi_entity_id, count)
       );
       thumbnailDiv.appendChild(thumbnailPlayDiv);
 
