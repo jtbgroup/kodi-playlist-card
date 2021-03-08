@@ -47,9 +47,11 @@ class PlaylistMediaCard extends HTMLElement {
 
   defineCSS() {
     return `
-                // .thumbnailCell, .titleCell, .genreCell, .albumCell, .durationCell, .removeCell{
-                //   border: 1px solid orange;
-                // }
+                /*.thumbnailCell, .titleCell, .genreCell, .albumCell, .durationCell, .removeCell{
+                  border: 1px solid orange;
+                }
+                */
+
                 .playerType{
                   width: 100%;
                   height: 50px;
@@ -60,7 +62,7 @@ class PlaylistMediaCard extends HTMLElement {
 
                 .inner-item{
                   display: grid;
-                  grid-template-columns: 65px 1fr auto auto;
+                  grid-template-columns: 65px 1fr auto auto auto;
                   grid-gap: 3px;
                   grid-auto-rows: auto;
                   margin-top: 20px;
@@ -90,7 +92,7 @@ class PlaylistMediaCard extends HTMLElement {
 
                 .titleCell{
                   grid-column-start: 2;
-                  grid-column-end: end-1;
+                  grid-column-end: 4;
                   grid-row-start: 1;
                   grid-row-end: 2;
                   font-weight: bold;
