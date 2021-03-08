@@ -281,7 +281,7 @@ class PlaylistMediaCard extends HTMLElement {
         trashIcon.setAttribute("class", "removeCell");
         trashIcon.setAttribute("icon", "mdi:delete");
         trashIcon.addEventListener("click", () =>
-          this.remove(kodi_entity_id, count - 1, 0)
+          this.remove(kodi_entity_id, count, 0)
         );
         row.appendChild(trashIcon);
       }
