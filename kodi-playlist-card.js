@@ -276,7 +276,7 @@ class PlaylistMediaCard extends HTMLElement {
         .substr(11, 8);
       row.appendChild(durationDiv);
 
-      if (count > 1) {
+      if (count > 0) {
         let trashIcon = document.createElement("ha-icon");
         trashIcon.setAttribute("class", "removeCell");
         trashIcon.setAttribute("icon", "mdi:delete");
