@@ -3,7 +3,7 @@ class PlaylistMediaCard extends HTMLElement {
 
   setConfig(config) {
     this._config = config;
-    this.cardSize = 1;
+    this.cardSize = 50;
 
     // Example configuration:
     //
@@ -169,22 +169,29 @@ class PlaylistMediaCard extends HTMLElement {
     const json_meta = typeof meta == "object" ? meta : JSON.parse(meta);
     let kodi_entity_id = json_meta[0]["kodi_entity_id"];
     // this._sensor_entity_id = json_meta[0]["sensor_entity_id"];
-    const playerType = json_meta[0]["playlisttype"].toLowerCase();
 
     let data = hass.states[entity].attributes.data;
     const json =
       typeof data == "object"
         ? hass.states[entity].attributes.data
         : JSON.parse(hass.states[entity].attributes.data);
-    let items = json[0]["items"];
-    const max = items.length;
-    this.cardSize = max + 1;
-    //const max = Math.min(json.length - 1, this.config.max || 5);
 
-    if (playerType == "video") {
-      this.fillVideoPlaylist(max, items);
-    } else if (playerType == "audio") {
-      this.fillAudioPlaylist(max, items, kodi_entity_id);
+    let items;
+    let playerType;
+    let max = 0;
+    if (json[0]) {
+      playerType = json_meta[0]["playlisttype"].toLowerCase();
+      items = json[0]["items"];
+      max = items.length;
+      this.cardSize = max + 1;
+      //const max = Math.min(json.length - 1, this.config.max || 5);
+    }
+    if (playerType) {
+      if (playerType == "video") {
+        this.fillVideoPlaylist(max, items);
+      } else if (playerType == "audio") {
+        this.fillAudioPlaylist(max, items, kodi_entity_id);
+      }
     } else {
       this.playerTypeDiv.innerHTML = `<div class="playerType">No playlist found</div>`;
       this.content.innerHTML = "";
