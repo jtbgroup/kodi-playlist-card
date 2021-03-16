@@ -53,11 +53,17 @@ class PlaylistMediaCard extends HTMLElement {
                 */
 
                 .playerType{
-                  width: 100%;
-                  height: 50px;
+                  display: grid;
+                  grid-template-columns: 1fr auto;
+                  grid-auto-rows: auto;
+                  grid-gap: 10px;
                   text-align: right;
                   font-weight: bold;
                   font-size: 18px;
+                  margin-top: 20px;
+                  margin-bottom: 20px;
+                  margin-right: 10px;
+                  margin-left: 10px;
                 }
 
                 .inner-item{
@@ -97,8 +103,6 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-row-end: 2;
                   font-weight: bold;
                   font-size: 14px;
-                  // background: rgb(230,230,230);
-                  // background: linear-gradient(90deg, rgba(230,230,230,1) 10%, rgba(255,255,255,1) 90%);
                 }
                 .genreCell{
                   grid-column-start: 2;
@@ -148,7 +152,8 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   getCardSize() {
-    return this.cardSize;
+    // return this.cardSize;
+    return 30;
   }
 
   set hass(hass) {
@@ -186,6 +191,8 @@ class PlaylistMediaCard extends HTMLElement {
       this.cardSize = max + 1;
       //const max = Math.min(json.length - 1, this.config.max || 5);
     }
+
+    this.playerTypeDiv.innerHTML = ``;
     if (playerType) {
       if (playerType == "video") {
         this.fillVideoPlaylist(max, items);
@@ -193,13 +200,21 @@ class PlaylistMediaCard extends HTMLElement {
         this.fillAudioPlaylist(max, items, kodi_entity_id);
       }
     } else {
-      this.playerTypeDiv.innerHTML = `<div class="playerType">No playlist found</div>`;
+      this.playerTypeDiv.innerHTML = `<div>No playlist found</div>`;
       this.content.innerHTML = "";
     }
   }
 
   fillVideoPlaylist(max, json, kodi_entity_id) {
-    this.playerTypeDiv.innerHTML = `Movie Playlist <ha-icon icon="mdi:movie"></ha-icon>`;
+    // this.playerTypeDiv.innerHTML = `Movie Playlist <ha-icon icon="mdi:movie"></ha-icon>`;
+    let playerTypeTxt = document.createElement("div");
+    playerTypeTxt.innerHTML = `Movie Playlist`;
+    this.playerTypeDiv.appendChild(playerTypeTxt);
+
+    let playerTypeIcon = document.createElement("ha-icon");
+    playerTypeIcon.setAttribute("icon", "mdi:movie");
+    this.playerTypeDiv.appendChild(playerTypeIcon);
+
     this.content.innerHTML = "";
     for (let count = 0; count < max; count++) {
       const item = (key) => json[count][key];
@@ -240,7 +255,16 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   fillAudioPlaylist(max, json, kodi_entity_id) {
-    this.playerTypeDiv.innerHTML = `Audio Playlist <ha-icon icon="mdi:music"></ha-icon>`;
+    // this.playerTypeDiv.innerHTML = `Audio Playlist <ha-icon icon="mdi:music"></ha-icon>`;
+
+    let playerTypeTxt = document.createElement("div");
+    playerTypeTxt.innerHTML = `Audio Playlist`;
+    this.playerTypeDiv.appendChild(playerTypeTxt);
+
+    let playerTypeIcon = document.createElement("ha-icon");
+    playerTypeIcon.setAttribute("icon", "mdi:music");
+    this.playerTypeDiv.appendChild(playerTypeIcon);
+
     this.content.innerHTML = "";
     for (let count = 0; count < max; count++) {
       const item = (key) => json[count][key];
