@@ -78,7 +78,7 @@ class PlaylistMediaCard extends HTMLElement {
                   display: grid;
                   grid-template-columns: 1fr;
                   grid-auto-rows: auto;
-                  grid-gap: 5px;
+                  grid-gap: 15px;
                 }
 
                /*
@@ -90,6 +90,7 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
                   grid-gap: 3px;
                   grid-auto-rows: auto;
+                  border-bottom: solid 1px;
                 }
 
                 .song-item-title{
