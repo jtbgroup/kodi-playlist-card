@@ -11,7 +11,7 @@ This card is intented to be an alternative to an iframe containing Chorus.
 
 ## Requirements
 
-This card requires a specific sensor that gets the data from Kodi. The sensor is provided by the custom component [Kodi Media Sensors](https://github.com/jtbgroup/kodi-media-sensors).
+This card requires a specific sensor that gets the data from Kodi. The sensor is provided by the custom component [Kodi Media Sensors](https://github.com/jtbgroup/kodi-media-sensors). You need at least version 2.0.0 of this component to use the card.
 
 ## Features:
 
@@ -36,6 +36,7 @@ You can perform some actions directly from the card like removing an item from t
 |------|------|---------|-------|-------------|
 | type | string	| **required** | v1.0.0 | `custom:kodi-playlist-card` |
 | entity | string | **required** | v1.0.0 |  `sensor.kodi_playlist` |
+| title | string | optional | v1.0.0 | The title of the card |
 | show_thumbnail | boolean | optional | v1.1.2 | Default = false. Set to true if you want to show the thumbnails coming from kodi. Attention you can get problems when mixing http and https content; if so, leave it to false. |
 
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
