@@ -39,8 +39,8 @@ class PlaylistMediaCard extends HTMLElement {
       this.playlistDiv.setAttribute("class", "playlist-container");
       card.appendChild(this.playlistDiv);
 
-      this.content = document.createElement("div");
-      card.appendChild(this.content);
+      // this.content = document.createElement("div");
+      // card.appendChild(this.content);
 
       let style = document.createElement("style");
       style.textContent = this.defineCSS();
@@ -79,6 +79,42 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-template-columns: 1fr;
                   grid-auto-rows: auto;
                   grid-gap: 15px;
+                }
+
+                /*
+                //// UNKNOWN
+               */
+                .unknown-item-grid{
+                  display: grid;
+                  grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
+                  grid-gap: 3px;
+                  grid-auto-rows: auto;
+                  border-bottom: solid 1px;
+                }
+
+                .unknown-item-title{
+                  grid-column-start: 2;
+                  grid-column-end: 4;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  font-weight: bold;
+                  font-size: 14px;
+                }
+
+                .unknown-message{
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                }
+
+                .unknown-item-remove, .unknown-item-remove-alt{
+                  grid-column-start: 4;
+                  grid-colu mn-end: 5;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  text-align: right;
+                  width: 30px;
                 }
 
                /*
@@ -306,32 +342,38 @@ class PlaylistMediaCard extends HTMLElement {
     // Update the card in case anything has changed
     if (!this._config) return; // Can't assume setConfig is called before hass is set
 
-    this._hass.callService("homeassistant", "update_entity", {
-      entity_id: this._config.entity,
-    });
-
     const entity = this._config.entity;
-    if (!hass.states[entity]) {
+    let state = hass.states[entity];
+    if (!state) {
       return;
     }
 
-    let meta = hass.states[entity].attributes.meta;
-    const json_meta = typeof meta == "object" ? meta : JSON.parse(meta);
-    this._service_domain = json_meta[0]["service_domain"];
-    this._currently_playing = json_meta[0]["currently_playing"];
+    if (state.state == "off") {
+      this.formatContainerOff();
+    } else {
+      let meta = state.attributes.meta;
+      const json_meta = typeof meta == "object" ? meta : JSON.parse(meta);
+      let json;
+      let playerType;
 
-    let data = hass.states[entity].attributes.data;
-    const json =
-      typeof data == "object"
-        ? hass.states[entity].attributes.data
-        : JSON.parse(hass.states[entity].attributes.data);
+      if (json_meta.length > 0) {
+        this._service_domain = json_meta[0]["service_domain"];
+        this._currently_playing = json_meta[0]["currently_playing"];
 
-    let playerType;
-    if (json[0] && json_meta[0]["playlist_type"]) {
-      playerType = json_meta[0]["playlist_type"].toLowerCase();
+        let data = state.attributes.data;
+        json = typeof data == "object" ? data : JSON.parse(data);
+
+        if (json[0] && json_meta[0]["playlist_type"]) {
+          playerType = json_meta[0]["playlist_type"].toLowerCase();
+        }
+      }
+      this.formatContainer(playerType, json);
     }
+  }
 
-    this.formatContainer(playerType, json);
+  formatContainerOff() {
+    this.playerTypeDiv.innerHTML = `<div>Kodi is off</div>`;
+    this.playlistDiv.innerHTML = "";
   }
 
   formatContainer(playerType, data) {
@@ -340,17 +382,19 @@ class PlaylistMediaCard extends HTMLElement {
 
     this.formatPlayerType(playerType);
 
-    for (let count = 0; count < data.length; count++) {
-      let item = data[count];
-      let attribute = item["object_type"];
-      if (attribute == "song") {
-        this.playlistDiv.appendChild(this.formatSong(item, count));
-      } else if (attribute == "movie") {
-        this.playlistDiv.appendChild(this.formatMovie(item, count));
-      } else if (attribute == "episode") {
-        this.playlistDiv.appendChild(this.formatEpisode(item, count));
-      } else {
-        this.playlistDiv.appendChild(this.formatUnknown(item));
+    if (data && data.length > 0) {
+      for (let count = 0; count < data.length; count++) {
+        let item = data[count];
+        let attribute = item["object_type"];
+        if (attribute == "song") {
+          this.playlistDiv.appendChild(this.formatSong(item, count));
+        } else if (attribute == "movie") {
+          this.playlistDiv.appendChild(this.formatMovie(item, count));
+        } else if (attribute == "episode") {
+          this.playlistDiv.appendChild(this.formatEpisode(item, count));
+        } else {
+          this.playlistDiv.appendChild(this.formatUnknown(item));
+        }
       }
     }
   }
@@ -513,8 +557,32 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   formatUnknown(item) {
+    let isPlaying = item["id"] == this._currently_playing;
+
     let row = document.createElement("div");
-    row.innerHTML = "unknown type... " + item["type"];
+    row.setAttribute("class", "unknown-item-grid");
+
+    let titleDiv = document.createElement("div");
+    titleDiv.setAttribute("class", "unknown-item-title");
+    titleDiv.innerHTML = item["title"];
+    row.appendChild(titleDiv);
+
+    let messageDiv = document.createElement("div");
+    messageDiv.setAttribute("class", "unknown-item-message");
+    messageDiv.innerHTML = "unknown type... " + item["type"];
+    row.appendChild(messageDiv);
+
+    let trashIcon = document.createElement("ha-icon");
+    row.appendChild(trashIcon);
+    if (isPlaying) {
+      trashIcon.setAttribute("class", "unknown-item-remove-alt");
+      trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
+    } else {
+      trashIcon.setAttribute("class", "unknown-item-remove");
+      trashIcon.setAttribute("icon", "mdi:delete");
+      trashIcon.addEventListener("click", () => this.remove(position, 1));
+    }
+
     return row;
   }
 
@@ -536,7 +604,7 @@ class PlaylistMediaCard extends HTMLElement {
       this.playerTypeDiv.appendChild(playerTypeIcon);
     } else {
       this.playerTypeDiv.innerHTML = `<div>No playlist found</div>`;
-      this.content.innerHTML = "";
+      this.playlistDiv.innerHTML = "";
     }
   }
 
