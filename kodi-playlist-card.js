@@ -51,287 +51,6 @@ class PlaylistMediaCard extends HTMLElement {
     }
   }
 
-  defineCSS() {
-    return `
-    /*
-    .movie-item-remove,.movie-item-grid,.movie-item-genre,.movie-item-title, .song-item-grid, .song-item-remove, .song-item-title{
-      border: 1px solid orange;
-    }
-    */
-
-                .playertype-container{
-                  display: grid;
-                  grid-template-columns: 1fr auto;
-                  grid-auto-rows: auto;
-                  grid-gap: 10px;
-                  text-align: right;
-                  font-weight: bold;
-                  font-size: 18px;
-                  margin-top: 20px;
-                  margin-bottom: 20px;
-                  margin-left: 10px;
-                  margin-right: 10px;
-                  border-bottom: solid;
-                }
-
-                .playlist-container{
-                  display: grid;
-                  grid-template-columns: 1fr;
-                  grid-auto-rows: auto;
-                  grid-gap: 15px;
-                }
-
-                /*
-                //// UNKNOWN
-               */
-                .unknown-item-grid{
-                  display: grid;
-                  grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
-                  grid-gap: 3px;
-                  grid-auto-rows: auto;
-                  border-bottom: solid 1px;
-                }
-
-                .unknown-item-title{
-                  grid-column-start: 2;
-                  grid-column-end: 4;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  font-weight: bold;
-                  font-size: 14px;
-                }
-
-                .unknown-message{
-                  grid-column-start: 2;
-                  grid-column-end: 3;
-                  grid-row-start: 3;
-                  grid-row-end: 4;
-                }
-
-                .unknown-item-remove, .unknown-item-remove-alt{
-                  grid-column-start: 4;
-                  grid-colu mn-end: 5;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  text-align: right;
-                  width: 30px;
-                }
-
-               /*
-                //// SONGS
-               */
-
-                .song-item-grid{
-                  display: grid;
-                  grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
-                  grid-gap: 3px;
-                  grid-auto-rows: auto;
-                  border-bottom: solid 1px;
-                }
-
-                .song-item-title{
-                  grid-column-start: 2;
-                  grid-column-end: 4;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  font-weight: bold;
-                  font-size: 14px;
-                }
-
-                .song-item-album{
-                  grid-column-start: 2;
-                  grid-column-end: 3;
-                  grid-row-start: 3;
-                  grid-row-end: 4;
-                }
-
-                .song-item-genre{
-                  grid-column-start: 2;
-                  grid-column-end: 4;
-                  grid-row-start: 2;
-                  grid-row-end: 3;
-                  font-style: italic;
-                }
-                .song-item-duration{
-                  grid-column-start: 3;
-                  grid-column-end: 5;
-                  grid-row-start: 3;
-                  grid-row-end: 4;
-                  text-align: right;
-                }
-
-                .song-item-remove, .song-item-remove-alt{
-                  grid-column-start: 4;
-                  grid-colu mn-end: 5;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  text-align: right;
-                  width: 30px;
-                }
-
-                .song-item-thumbnail{
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 4;
-                  display: block;
-                  background-size: contain;
-                  background-repeat: no-repeat;
-                  background-color: ${this.BACKGROUND_BASIC_COLOR};
-                  width: 65px;
-                  height: 65px;
-                }
-
-                .song-item-play{
-                  display: block;
-                  width: 65px;
-                  height: 65px;
-                }
-
-
-                /*
-                //// MOVIES
-               */
-                .movie-item-grid{
-                  display: grid;
-                  grid-template-columns: calc(${this.MOVIE_THUMBNAIL_SIZE} * ${this.MOVIE_THUMBNAIL_RATIO}) 1fr auto;
-                  grid-gap: 3px;
-                  grid-auto-rows: auto;
-                }
-
-                .movie-item-title{
-                  grid-column-start: 2;
-                  grid-column-end: 3;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  font-weight: bold;
-                  font-size: 14px;
-                }
-
-                .movie-item-genre{
-                  grid-column-start: 2;
-                  grid-column-end: end;
-                  grid-row-start: 2;
-                  grid-row-end: 3;
-                  font-style: italic;
-                }
-
-                .movie-item-remove, .movie-item-remove-alt{
-                  grid-column-start: 3;
-                  grid-column-end: end;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  text-align: right;
-                  display:flex;
-                  justify-content:flex-end;
-                  align-items:flex-end;
-                  width: 30px;
-                }
-
-                .movie-item-thumbnail{
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 4;
-                  display: block;
-                  background-size: contain;
-                  background-repeat: no-repeat;
-                  background-color: ${this.BACKGROUND_BASIC_COLOR};
-                }
-
-                .movie-item-play{
-                  display: block;
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 4;
-                  width: calc(${this.MOVIE_THUMBNAIL_SIZE} * ${this.MOVIE_THUMBNAIL_RATIO});
-                  height: ${this.MOVIE_THUMBNAIL_SIZE} ;
-                }
-
-
-                /*
-                //// EPISODE
-               */
-                .episode-item-grid{
-                  display: grid;
-                  grid-template-columns: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO}) 1fr auto;
-                  grid-gap: 3px;
-                  grid-auto-rows: auto;
-                }
-
-                .episode-item-title{
-                  grid-column-start: 2;
-                  grid-column-end: 3;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  font-weight: bold;
-                  font-size: 14px;
-                }
-
-                .episode-item-genre{
-                  grid-column-start: 2;
-                  grid-column-end: end;
-                  grid-row-start: 2;
-                  grid-row-end: 3;
-                  font-style: italic;
-                }
-
-                .episode-item-season{
-                  grid-column-start: 2;
-                  grid-column-end: end;
-                  grid-row-start: 3;
-                  grid-row-end: 4;
-                }
-
-                .episode-item-remove, .episode-item-remove-alt{
-                  grid-column-start: 3;
-                  grid-column-end: end;
-                  grid-row-start: 1;
-                  grid-row-end: 2;
-                  text-align: right;
-                  display:flex;
-                  justify-content:flex-end;
-                  align-items:flex-end;
-                  width: 30px;
-                }
-
-                .episode-item-thumbnail{
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 5;
-                  display: block;
-                  background-size: contain;
-                  background-repeat: no-repeat;
-                  background-color: ${this.BACKGROUND_BASIC_COLOR};
-                  width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
-                  height: ${this.EPISODE_THUMBNAIL_SIZE} ;
-                }
-
-                .episode-item-play{
-                  display: block;
-                  grid-column-start: 1;
-                  grid-column-end: 2;
-                  grid-row-start: 1;
-                  grid-row-end: 5;
-                  width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
-                  height: ${this.EPISODE_THUMBNAIL_SIZE} ;
-                }
-
-                .song-item-play, .movie-item-play, .episode-item-play{
-                  display: block;
-                  color: black;
-                  background-color: rgb(250, 250, 250, 0.4)
-                }
-
-                .song-item-play:hover, .song-item-remove:hover, .movie-item-play:hover, .movie-item-remove:hover, .episode-item-play:hover, .episode-item-remove:hover{
-                  color: red;
-                }
-
-          `;
-  }
-
   getCardSize() {
     // return this.cardSize;
     return 30;
@@ -628,6 +347,287 @@ class PlaylistMediaCard extends HTMLElement {
         position: posn,
       },
     });
+  }
+
+  defineCSS() {
+    return `
+    /*
+    .movie-item-remove,.movie-item-grid,.movie-item-genre,.movie-item-title, .song-item-grid, .song-item-remove, .song-item-title{
+      border: 1px solid orange;
+    }
+    */
+
+                .playertype-container{
+                  display: grid;
+                  grid-template-columns: 1fr auto;
+                  grid-auto-rows: auto;
+                  grid-gap: 10px;
+                  text-align: right;
+                  font-weight: bold;
+                  font-size: 18px;
+                  margin-top: 20px;
+                  margin-bottom: 20px;
+                  margin-left: 10px;
+                  margin-right: 10px;
+                  border-bottom: solid;
+                }
+
+                .playlist-container{
+                  display: grid;
+                  grid-template-columns: 1fr;
+                  grid-auto-rows: auto;
+                  grid-gap: 15px;
+                }
+
+                /*
+                //// UNKNOWN
+               */
+                .unknown-item-grid{
+                  display: grid;
+                  grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
+                  grid-gap: 3px;
+                  grid-auto-rows: auto;
+                  border-bottom: solid 1px;
+                }
+
+                .unknown-item-title{
+                  grid-column-start: 2;
+                  grid-column-end: 4;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  font-weight: bold;
+                  font-size: 14px;
+                }
+
+                .unknown-message{
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                }
+
+                .unknown-item-remove, .unknown-item-remove-alt{
+                  grid-column-start: 4;
+                  grid-colu mn-end: 5;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  text-align: right;
+                  width: 30px;
+                }
+
+               /*
+                //// SONGS
+               */
+
+                .song-item-grid{
+                  display: grid;
+                  grid-template-columns: ${this.SONG_THUMBNAIL_SIZE} 1fr auto auto auto;
+                  grid-gap: 3px;
+                  grid-auto-rows: auto;
+                  border-bottom: solid 1px;
+                }
+
+                .song-item-title{
+                  grid-column-start: 2;
+                  grid-column-end: 4;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  font-weight: bold;
+                  font-size: 14px;
+                }
+
+                .song-item-album{
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                }
+
+                .song-item-genre{
+                  grid-column-start: 2;
+                  grid-column-end: 4;
+                  grid-row-start: 2;
+                  grid-row-end: 3;
+                  font-style: italic;
+                }
+                .song-item-duration{
+                  grid-column-start: 3;
+                  grid-column-end: 5;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                  text-align: right;
+                }
+
+                .song-item-remove, .song-item-remove-alt{
+                  grid-column-start: 4;
+                  grid-colu mn-end: 5;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  text-align: right;
+                  width: 30px;
+                }
+
+                .song-item-thumbnail{
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 4;
+                  display: block;
+                  background-size: contain;
+                  background-repeat: no-repeat;
+                  background-color: ${this.BACKGROUND_BASIC_COLOR};
+                  width: 65px;
+                  height: 65px;
+                }
+
+                .song-item-play{
+                  display: block;
+                  width: 65px;
+                  height: 65px;
+                }
+
+
+                /*
+                //// MOVIES
+               */
+                .movie-item-grid{
+                  display: grid;
+                  grid-template-columns: calc(${this.MOVIE_THUMBNAIL_SIZE} * ${this.MOVIE_THUMBNAIL_RATIO}) 1fr auto;
+                  grid-gap: 3px;
+                  grid-auto-rows: auto;
+                }
+
+                .movie-item-title{
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  font-weight: bold;
+                  font-size: 14px;
+                }
+
+                .movie-item-genre{
+                  grid-column-start: 2;
+                  grid-column-end: end;
+                  grid-row-start: 2;
+                  grid-row-end: 3;
+                  font-style: italic;
+                }
+
+                .movie-item-remove, .movie-item-remove-alt{
+                  grid-column-start: 3;
+                  grid-column-end: end;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  text-align: right;
+                  display:flex;
+                  justify-content:flex-end;
+                  align-items:flex-end;
+                  width: 30px;
+                }
+
+                .movie-item-thumbnail{
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 4;
+                  display: block;
+                  background-size: contain;
+                  background-repeat: no-repeat;
+                  background-color: ${this.BACKGROUND_BASIC_COLOR};
+                }
+
+                .movie-item-play{
+                  display: block;
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 4;
+                  width: calc(${this.MOVIE_THUMBNAIL_SIZE} * ${this.MOVIE_THUMBNAIL_RATIO});
+                  height: ${this.MOVIE_THUMBNAIL_SIZE} ;
+                }
+
+
+                /*
+                //// EPISODE
+               */
+                .episode-item-grid{
+                  display: grid;
+                  grid-template-columns: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO}) 1fr auto;
+                  grid-gap: 3px;
+                  grid-auto-rows: auto;
+                }
+
+                .episode-item-title{
+                  grid-column-start: 2;
+                  grid-column-end: 3;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  font-weight: bold;
+                  font-size: 14px;
+                }
+
+                .episode-item-genre{
+                  grid-column-start: 2;
+                  grid-column-end: end;
+                  grid-row-start: 2;
+                  grid-row-end: 3;
+                  font-style: italic;
+                }
+
+                .episode-item-season{
+                  grid-column-start: 2;
+                  grid-column-end: end;
+                  grid-row-start: 3;
+                  grid-row-end: 4;
+                }
+
+                .episode-item-remove, .episode-item-remove-alt{
+                  grid-column-start: 3;
+                  grid-column-end: end;
+                  grid-row-start: 1;
+                  grid-row-end: 2;
+                  text-align: right;
+                  display:flex;
+                  justify-content:flex-end;
+                  align-items:flex-end;
+                  width: 30px;
+                }
+
+                .episode-item-thumbnail{
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 5;
+                  display: block;
+                  background-size: contain;
+                  background-repeat: no-repeat;
+                  background-color: ${this.BACKGROUND_BASIC_COLOR};
+                  width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
+                  height: ${this.EPISODE_THUMBNAIL_SIZE} ;
+                }
+
+                .episode-item-play{
+                  display: block;
+                  grid-column-start: 1;
+                  grid-column-end: 2;
+                  grid-row-start: 1;
+                  grid-row-end: 5;
+                  width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
+                  height: ${this.EPISODE_THUMBNAIL_SIZE} ;
+                }
+
+                .song-item-play, .movie-item-play, .episode-item-play{
+                  display: block;
+                  color: black;
+                  background-color: rgb(250, 250, 250, 0.4)
+                }
+
+                .song-item-play:hover, .song-item-remove:hover, .movie-item-play:hover, .movie-item-remove:hover, .episode-item-play:hover, .episode-item-remove:hover{
+                  color: red;
+                }
+
+          `;
   }
 }
 customElements.define("kodi-playlist-card", PlaylistMediaCard);
