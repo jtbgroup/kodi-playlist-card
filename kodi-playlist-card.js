@@ -16,6 +16,7 @@ class PlaylistMediaCard extends HTMLElement {
   setConfig(config) {
     this._config = config;
     this.cardSize = 50;
+    this.last_update_time;
 
     if (!config.entity) {
       // If no entity was specified, this will display a red error card with the message below
@@ -64,28 +65,45 @@ class PlaylistMediaCard extends HTMLElement {
     const entity = this._config.entity;
     let state = hass.states[entity];
     if (!state) {
+      console.error("no state for the sensor");
       return;
     }
-
     if (state.state == "off") {
       this.formatContainerOff();
     } else {
       let meta = state.attributes.meta;
+      if (!meta) {
+        console.error("no metadata for the sensor");
+        return;
+      }
       const json_meta = typeof meta == "object" ? meta : JSON.parse(meta);
+      if (json_meta.length == 0) {
+        console.error("empty metadata attribute");
+        return;
+      }
+
+      let update_time = json_meta[0]["update_time"];
+      if (this.last_update_time && this.last_update_time == update_time) {
+        console.log("no update available");
+        return;
+      }
+
+      this.last_update_time = update_time;
+
       let json;
       let playerType;
 
-      if (json_meta.length > 0) {
-        this._service_domain = json_meta[0]["service_domain"];
-        this._currently_playing = json_meta[0]["currently_playing"];
+      // if (json_meta.length > 0) {
+      this._service_domain = json_meta[0]["service_domain"];
+      this._currently_playing = json_meta[0]["currently_playing"];
 
-        let data = state.attributes.data;
-        json = typeof data == "object" ? data : JSON.parse(data);
+      let data = state.attributes.data;
+      json = typeof data == "object" ? data : JSON.parse(data);
 
-        if (json[0] && json_meta[0]["playlist_type"]) {
-          playerType = json_meta[0]["playlist_type"].toLowerCase();
-        }
+      if (json[0] && json_meta[0]["playlist_type"]) {
+        playerType = json_meta[0]["playlist_type"].toLowerCase();
       }
+      // }
       this.formatContainer(playerType, json);
     }
   }
