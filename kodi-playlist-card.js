@@ -90,10 +90,10 @@ class PlaylistMediaCard extends HTMLElement {
 
       this.last_update_time = update_time;
 
+      /** Here the real code */
       let json;
       let playerType;
 
-      // if (json_meta.length > 0) {
       this._service_domain = json_meta[0]["service_domain"];
       this._currently_playing = json_meta[0]["currently_playing"];
 
@@ -103,7 +103,6 @@ class PlaylistMediaCard extends HTMLElement {
       if (json[0] && json_meta[0]["playlist_type"]) {
         playerType = json_meta[0]["playlist_type"].toLowerCase();
       }
-      // }
       this.formatContainer(playerType, json);
     }
   }
@@ -152,8 +151,8 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let thumbnailPlayDiv = document.createElement("ha-icon");
-    thumbnailPlayDiv.setAttribute("class", "movie-item-play");
     if (!isPlaying) {
+      thumbnailPlayDiv.setAttribute("class", "movie-item-play");
       thumbnailPlayDiv.setAttribute("icon", "mdi:play");
       thumbnailPlayDiv.addEventListener("click", () => this.goTo(position, 1));
     }
@@ -172,7 +171,7 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "movie-item-remove-alt");
+      trashIcon.setAttribute("class", "movie-item-playing");
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
       trashIcon.setAttribute("class", "movie-item-remove");
@@ -198,8 +197,8 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let thumbnailPlayDiv = document.createElement("ha-icon");
-    thumbnailPlayDiv.setAttribute("class", "episode-item-play");
     if (!isPlaying) {
+      thumbnailPlayDiv.setAttribute("class", "episode-item-play");
       thumbnailPlayDiv.setAttribute("icon", "mdi:play");
       thumbnailPlayDiv.addEventListener("click", () => this.goTo(position, 1));
     }
@@ -225,7 +224,7 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "episode-item-remove-alt");
+      trashIcon.setAttribute("class", "episode-item-playing");
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
       trashIcon.setAttribute("class", "episode-item-remove");
@@ -250,8 +249,8 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let thumbnailPlayDiv = document.createElement("ha-icon");
-    thumbnailPlayDiv.setAttribute("class", "song-item-play");
     if (!isPlaying) {
+      thumbnailPlayDiv.setAttribute("class", "song-item-play");
       thumbnailPlayDiv.setAttribute("icon", "mdi:play");
       thumbnailPlayDiv.addEventListener("click", () => this.goTo(position, 0));
     }
@@ -282,7 +281,7 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "song-item-remove-alt");
+      trashIcon.setAttribute("class", "song-item-playing");
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
       trashIcon.setAttribute("class", "song-item-remove");
@@ -499,11 +498,9 @@ class PlaylistMediaCard extends HTMLElement {
                 }
 
                 .song-item-play{
-                  display: block;
                   width: 65px;
                   height: 65px;
                 }
-
 
                 /*
                 //// MOVIES
@@ -619,7 +616,7 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-row-end: 5;
                   display: block;
                   background-size: contain;
-                  background-repeat: no-repeat;
+                  backgrouFFnd-repeat: no-repeat;
                   background-color: ${this.BACKGROUND_BASIC_COLOR};
                   width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
                   height: ${this.EPISODE_THUMBNAIL_SIZE} ;
@@ -635,10 +632,20 @@ class PlaylistMediaCard extends HTMLElement {
                   height: ${this.EPISODE_THUMBNAIL_SIZE} ;
                 }
 
-                .song-item-play, .movie-item-play, .episode-item-play{
+
+                .song-item-play, .movie-item-play, .episode-item-play, song-item-playing, .movie-item-playing, .episode-item-playing{
                   display: block;
-                  color: black;
-                  background-color: rgb(250, 250, 250, 0.4)
+                  background-color: rgb(250, 250, 250, 0.4);
+                }
+
+
+                .song-item-play, .movie-item-play, .episode-item-play{
+                  color: rgb(0, 0, 0);
+                }
+
+
+                .song-item-playing, .movie-item-playing, .episode-item-playing{
+                  color: rgb(3, 169, 244);
                 }
 
                 .song-item-play:hover, .song-item-remove:hover, .movie-item-play:hover, .movie-item-remove:hover, .episode-item-play:hover, .episode-item-remove:hover{
