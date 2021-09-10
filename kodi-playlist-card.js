@@ -60,7 +60,12 @@ class PlaylistMediaCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     // Update the card in case anything has changed
+
     if (!this._config) return; // Can't assume setConfig is called before hass is set
+
+    // this._hass.callService("homeassistant", "update_entity", {
+    //   entity_id: this._config.entity,
+    // });
 
     const entity = this._config.entity;
     let state = hass.states[entity];
