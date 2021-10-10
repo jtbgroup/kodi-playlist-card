@@ -5,8 +5,10 @@ class PlaylistMediaCard extends HTMLElement {
   MOVIE_THUMBNAIL_SIZE = "80px";
   MOVIE_THUMBNAIL_RATIO = 0.6;
 
-  EPISODE_THUMBNAIL_SIZE = "50px";
-  EPISODE_THUMBNAIL_RATIO = 1.75;
+  // EPISODE_THUMBNAIL_SIZE = "50px";
+  // EPISODE_THUMBNAIL_RATIO = 1.75;
+  EPISODE_THUMBNAIL_SIZE = "80px";
+  EPISODE_THUMBNAIL_RATIO = 0.6;
 
   BACKGROUND_BASIC_COLOR = "#9b9595";
 
@@ -151,7 +153,13 @@ class PlaylistMediaCard extends HTMLElement {
     row.appendChild(thumbnailDiv);
 
     if (this._config.show_thumbnail && item["thumbnail"] != "") {
-      let url = "background-image: url('" + item["thumbnail"] + "')";
+      let image = item["thumbnail"];
+      if (item["poster"]) {
+        image = item["poster"];
+      }
+
+      let url = "background-image: url('" + image + "')";
+
       thumbnailDiv.setAttribute("style", url);
     }
 
@@ -197,7 +205,12 @@ class PlaylistMediaCard extends HTMLElement {
     row.appendChild(thumbnailDiv);
 
     if (this._config.show_thumbnail && item["thumbnail"] != "") {
-      let url = "background-image: url('" + item["thumbnail"] + "')";
+      let image = item["thumbnail"];
+      if (item["poster"]) {
+        image = item["poster"];
+      }
+
+      let url = "background-image: url('" + image + "')";
       thumbnailDiv.setAttribute("style", url);
     }
 
@@ -552,7 +565,7 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-row-start: 1;
                   grid-row-end: 4;
                   display: block;
-                  background-size: contain;
+                  background-size: cover;
                   background-repeat: no-repeat;
                   background-color: ${this.BACKGROUND_BASIC_COLOR};
                 }
@@ -620,7 +633,7 @@ class PlaylistMediaCard extends HTMLElement {
                   grid-row-start: 1;
                   grid-row-end: 5;
                   display: block;
-                  background-size: contain;
+                  background-size: cover;
                   backgrouFFnd-repeat: no-repeat;
                   background-color: ${this.BACKGROUND_BASIC_COLOR};
                   width: calc(${this.EPISODE_THUMBNAIL_SIZE} * ${this.EPISODE_THUMBNAIL_RATIO});
