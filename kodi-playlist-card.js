@@ -571,7 +571,7 @@ class PlaylistMediaCard extends HTMLElement {
                */
                 .unknown-item-grid{
                   display: grid;
-                  grid-template-columns: ${this.SONG_THUMBNAIL_WIDTH} 1fr auto auto auto;
+                  grid-template-columns: auto 1fr auto auto auto;
                   grid-gap: 3px;
                   grid-auto-rows: auto;
                 }
@@ -651,7 +651,7 @@ class PlaylistMediaCard extends HTMLElement {
                */
 
                 .movie-item-grid{
-                  grid-template-columns: ${this.MOVIE_THUMBNAIL_WIDTH} 1fr auto;
+                  grid-template-columns: auto 1fr auto;
                   grid-auto-rows: auto;
                 }
 
@@ -691,7 +691,7 @@ class PlaylistMediaCard extends HTMLElement {
                 //// EPISODE
                */
                 .episode-item-grid{
-                  grid-template-columns: ${this.EPISODE_THUMBNAIL_WIDTH} 1fr auto;
+                  grid-template-columns: auto 1fr auto;
                   grid-auto-rows: auto;
                 }
 
