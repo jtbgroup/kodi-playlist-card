@@ -156,14 +156,14 @@ class PlaylistMediaCard extends HTMLElement {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
-    row.setAttribute("class", "movie-item-grid item-grid");
+    row.setAttribute("class", "playlist-movie-grid playlist-grid");
 
     let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "movie-item-thumbnail");
+    thumbnailDiv.setAttribute("class", "playlist-movie-cover");
     row.appendChild(thumbnailDiv);
 
     let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "item-thumbnail-container");
+    thumbContainer.setAttribute("class", "playlist-cover-container");
     thumbnailDiv.appendChild(thumbContainer);
 
     let cover =
@@ -175,7 +175,7 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImg = document.createElement("img");
       thumbImg.setAttribute(
         "class",
-        "movie-item-thumbnail-image item-thumbnail-image"
+        "playlist-movie-cover-image playlist-cover-image"
       );
       thumbImg.setAttribute("src", cover);
       thumbContainer.appendChild(thumbImg);
@@ -183,9 +183,9 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImgDefault = document.createElement("ha-icon");
       thumbImgDefault.setAttribute(
         "class",
-        "movie-item-thumbnail-container-img-default item-thumbnail-container-img-default"
+        "playlist-movie-cover-img-default playlist-cover-container-img-default"
       );
-      thumbImgDefault.setAttribute("icon", "mdi:account-circle");
+      thumbImgDefault.setAttribute("icon", "mdi:movie");
       thumbContainer.appendChild(thumbImgDefault);
     }
 
@@ -204,22 +204,25 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let titleDiv = document.createElement("div");
-    titleDiv.setAttribute("class", "movie-item-title item-title");
+    titleDiv.setAttribute("class", "playlist-movie-title playlist-title");
     titleDiv.innerHTML = item["title"];
     row.appendChild(titleDiv);
 
     let genreDiv = document.createElement("div");
-    genreDiv.setAttribute("class", "movie-item-genre item-genre");
+    genreDiv.setAttribute("class", "playlist-movie-genre playlist-genre");
     genreDiv.innerHTML = item["genre"] ? item["genre"] : "undefined";
     row.appendChild(genreDiv);
 
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "movie-item-playing item-control");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-movie-playing playlist-control playlist-playing"
+      );
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
-      trashIcon.setAttribute("class", "movie-item-remove item-control");
+      trashIcon.setAttribute("class", "playlist-movie-remove playlist-control");
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () =>
         this.remove(position, this.PLAYER_ID_VIDEO)
@@ -233,14 +236,14 @@ class PlaylistMediaCard extends HTMLElement {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
-    row.setAttribute("class", "episode-item-grid item-grid");
+    row.setAttribute("class", "playlist-episode-grid playlist-grid");
 
     let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "episode-item-thumbnail");
+    thumbnailDiv.setAttribute("class", "playlist-episode-cover");
     row.appendChild(thumbnailDiv);
 
     let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "item-thumbnail-container");
+    thumbContainer.setAttribute("class", "playlist-cover-container");
     thumbnailDiv.appendChild(thumbContainer);
 
     let cover =
@@ -252,7 +255,7 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImg = document.createElement("img");
       thumbImg.setAttribute(
         "class",
-        "episode-item-thumbnail-image item-thumbnail-image"
+        "playlist-episode-cover-image playlist-cover-image"
       );
       thumbImg.setAttribute("src", cover);
       thumbContainer.appendChild(thumbImg);
@@ -260,9 +263,9 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImgDefault = document.createElement("ha-icon");
       thumbImgDefault.setAttribute(
         "class",
-        "episode-item-thumbnail-container-img-default item-thumbnail-container-img-default"
+        "playlist-episode-cover-image-default playlist-cover-container-img-default"
       );
-      thumbImgDefault.setAttribute("icon", "mdi:account-circle");
+      thumbImgDefault.setAttribute("icon", "mdi:movie");
       thumbContainer.appendChild(thumbImgDefault);
     }
 
@@ -281,17 +284,17 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let titleDiv = document.createElement("div");
-    titleDiv.setAttribute("class", "episode-item-title item-title");
+    titleDiv.setAttribute("class", "playlist-episode-title playlist-title");
     titleDiv.innerHTML = item["title"];
     row.appendChild(titleDiv);
 
     let genreDiv = document.createElement("div");
-    genreDiv.setAttribute("class", "episode-item-genre item-genre");
+    genreDiv.setAttribute("class", "playlist-episode-genre playlist-genre");
     genreDiv.innerHTML = item["genre"] ? item["genre"] : "undefined";
     row.appendChild(genreDiv);
 
     let seasonDiv = document.createElement("div");
-    seasonDiv.setAttribute("class", "episode-item-season");
+    seasonDiv.setAttribute("class", "playlist-episode-season");
     seasonDiv.innerHTML =
       "Season " +
       (item["season"] ? item["season"] : "undefined") +
@@ -302,10 +305,16 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "episode-item-playing item-control");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-episode-playing playlist-control playlist-playing"
+      );
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
-      trashIcon.setAttribute("class", "episode-item-remove item-control");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-episode-remove playlist-control"
+      );
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () =>
         this.remove(position, this.PLAYER_ID_VIDEO)
@@ -319,14 +328,14 @@ class PlaylistMediaCard extends HTMLElement {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
-    row.setAttribute("class", "song-item-grid item-grid");
+    row.setAttribute("class", "playlist-song-grid playlist-grid");
 
     let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "song-item-thumbnail");
+    thumbnailDiv.setAttribute("class", "playlist-song-cover");
     row.appendChild(thumbnailDiv);
 
     let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "item-thumbnail-container");
+    thumbContainer.setAttribute("class", "playlist-cover-container");
     thumbnailDiv.appendChild(thumbContainer);
 
     if (
@@ -337,7 +346,7 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImg = document.createElement("img");
       thumbImg.setAttribute(
         "class",
-        "song-item-thumbnail-image item-thumbnail-image"
+        "playlist-song-cover-image playlist-cover-image"
       );
       thumbImg.setAttribute("src", item["thumbnail"]);
       thumbContainer.appendChild(thumbImg);
@@ -345,9 +354,9 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImgDefault = document.createElement("ha-icon");
       thumbImgDefault.setAttribute(
         "class",
-        "song-item-thumbnail-container-img-default item-thumbnail-container-img-default"
+        "playlist-song-cover-img-default playlist-cover-container-img-default"
       );
-      thumbImgDefault.setAttribute("icon", "mdi:account-circle");
+      thumbImgDefault.setAttribute("icon", "mdi:music");
       thumbContainer.appendChild(thumbImgDefault);
     }
 
@@ -366,22 +375,22 @@ class PlaylistMediaCard extends HTMLElement {
     }
 
     let titleDiv = document.createElement("div");
-    titleDiv.setAttribute("class", "song-item-title item-title");
+    titleDiv.setAttribute("class", "playlist-song-title playlist-title");
     titleDiv.innerHTML = item["artist"] + " - " + item["title"];
     row.appendChild(titleDiv);
 
     let genreDiv = document.createElement("div");
-    genreDiv.setAttribute("class", "song-item-genre item-genre");
+    genreDiv.setAttribute("class", "playlist-song-genre playlist-genre");
     genreDiv.innerHTML = item["genre"] ? item["genre"] : "undefined";
     row.appendChild(genreDiv);
 
     let albumDiv = document.createElement("div");
-    albumDiv.setAttribute("class", "song-item-album");
+    albumDiv.setAttribute("class", "playlist-song-album");
     albumDiv.innerHTML = item["album"] + " (" + item["year"] + ")";
     row.appendChild(albumDiv);
 
     let durationDiv = document.createElement("div");
-    durationDiv.setAttribute("class", "song-item-duration");
+    durationDiv.setAttribute("class", "playlist-song-duration");
     durationDiv.innerHTML = new Date(item["duration"] * 1000)
       .toISOString()
       .substr(11, 8);
@@ -390,10 +399,13 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "song-item-playing item-control");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-song-playing playlist-control playlist-playing"
+      );
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
-      trashIcon.setAttribute("class", "song-item-remove item-control");
+      trashIcon.setAttribute("class", "playlist-song-remove playlist-control");
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () =>
         this.remove(position, this.PLAYER_ID_MUSIC)
@@ -407,10 +419,10 @@ class PlaylistMediaCard extends HTMLElement {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
-    row.setAttribute("class", "unknown-item-grid");
+    row.setAttribute("class", "playlist-unknown-grid");
 
     let titleDiv = document.createElement("div");
-    titleDiv.setAttribute("class", "unknown-item-title");
+    titleDiv.setAttribute("class", "playlist-unknown-title");
     titleDiv.innerHTML = item["title"];
     row.appendChild(titleDiv);
 
@@ -422,10 +434,10 @@ class PlaylistMediaCard extends HTMLElement {
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "unknown-item-remove-alt");
+      trashIcon.setAttribute("class", "playlist-unknown-playing");
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
-      trashIcon.setAttribute("class", "unknown-item-remove");
+      trashIcon.setAttribute("class", "playlist-unknown-remove");
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () => this.remove(position, 1));
     }
@@ -520,7 +532,7 @@ class PlaylistMediaCard extends HTMLElement {
                   --mdc-icon-size: 50px;
                 }
 
-                .item-thumbnail-container-img-default{
+                .playlist-cover-container-img-default{
                   display:flex;
                   justify-content:flex-end;
                   align-items:flex-end;
@@ -528,67 +540,67 @@ class PlaylistMediaCard extends HTMLElement {
                   background-color: ${this.BACKGROUND_BASIC_COLOR};
                 }
 
-                .item-thumbnail-image{
+                .playlist-cover-image{
                   height:auto !important;
                   display: block;
                   justify-content:center;
                 }
 
-                .item-thumbnail-container{
+                .playlist-cover-container{
                   position: relative;
                 }
 
-                .item-thumbnail-container:hover .overlay-play {
+                .playlist-cover-container:hover .overlay-play {
                   opacity: 1;
                 }
 
-                .item-grid {
+                .playlist-grid {
                   display: grid;
                   column-gap:10px;
                   border-bottom:1px solid white;
                 }
 
-                .item-title{
+                .playlist-title{
                   font-weight: bold;
                   font-size: 14px;
                 }
 
-                .item-genre{
+                .playlist-genre{
                   font-style: italic;
                 }
 
-                .item-control{
+                .playlist-control{
                   text-align: right;
                   width: 30px;
                 }
 
-                .song-item-playing, .movie-item-playing, .episode-item-playing{
+                .playlist-playing{
                   color: rgb(3, 169, 244);
                 }
 
                 /*
                 //// UNKNOWN
                */
-                .unknown-item-grid{
+                .playlist-unknown-grid{
                   display: grid;
                   grid-template-columns: auto 1fr auto auto auto;
                   grid-gap: 3px;
                   grid-auto-rows: auto;
                 }
 
-                .unknown-item-title{
+                .playlist-unknown-title{
                   grid-column: 2 / 4;
                   grid-row: 1;
                   font-weight: bold;
                   font-size: 14px;
                 }
 
-                .unknown-message{
-                  grid-column: 2;
-                  grid-row: 3;
-                }
+                // .playlist-unknown-message{
+                //   grid-column: 2;
+                //   grid-row: 3;
+                // }
 
-                .unknown-item-remove, .unknown-item-remove-alt{
+                .playlist-unknown-remove, .playlist-unknown-playing{
                   grid-column: 4;
                   grid-row: 1;
                   text-align: right;
@@ -599,47 +611,47 @@ class PlaylistMediaCard extends HTMLElement {
                 //// SONGS
                */
 
-                .song-item-grid{
+                .playlist-song-grid{
                   grid-template-columns: auto 1fr auto auto;
                   grid-auto-rows: auto;
                 }
 
-                .song-item-title{
+                .playlist-song-title{
                   grid-column: 2 / 4;
                   grid-row: 1;
                 }
 
-                .song-item-genre{
+                .playlist-song-genre{
                   grid-column: 2 / 4;
                   grid-row: 2;
                 }
 
-                .song-item-album{
+                .playlist-song-album{
                   grid-column: 2 / 5;
                   grid-row: 3;
                 }
 
-                .song-item-duration{
+                .playlist-song-duration{
                   grid-column: 3 / 5;
                   grid-row: 3;
                   text-align: right;
                 }
 
-                .song-item-remove, .song-item-playing{
+                .playlist-song-remove, .playlist-song-playing{
                   grid-column: 4 / 5;
                   grid-row: 1 / 3;
                 }
 
-                .song-item-thumbnail{
+                .playlist-song-cover{
                   grid-column: 1;
-                  grid-row: 1 /5 ;
+                  grid-row: 1 / 5 ;
                 }
 
-                .song-item-thumbnail-image{
+                .playlist-song-cover-image{
                   width: ${this.SONG_THUMBNAIL_WIDTH};
                 }
 
-                .song-item-thumbnail-container-img-default{
+                .playlist-song-cover-img-default{
                   width: ${this.SONG_THUMBNAIL_WIDTH};
                   height: ${this.SONG_THUMBNAIL_WIDTH};
                   --mdc-icon-size: calc(${this.SONG_THUMBNAIL_WIDTH} - 30px);
@@ -650,37 +662,37 @@ class PlaylistMediaCard extends HTMLElement {
                 //// MOVIES
                */
 
-                .movie-item-grid{
+                .playlist-movie-grid{
                   grid-template-columns: auto 1fr auto;
                   grid-auto-rows: auto;
                 }
 
-                .movie-item-title{
+                .playlist-movie-title{
                   grid-column: 2;
                   grid-row: 1;
                 }
 
-                .movie-item-genre{
+                .playlist-movie-genre{
                   grid-column: 2;
                   grid-row: 2;
                 }
 
-                .movie-item-remove, .movie-item-playing{
+                .playlist-movie-remove, .playlist-movie-playing{
                   grid-column: 3;
                   grid-row: 1 / 3;
                 }
 
-                .movie-item-thumbnail{
+                .playlist-movie-cover{
                   grid-column: 1;
                   grid-row: 1 / 4 ;
 
                 }
 
-                .movie-item-thumbnail-image{
+                .playlist-movie-cover-image{
                   width: ${this.MOVIE_THUMBNAIL_WIDTH};
                 }
 
-                .movie-item-thumbnail-container-img-default{
+                .playlist-movie-cover-img-default{
                   width: ${this.MOVIE_THUMBNAIL_WIDTH};
                   height: ${this.MOVIE_THUMBNAIL_WIDTH};
                   --mdc-icon-size: calc(${this.MOVIE_THUMBNAIL_WIDTH} - 30px);
@@ -690,42 +702,42 @@ class PlaylistMediaCard extends HTMLElement {
               /*
                 //// EPISODE
                */
-                .episode-item-grid{
+                .playlist-episode-grid{
                   grid-template-columns: auto 1fr auto;
                   grid-auto-rows: auto;
                 }
 
-                .episode-item-title{
+                .playlist-episode-title{
                   grid-column: 2;
                   grid-row: 1;
                 }
 
-                .episode-item-genre{
+                .playlist-episode-genre{
                   grid-column: 2;
                   grid-row: 2;
                 }
 
-                .episode-item-season{
+                .playlist-episode-season{
                   grid-column: 2;
                   grid-row: 3;
                 }
 
-                .episode-item-remove, .episode-item-playing{
+                .playlist-episode-remove, .playlist-episode-playing{
                   grid-column: 3;
                   grid-row: 1 / 3;
                 }
 
-                .episode-item-thumbnail{
+                .playlist-episode-cover{
                   grid-column: 1;
                   grid-row: 1 / 4 ;
 
                 }
 
-                .episode-item-thumbnail-image{
+                .playlist-episode-cover-image{
                   width: ${this.EPISODE_THUMBNAIL_WIDTH};
                 }
 
-                .episode-item-thumbnail-container-img-default{
+                .playlist-episode-cover-image-default{
                   width: ${this.EPISODE_THUMBNAIL_WIDTH};
                   height: ${this.EPISODE_THUMBNAIL_WIDTH};
                   --mdc-icon-size: calc(${this.EPISODE_THUMBNAIL_WIDTH} - 30px);
@@ -736,7 +748,7 @@ class PlaylistMediaCard extends HTMLElement {
     if (this._config_show_thumbnail_border) {
       css +=
         `
-         .song-item-thumbnail-image, .movie-item-thumbnail-image, .episode-item-thumbnail-image{
+        .playlist-cover-image{
                 border: 1px solid ` +
         this._config_thumbnail_border_color +
         `;
