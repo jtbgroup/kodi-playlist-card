@@ -3,8 +3,11 @@ class PlaylistMediaCard extends HTMLElement {
 
   // the height of the epthumbnailsode of the episode in the search result
   EPISODE_THUMBNAIL_WIDTH = "150px";
+  EPISODE_THUMBNAIL_RATIO = 1.5;
   // the height of the thumbnail
   MOVIE_THUMBNAIL_WIDTH = "100px";
+  MOVIE_THUMBNAIL_RATIO = 0.8;
+
   BACKGROUND_BASIC_COLOR = "#9b9595";
   ICON_CURRENT_PLAYING = "mdi:arrow-left-bold";
 
@@ -158,50 +161,22 @@ class PlaylistMediaCard extends HTMLElement {
     let row = document.createElement("div");
     row.setAttribute("class", "playlist-movie-grid playlist-grid");
 
-    let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "playlist-movie-cover");
-    row.appendChild(thumbnailDiv);
-
-    let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "playlist-cover-container");
-    thumbnailDiv.appendChild(thumbContainer);
-
     let cover =
       item["poster"] && item["poster"] != ""
         ? item["poster"]
         : item["thumbnail"];
 
-    if (this._config_show_thumbnail && cover != undefined && cover != "") {
-      let thumbImg = document.createElement("img");
-      thumbImg.setAttribute(
-        "class",
-        "playlist-movie-cover-image playlist-cover-image"
-      );
-      thumbImg.setAttribute("src", cover);
-      thumbContainer.appendChild(thumbImg);
-    } else {
-      let thumbImgDefault = document.createElement("ha-icon");
-      thumbImgDefault.setAttribute(
-        "class",
-        "playlist-movie-cover-img-default playlist-cover-container-img-default"
-      );
-      thumbImgDefault.setAttribute("icon", "mdi:movie");
-      thumbContainer.appendChild(thumbImgDefault);
-    }
-
-    if (!this._config_show_thumbnail_overlay) {
-      thumbContainer.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_VIDEO)
-      );
-    } else if (this._config_show_thumbnail_overlay && !isPlaying) {
-      let overlayImg = document.createElement("ha-icon");
-      overlayImg.setAttribute("class", "overlay-play");
-      overlayImg.setAttribute("icon", "mdi:play");
-      overlayImg.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_VIDEO)
-      );
-      thumbContainer.appendChild(overlayImg);
-    }
+    let coverDiv = this.prepareCover(
+      cover,
+      "playlist-movie-cover",
+      "playlist-movie-cover-image",
+      "playlist-movie-cover-image-default",
+      "mdi:play",
+      "mdi:movie",
+      isPlaying,
+      () => this.goTo(position, this.PLAYER_ID_VIDEO)
+    );
+    row.appendChild(coverDiv);
 
     let titleDiv = document.createElement("div");
     titleDiv.setAttribute("class", "playlist-movie-title playlist-title");
@@ -238,50 +213,22 @@ class PlaylistMediaCard extends HTMLElement {
     let row = document.createElement("div");
     row.setAttribute("class", "playlist-episode-grid playlist-grid");
 
-    let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "playlist-episode-cover");
-    row.appendChild(thumbnailDiv);
-
-    let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "playlist-cover-container");
-    thumbnailDiv.appendChild(thumbContainer);
-
     let cover =
       item["poster"] && item["poster"] != ""
         ? item["poster"]
         : item["thumbnail"];
 
-    if (this._config_show_thumbnail && cover && cover != "") {
-      let thumbImg = document.createElement("img");
-      thumbImg.setAttribute(
-        "class",
-        "playlist-episode-cover-image playlist-cover-image"
-      );
-      thumbImg.setAttribute("src", cover);
-      thumbContainer.appendChild(thumbImg);
-    } else {
-      let thumbImgDefault = document.createElement("ha-icon");
-      thumbImgDefault.setAttribute(
-        "class",
-        "playlist-episode-cover-image-default playlist-cover-container-img-default"
-      );
-      thumbImgDefault.setAttribute("icon", "mdi:movie");
-      thumbContainer.appendChild(thumbImgDefault);
-    }
-
-    if (!this._config_show_thumbnail_overlay) {
-      thumbContainer.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_VIDEO)
-      );
-    } else if (this._config_show_thumbnail_overlay && !isPlaying) {
-      let overlayImg = document.createElement("ha-icon");
-      overlayImg.setAttribute("class", "overlay-play");
-      overlayImg.setAttribute("icon", "mdi:play");
-      overlayImg.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_VIDEO)
-      );
-      thumbContainer.appendChild(overlayImg);
-    }
+    let coverDiv = this.prepareCover(
+      cover,
+      "playlist-episode-cover",
+      "playlist-episode-cover-image",
+      "playlist-episode-cover-image-default",
+      "mdi:play",
+      "mdi:movie",
+      isPlaying,
+      () => this.goTo(position, this.PLAYER_ID_VIDEO)
+    );
+    row.appendChild(coverDiv);
 
     let titleDiv = document.createElement("div");
     titleDiv.setAttribute("class", "playlist-episode-title playlist-title");
@@ -330,49 +277,18 @@ class PlaylistMediaCard extends HTMLElement {
     let row = document.createElement("div");
     row.setAttribute("class", "playlist-song-grid playlist-grid");
 
-    let thumbnailDiv = document.createElement("div");
-    thumbnailDiv.setAttribute("class", "playlist-song-cover");
-    row.appendChild(thumbnailDiv);
-
-    let thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "playlist-cover-container");
-    thumbnailDiv.appendChild(thumbContainer);
-
-    if (
-      this._config_show_thumbnail &&
-      item["thumbnail"] &&
-      item["thumbnail"] != ""
-    ) {
-      let thumbImg = document.createElement("img");
-      thumbImg.setAttribute(
-        "class",
-        "playlist-song-cover-image playlist-cover-image"
-      );
-      thumbImg.setAttribute("src", item["thumbnail"]);
-      thumbContainer.appendChild(thumbImg);
-    } else {
-      let thumbImgDefault = document.createElement("ha-icon");
-      thumbImgDefault.setAttribute(
-        "class",
-        "playlist-song-cover-img-default playlist-cover-container-img-default"
-      );
-      thumbImgDefault.setAttribute("icon", "mdi:music");
-      thumbContainer.appendChild(thumbImgDefault);
-    }
-
-    if (!this._config_show_thumbnail_overlay) {
-      thumbContainer.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_MUSIC)
-      );
-    } else if (this._config_show_thumbnail_overlay && !isPlaying) {
-      let overlayImg = document.createElement("ha-icon");
-      overlayImg.setAttribute("class", "overlay-play");
-      overlayImg.setAttribute("icon", "mdi:play");
-      overlayImg.addEventListener("click", () =>
-        this.goTo(position, this.PLAYER_ID_MUSIC)
-      );
-      thumbContainer.appendChild(overlayImg);
-    }
+    let cover = item["thumbnail"];
+    let coverDiv = this.prepareCover(
+      cover,
+      "playlist-song-cover",
+      "playlist-song-cover-image",
+      "playlist-song-cover-image-default",
+      "mdi:play",
+      "mdi:music",
+      isPlaying,
+      () => this.goTo(position, this.PLAYER_ID_MUSIC)
+    );
+    row.appendChild(coverDiv);
 
     let titleDiv = document.createElement("div");
     titleDiv.setAttribute("class", "playlist-song-title playlist-title");
@@ -415,29 +331,108 @@ class PlaylistMediaCard extends HTMLElement {
     return row;
   }
 
+  prepareCover(
+    cover,
+    class_cover,
+    class_cover_image,
+    class_cover_image_default,
+    icon_overlay,
+    icon_default,
+    isPlaying,
+    action_click
+  ) {
+    let thumbnailDiv = document.createElement("div");
+    thumbnailDiv.setAttribute("class", class_cover);
+
+    let thumbContainer = document.createElement("div");
+    thumbContainer.setAttribute("class", "playlist-cover-container");
+    thumbnailDiv.appendChild(thumbContainer);
+
+    if (this._config_show_thumbnail && cover && cover != "") {
+      let thumbImg = document.createElement("img");
+      thumbImg.setAttribute(
+        "class",
+        "playlist-cover-image " + class_cover_image
+      );
+      thumbImg.setAttribute("src", cover);
+      thumbImg.onerror = function () {
+        thumbImg.remove();
+
+        let thumbImgDefault = document.createElement("ha-icon");
+        thumbImgDefault.setAttribute(
+          "class",
+          "playlist-cover-container-image-default " + class_cover_image_default
+        );
+        thumbImgDefault.setAttribute("icon", icon_default);
+        thumbContainer.appendChild(thumbImgDefault);
+      };
+
+      thumbContainer.appendChild(thumbImg);
+    } else {
+      let thumbImgDefault = document.createElement("ha-icon");
+      thumbImgDefault.setAttribute(
+        "class",
+        "playlist-cover-container-image-default " + class_cover_image_default
+      );
+      thumbImgDefault.setAttribute("icon", icon_default);
+      thumbContainer.appendChild(thumbImgDefault);
+    }
+
+    if (!this._config_show_thumbnail_overlay) {
+      thumbContainer.addEventListener("click", action_click);
+    } else if (this._config_show_thumbnail_overlay && !isPlaying) {
+      let overlayImg = document.createElement("ha-icon");
+      overlayImg.setAttribute("class", "overlay-play");
+      overlayImg.setAttribute("icon", icon_overlay);
+      overlayImg.addEventListener("click", action_click);
+      thumbContainer.appendChild(overlayImg);
+    }
+
+    return thumbnailDiv;
+  }
+
   formatUnknown(item) {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
-    row.setAttribute("class", "playlist-unknown-grid");
+    row.setAttribute("class", "playlist-unknown-grid playlist-grid");
 
-    let titleDiv = document.createElement("div");
-    titleDiv.setAttribute("class", "playlist-unknown-title");
-    titleDiv.innerHTML = item["title"];
-    row.appendChild(titleDiv);
+    let cover = item["thumbnail"];
+    let coverDiv = this.prepareCover(
+      cover,
+      "playlist-unknown-cover",
+      "playlist-unknown-cover-image",
+      "playlist-unknown-cover-image-default",
+      "mdi:play",
+      "mdi:sparkles",
+      isPlaying,
+      () => this.goTo(position, this.PLAYER_ID_MUSIC)
+    );
+    row.appendChild(coverDiv);
 
     let messageDiv = document.createElement("div");
-    messageDiv.setAttribute("class", "unknown-item-message");
-    messageDiv.innerHTML = "unknown type... " + item["type"];
+    messageDiv.setAttribute("class", "playlist-unknown-message");
+    messageDiv.innerHTML = "type of media is... : " + item["type"];
     row.appendChild(messageDiv);
+
+    let titleDiv = document.createElement("div");
+    titleDiv.setAttribute("class", "playlist-unknown-title playlist-title");
+    titleDiv.innerHTML = item["title"];
+    row.appendChild(titleDiv);
 
     let trashIcon = document.createElement("ha-icon");
     row.appendChild(trashIcon);
     if (isPlaying) {
-      trashIcon.setAttribute("class", "playlist-unknown-playing");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-unknown-playing playlist-control"
+      );
       trashIcon.setAttribute("icon", this.ICON_CURRENT_PLAYING);
     } else {
-      trashIcon.setAttribute("class", "playlist-unknown-remove");
+      trashIcon.setAttribute(
+        "class",
+        "playlist-unknown-remove playlist-control"
+      );
       trashIcon.setAttribute("icon", "mdi:delete");
       trashIcon.addEventListener("click", () => this.remove(position, 1));
     }
@@ -532,7 +527,7 @@ class PlaylistMediaCard extends HTMLElement {
                   --mdc-icon-size: 50px;
                 }
 
-                .playlist-cover-container-img-default{
+                .playlist-cover-container-image-default{
                   display:flex;
                   justify-content:flex-end;
                   align-items:flex-end;
@@ -582,35 +577,44 @@ class PlaylistMediaCard extends HTMLElement {
                 //// UNKNOWN
                */
                 .playlist-unknown-grid{
-                  display: grid;
-                  grid-template-columns: auto 1fr auto auto auto;
-                  grid-gap: 3px;
+                  grid-template-columns: auto 1fr auto;
                   grid-auto-rows: auto;
                 }
 
-                .playlist-unknown-title{
-                  grid-column: 2 / 4;
+                .playlist-unknown-message{
+                  grid-column: 2;
                   grid-row: 1;
-                  font-weight: bold;
-                  font-size: 14px;
                 }
 
-                // .playlist-unknown-message{
-                //   grid-column: 2;
-                //   grid-row: 3;
-                // }
+                .playlist-unknown-title{
+                  grid-column: 2 ;
+                  grid-row: 2;
+                }
 
                 .playlist-unknown-remove, .playlist-unknown-playing{
-                  grid-column: 4;
+                  grid-column: 3;
                   grid-row: 1;
-                  text-align: right;
-                  width: 30px;
                 }
+
+                .playlist-unknown-cover{
+                  grid-column: 1;
+                  grid-row: 1 / 3 ;
+                }
+
+                .playlist-unknown-cover-image{
+                  width: ${this.SONG_THUMBNAIL_WIDTH};
+                }
+
+                .playlist-unknown-cover-image-default{
+                  width: ${this.SONG_THUMBNAIL_WIDTH};
+                  height: ${this.SONG_THUMBNAIL_WIDTH};
+                  --mdc-icon-size: calc(${this.SONG_THUMBNAIL_WIDTH} - 30px);
+                }
+
 
                /*
                 //// SONGS
                */
-
                 .playlist-song-grid{
                   grid-template-columns: auto 1fr auto auto;
                   grid-auto-rows: auto;
@@ -651,7 +655,7 @@ class PlaylistMediaCard extends HTMLElement {
                   width: ${this.SONG_THUMBNAIL_WIDTH};
                 }
 
-                .playlist-song-cover-img-default{
+                .playlist-song-cover-image-default{
                   width: ${this.SONG_THUMBNAIL_WIDTH};
                   height: ${this.SONG_THUMBNAIL_WIDTH};
                   --mdc-icon-size: calc(${this.SONG_THUMBNAIL_WIDTH} - 30px);
@@ -692,9 +696,9 @@ class PlaylistMediaCard extends HTMLElement {
                   width: ${this.MOVIE_THUMBNAIL_WIDTH};
                 }
 
-                .playlist-movie-cover-img-default{
+                .playlist-movie-cover-image-default{
                   width: ${this.MOVIE_THUMBNAIL_WIDTH};
-                  height: ${this.MOVIE_THUMBNAIL_WIDTH};
+                  height: calc(${this.MOVIE_THUMBNAIL_WIDTH} / ${this.MOVIE_THUMBNAIL_RATIO});
                   --mdc-icon-size: calc(${this.MOVIE_THUMBNAIL_WIDTH} - 30px);
                 }
 
@@ -739,8 +743,8 @@ class PlaylistMediaCard extends HTMLElement {
 
                 .playlist-episode-cover-image-default{
                   width: ${this.EPISODE_THUMBNAIL_WIDTH};
-                  height: ${this.EPISODE_THUMBNAIL_WIDTH};
-                  --mdc-icon-size: calc(${this.EPISODE_THUMBNAIL_WIDTH} - 30px);
+                  height: calc(${this.EPISODE_THUMBNAIL_WIDTH} / ${this.EPISODE_THUMBNAIL_RATIO});
+                  --mdc-icon-size: calc((${this.EPISODE_THUMBNAIL_WIDTH} / ${this.EPISODE_THUMBNAIL_RATIO}) - 30px);
                 }
 
           `;
