@@ -733,8 +733,7 @@ class PlaylistMediaCard extends HTMLElement {
 
                 .playlist-episode-cover{
                   grid-column: 1;
-                  grid-row: 1 / 4 ;
-
+                  grid-row: 1 / 5 ;
                 }
 
                 .playlist-episode-cover-image{
