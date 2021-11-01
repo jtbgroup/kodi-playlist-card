@@ -2,7 +2,7 @@
 
 #### 3.2.0
 
-* Card editor + made avaialble in the card picker
+* Card editor + made available in the card picker
 * bugfix: layout of the album name was over the duration when too long
 * bugfix: border was not shown when default icon
 
