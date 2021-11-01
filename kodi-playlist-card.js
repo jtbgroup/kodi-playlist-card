@@ -783,13 +783,3 @@ class PlaylistMediaCard extends HTMLElement {
   }
 }
 customElements.define("kodi-playlist-card", PlaylistMediaCard);
-
-// window.customCards = window.customCards || [];
-// window.customCards.push({
-//   type: "kodi-playlist-card",
-//   name: "Kodi Playlist Card",
-//   preview: false, // Optional - defaults to false
-//   description: "Shows the playlist of Kodi", // Optional
-// });
-
-// Finally we create and register the editor itself
