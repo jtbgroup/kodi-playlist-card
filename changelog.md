@@ -1,5 +1,11 @@
 # Changelog
 
+#### 3.2.0
+
+* Card editor + made avaialble in the card picker
+* bugfix: layout of the album name was over the duration when too long
+* bugfix: border was not shown when default icon
+
 #### 3.1.5
 
 * compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.1.5

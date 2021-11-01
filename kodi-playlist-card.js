@@ -1,3 +1,8 @@
+const DEFAULT_SHOW_THUMBNAIL = true;
+const DEFAULT_SHOW_THUMBNAIL_BORDER = false;
+const DEFAULT_SHOW_THUMBNAIL_OVERLAY = true;
+const DEFAULT_THUMBNAIL_BORDER_COLOR = "white";
+
 class PlaylistMediaCard extends HTMLElement {
   SONG_THUMBNAIL_WIDTH = "65px";
 
@@ -14,10 +19,25 @@ class PlaylistMediaCard extends HTMLElement {
   PLAYER_ID_MUSIC = 0;
   PLAYER_ID_VIDEO = 1;
 
-  _config_show_thumbnail = true;
-  _config_show_thumbnail_border = false;
-  _config_thumbnail_border_color = "white";
-  _config_show_thumbnail_overlay = true;
+  _config_show_thumbnail = DEFAULT_SHOW_THUMBNAIL;
+  _config_show_thumbnail_border = DEFAULT_SHOW_THUMBNAIL_BORDER;
+  _config_thumbnail_border_color = DEFAULT_THUMBNAIL_BORDER_COLOR;
+  _config_show_thumbnail_overlay = DEFAULT_SHOW_THUMBNAIL_OVERLAY;
+
+  static async getConfigElement() {
+    await import("./kodi-playlist-card-editor.js");
+    return document.createElement("kodi-playlist-card-editor");
+  }
+
+  static getStubConfig() {
+    return {
+      entity: _config.entity,
+      show_thumbnail: DEFAULT_SHOW_THUMBNAIL,
+      show_thumbnail_border: DEFAULT_SHOW_THUMBNAIL_BORDER,
+      show_thumbnail_overlay: DEFAULT_SHOW_THUMBNAIL_OVERLAY,
+      thumbnail_border_color: DEFAULT_THUMBNAIL_BORDER_COLOR,
+    };
+  }
 
   setConfig(config) {
     this._config = config;
@@ -361,7 +381,7 @@ class PlaylistMediaCard extends HTMLElement {
         let thumbImgDefault = document.createElement("ha-icon");
         thumbImgDefault.setAttribute(
           "class",
-          "playlist-cover-container-image-default " + class_cover_image_default
+          "playlist-cover-image-default " + class_cover_image_default
         );
         thumbImgDefault.setAttribute("icon", icon_default);
         thumbContainer.appendChild(thumbImgDefault);
@@ -372,7 +392,7 @@ class PlaylistMediaCard extends HTMLElement {
       let thumbImgDefault = document.createElement("ha-icon");
       thumbImgDefault.setAttribute(
         "class",
-        "playlist-cover-container-image-default " + class_cover_image_default
+        "playlist-cover-image-default " + class_cover_image_default
       );
       thumbImgDefault.setAttribute("icon", icon_default);
       thumbContainer.appendChild(thumbImgDefault);
@@ -527,7 +547,7 @@ class PlaylistMediaCard extends HTMLElement {
                   --mdc-icon-size: 50px;
                 }
 
-                .playlist-cover-container-image-default{
+                .playlist-cover-image-default{
                   display:flex;
                   justify-content:flex-end;
                   align-items:flex-end;
@@ -631,7 +651,7 @@ class PlaylistMediaCard extends HTMLElement {
                 }
 
                 .playlist-song-album{
-                  grid-column: 2 / 5;
+                  grid-column: 2 / 3;
                   grid-row: 3;
                 }
 
@@ -751,7 +771,7 @@ class PlaylistMediaCard extends HTMLElement {
     if (this._config_show_thumbnail_border) {
       css +=
         `
-        .playlist-cover-image{
+        .playlist-cover-image, .playlist-cover-image-default{
                 border: 1px solid ` +
         this._config_thumbnail_border_color +
         `;
