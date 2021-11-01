@@ -1,6 +1,6 @@
 # Changelog
 
-#### 3.1.4
+#### 3.1.5
 
 * compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.1.5
 * new options: show_thumbnail_overlay, show_thumbnail_border, thumbnail_border_color
