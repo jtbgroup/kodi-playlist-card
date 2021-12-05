@@ -44,8 +44,12 @@ export class KodiPlaylistCardEditor extends LitElement {
     return this._config.show_thumbnail_overlay;
   }
 
-  get _thumbnail_border_color() {
-    return this._config.thumbnail_border_color;
+  get _show_line_separator() {
+    return this._config.show_line_separator;
+  }
+
+  get _outline_color() {
+    return this._config.outline_color;
   }
 
   render() {
@@ -77,6 +81,16 @@ export class KodiPlaylistCardEditor extends LitElement {
         </div>
 
         <div class="config">
+          <span class="config-label">Show line separator</span>
+          <ha-switch
+            .checked=${this._config.show_line_separator}
+            .configValue="${"show_line_separator"}"
+            @change="${this._valueChanged}"
+            class="config-component"
+          ></ha-switch>
+        </div>
+
+        <div class="config">
           <span class="config-label">Show thumbnail border</span>
           <ha-switch
             .checked=${this._config.show_thumbnail_border}
@@ -87,9 +101,9 @@ export class KodiPlaylistCardEditor extends LitElement {
         </div>
 
         <paper-input
-          label="Thumbnail border color"
-          .configValue="${"thumbnail_border_color"}"
-          .value=${this._config.thumbnail_border_color}
+          label="Outline color"
+          .configValue="${"outline_color"}"
+          .value=${this._config.outline_color}
           @value-changed=${this._valueChanged}
           class="config"
         ></paper-input>
@@ -112,9 +126,9 @@ export class KodiPlaylistCardEditor extends LitElement {
       return;
     }
     const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
-      return;
-    }
+    // if (this[`_${target.configValue}`] === target.value) {
+    //   return;
+    // }
     if (target.configValue) {
       if (target.value === "") {
         delete this._config[target.configValue];
