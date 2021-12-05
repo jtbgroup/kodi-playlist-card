@@ -1,5 +1,9 @@
 # Changelog
 
+#### 3.3.0
+
+* New property available: line separator
+  
 #### 3.2.0
 
 * Card editor + made available in the card picker
