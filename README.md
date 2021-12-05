@@ -4,9 +4,8 @@ This card displays the playlist running on the kodi entity. The refresh is autom
 
 This card is intented to be an alternative to an iframe containing Chorus.
 
-| Audio Playlist | Ausio Playlist | Video Playlist |
+| Audio Playlist | Audio Playlist | Video Playlist |
 | ---- | ---- | ---- |
-
 | ![Palylist Audio](./assets/playlist_audio_3_3_0.png) | ![Palylist Audio](./assets/playlist_audio_dark_3_3_0.png) | ![Palylist Video](./assets/playlist_video_dark_3_3_0.png) |
 
 ## Requirements
