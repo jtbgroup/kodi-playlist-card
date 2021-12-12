@@ -334,7 +334,7 @@ class PlaylistMediaCard extends HTMLElement {
     durationDiv.setAttribute("class", "playlist-song-duration");
     durationDiv.innerHTML = new Date(item["duration"] * 1000)
       .toISOString()
-      .substr(11, 8);
+      .substring(11, 19);
     row.appendChild(durationDiv);
 
     let trashIcon = document.createElement("ha-icon");
