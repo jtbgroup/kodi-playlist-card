@@ -22,7 +22,7 @@ You can perform some actions directly from the card like removing an item from t
 1. Install the custom component [Kodi Media Sensors](https://github.com/jtbgroup/kodi-media-sensors).
 2. Install the card using HACS
 
-Manual installation is of course possible, but not explained here.
+Manual installation is of course possible, but not explained here as there are plenty of tutorials.
 
 ## Card options
 
@@ -38,3 +38,15 @@ Manual installation is of course possible, but not explained here.
 | outline_color | string | optional<br/>default: `white` | v3.1 | This option is to use in combination with other properties (**show_thumbnail_border** and **show_line_separator**). The color can be a string (ex: 'white', 'red', 'green', ... ), rgb format (ex: 'rgb(10, 12, 250)') or hexa format (ex: '#EE22FF').
 
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
+
+Example
+
+``` yaml
+    type: custom:kodi-playlist-card
+    entity: sensor.kodi_media_sensor_playlist
+    show_thumbnail: true
+    show_thumbnail_border: true
+    show_thumbnail_overlay: true
+    show_line_separator: true
+    outline_color: rgb(245,12,54)
+```

@@ -4,7 +4,7 @@ const DEFAULT_SHOW_THUMBNAIL_OVERLAY = true;
 const DEFAULT_SHOW_LINE_SEPARATOR = true;
 const DEFAULT_OUTLINE_COLOR = "white";
 
-class PlaylistMediaCard extends HTMLElement {
+class PlaylistSensorCard extends HTMLElement {
   SONG_THUMBNAIL_WIDTH = "65px";
   EPISODE_THUMBNAIL_WIDTH = "150px";
   EPISODE_THUMBNAIL_RATIO = 1.5;
@@ -29,9 +29,8 @@ class PlaylistMediaCard extends HTMLElement {
   }
 
   static getStubConfig() {
-    let i = 1;
     return {
-      entity: _config.entity,
+      entity: "",
       show_thumbnail: DEFAULT_SHOW_THUMBNAIL,
       show_thumbnail_border: DEFAULT_SHOW_THUMBNAIL_BORDER,
       show_line_separator: DEFAULT_SHOW_LINE_SEPARATOR,
@@ -799,4 +798,11 @@ class PlaylistMediaCard extends HTMLElement {
     return css;
   }
 }
-customElements.define("kodi-playlist-card", PlaylistMediaCard);
+customElements.define("kodi-playlist-card", PlaylistSensorCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "kodi-playlist-card",
+  name: "Kodi Playlist Card",
+  preview: false, // Optional - defaults to false
+  description: "Shows the playlist of Kodi", // Optional
+});

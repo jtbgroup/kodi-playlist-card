@@ -81,10 +81,10 @@ export class KodiPlaylistCardEditor extends LitElement {
         </div>
 
         <div class="config">
-          <span class="config-label">Show line separator</span>
+          <span class="config-label">Show thumbnail overlay</span>
           <ha-switch
-            .checked=${this._config.show_line_separator}
-            .configValue="${"show_line_separator"}"
+            .checked=${this._config.show_thumbnail_overlay}
+            .configValue="${"show_thumbnail_overlay"}"
             @change="${this._valueChanged}"
             class="config-component"
           ></ha-switch>
@@ -100,6 +100,16 @@ export class KodiPlaylistCardEditor extends LitElement {
           ></ha-switch>
         </div>
 
+        <div class="config">
+          <span class="config-label">Show line separator</span>
+          <ha-switch
+            .checked=${this._config.show_line_separator}
+            .configValue="${"show_line_separator"}"
+            @change="${this._valueChanged}"
+            class="config-component"
+          ></ha-switch>
+        </div>
+
         <paper-input
           label="Outline color"
           .configValue="${"outline_color"}"
@@ -107,16 +117,6 @@ export class KodiPlaylistCardEditor extends LitElement {
           @value-changed=${this._valueChanged}
           class="config"
         ></paper-input>
-
-        <div class="config">
-          <span class="config-label">Show thumbnail overlay</span>
-          <ha-switch
-            .checked=${this._config.show_thumbnail_overlay}
-            .configValue="${"show_thumbnail_overlay"}"
-            @change="${this._valueChanged}"
-            class="config-component"
-          ></ha-switch>
-        </div>
       </div>
     `;
   }
@@ -170,11 +170,3 @@ export class KodiPlaylistCardEditor extends LitElement {
 }
 
 customElements.define("kodi-playlist-card-editor", KodiPlaylistCardEditor);
-
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "kodi-playlist-card",
-  name: "Kodi Playlist Card",
-  preview: false, // Optional - defaults to false
-  description: "Shows the playlist of Kodi", // Optional
-});
