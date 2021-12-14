@@ -1,38 +1,41 @@
 # Changelog
 
-#### 3.3.0
+## 3.3.1
 
-* New property available: line separator
+- Bugfix : make available in the card chooser (regression)
+- order of the properties in the editor
+
+## 3.3.0
+
+- New property available: line separator
   
-#### 3.2.0
+## 3.2.0
 
-* Card editor + made available in the card picker
-* bugfix: layout of the album name was over the duration when too long
-* bugfix: border was not shown when default icon
+- Card editor + made available in the card picker
+- bugfix: layout of the album name was over the duration when too long
+- bugfix: border was not shown when default icon
 
-#### 3.1.5
+## 3.1.5
 
-* compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.1.5
-* new options: show_thumbnail_overlay, show_thumbnail_border, thumbnail_border_color
-* CSS & layout refactoring
-* Default image used when not showing thumbnail is also used as backup when problem happens while loading the image
+- compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.1.5
+- new options: show_thumbnail_overlay, show_thumbnail_border, thumbnail_border_color
+- CSS & layout refactoring
+- Default image used when not showing thumbnail is also used as backup when problem happens while loading the image
 
+## 3.0.0
 
-#### 3.0.0
+- compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.0.0
+- displays a blue arrow near the currently playing item
 
-* compatible with [kodi media sensors](https://github.com/jtbgroup/kodi-media-sensors) 3.0.0
-* displays a blue arrow near the currently playing item
+## 2.0.0
 
+- Modified to work with version 2.0.0 of the kodi media sensor
 
-#### 2.0.0
+## 1.1
 
-* Modified to work with version 2.0.0 of the kodi media sensor
+- Code review handling HTML document
+- New option: show thumbnail
 
-#### 1.1
-
-* Code review handling HTML document
-* New option: show thumbnail
-
-#### 1.0
+## 1.0
 
 First version
