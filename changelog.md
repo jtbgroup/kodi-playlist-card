@@ -1,12 +1,9 @@
 # Changelog
 
-## 3.3.1
+## 3.3.2
 
 - Bugfix : make available in the card chooser (regression)
-- order of the properties in the editor
-
-## 3.3.0
-
+- Order of the properties in the editor
 - New property available: line separator
   
 ## 3.2.0
