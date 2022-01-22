@@ -173,7 +173,7 @@ class PlaylistSensorCard extends HTMLElement {
         } else if (attribute == "episode") {
           this.playlistDiv.appendChild(this.formatEpisode(item, count));
         } else {
-          this.playlistDiv.appendChild(this.formatUnknown(item));
+          this.playlistDiv.appendChild(this.formatUnknown(item, count));
         }
       }
     }
@@ -415,7 +415,7 @@ class PlaylistSensorCard extends HTMLElement {
     return thumbnailDiv;
   }
 
-  formatUnknown(item) {
+  formatUnknown(item, position) {
     let isPlaying = item["id"] == this._currently_playing;
 
     let row = document.createElement("div");
@@ -595,7 +595,7 @@ class PlaylistSensorCard extends HTMLElement {
                 }
 
                 .playlist-playing{
-                  color: rgb(3, 169, 244);
+                  color: var(--paper-item-icon-color, #44739e);
                 }
 
                 /*
