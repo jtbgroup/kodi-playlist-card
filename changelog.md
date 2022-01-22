@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.3
+
+- Bugfix: added position for unknown item type to allow the delete action
+
 ## 3.3.2
 
 - Bugfix : make available in the card chooser (regression)
