@@ -107,15 +107,15 @@ class PlaylistSensorCard extends HTMLElement {
     if (!this._config) return; // Can't assume setConfig is called before hass is set
 
     const entity = this._config.entity;
-    let state = hass.states[entity];
-    if (!state) {
+    this.state = hass.states[entity];
+    if (!this.state) {
       console.error("no state for the sensor");
       return;
     }
-    if (state.state == "off") {
+    if (this.state.state == "off") {
       this.formatContainerOff();
     } else {
-      let meta = state.attributes.meta;
+      let meta = this.state.attributes.meta;
       if (!meta) {
         console.error("no metadata for the sensor");
         return;
@@ -141,7 +141,7 @@ class PlaylistSensorCard extends HTMLElement {
       this._service_domain = json_meta[0]["service_domain"];
       this._currently_playing = json_meta[0]["currently_playing"];
 
-      let data = state.attributes.data;
+      let data = this.state.attributes.data;
       json = typeof data == "object" ? data : JSON.parse(data);
 
       if (json[0] && json_meta[0]["playlist_type"]) {
@@ -492,7 +492,7 @@ class PlaylistSensorCard extends HTMLElement {
       method: "goto",
       item: {
         playerid: player,
-        to: posn,
+        position: posn,
       },
     });
   }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.4
+
+- Bugfix: wrong reference to the state of the entity
+
 ## 3.3.3
 
 - Bugfix: added position for unknown item type to allow the delete action
