@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.0
+
+- Conversion of HTMLElement to LitElement
+- New Configuration parameter `hide_last_line_separator`
+
 ## 3.3.4
 
 - Bugfix: wrong reference to the state of the entity
@@ -13,7 +18,7 @@
 - Bugfix : make available in the card chooser (regression)
 - Order of the properties in the editor
 - New property available: line separator
-  
+
 ## 3.2.0
 
 - Card editor + made available in the card picker
