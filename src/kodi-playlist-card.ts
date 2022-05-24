@@ -478,6 +478,10 @@ export class KodiPlaylistCard extends LitElement {
         width: 30px;
       }
 
+      /* .playlist-control:hover {
+        color: red;
+      } */
+
       .playlist-playing {
         color: var(--primary-color, #03a9f4);
       }
