@@ -1,9 +1,9 @@
 resources:
-  - url: http://127.0.0.1:5000/kodi-search-card.js
+  - url: http://127.0.0.1:5000/kodi-playlist-card.js
     type: module
 views:
   - cards:
-      - type: custom:kodi-search-card
-        name: Kodi Search Card Development
+      - type: custom:kodi-playlist-card
+        name: Kodi Playlist Card Development
         entity: sun.sun
         test_gui: true

@@ -137,7 +137,7 @@ export class KodiPlaylistCard extends LitElement {
       <ha-card
         .header=${this.config.title ? this.config.title : ''}
         tabindex="0"
-        .label=${`Kodi Search ${this.config.entity || 'No Entity Defined'}`}
+        .label=${`Kodi Playlist ${this.config.entity || 'No Entity Defined'}`}
       >
         <div class="card-container">${errorMessage ? errorMessage : this._buildCardContainer()}</div>
       </ha-card>
