@@ -11,6 +11,7 @@ import {
   DEFAULT_SHOW_THUMBNAIL_OVERLAY,
   DEFAULT_SHOW_THUMBNAIL_BORDER,
   DEFAULT_SHOW_LINE_SEPARATOR,
+  DEFAULT_HIDE_LAST_LINE_SEPARATOR,
   DEFAULT_OUTLINE_COLOR,
   DEFAULT_ENTITY_NAME,
   PLAYER_TYPE,
@@ -58,6 +59,7 @@ export class KodiPlaylistCard extends LitElement {
       show_thumbnail_border: DEFAULT_SHOW_THUMBNAIL_BORDER,
       show_thumbnail_overlay: DEFAULT_SHOW_THUMBNAIL_OVERLAY,
       show_line_separator: DEFAULT_SHOW_LINE_SEPARATOR,
+      hide_last_line_separator: DEFAULT_HIDE_LAST_LINE_SEPARATOR,
       outline_color: DEFAULT_OUTLINE_COLOR,
     };
   }
@@ -163,28 +165,41 @@ export class KodiPlaylistCard extends LitElement {
 
   private _buildResultContainer() {
     let position = 0;
+    const resultCount = this._json_data.length;
     return html`
-      <div class="playlist-items-container">${this._json_data.map((item) => this._formatItem(item, position++))}</div>
+      <div class="playlist-items-container">
+        ${this._json_data.map((item) => this._formatItem(item, position++, resultCount - position == 0))}
+      </div>
     `;
   }
 
-  private _formatItem(item, position) {
+  private _formatItem(item, position, isLast) {
     switch (item.type) {
       case MEDIA_TYPE_PARAMS.song.id:
-        return this._formatSong(item, position);
+        return this._formatSong(item, position, isLast);
       case MEDIA_TYPE_PARAMS.movie.id:
-        return this._formatMovie(item, position);
+        return this._formatMovie(item, position, isLast);
+      case MEDIA_TYPE_PARAMS.episode.id:
+        return this._formatEpisode(item, position, isLast);
       default:
-        return this._formatUnknown(item, position);
+        return this._formatUnknown(item, position, isLast);
     }
     return html``;
   }
 
-  private _formatUnknown(item, position) {
-    const isPlaying = item.id == this._currently_playing;
+  private getItemCss(itemClass, isLast) {
+    return (
+      itemClass +
+      (this.config.show_line_separator && (!isLast || (isLast && !this.config.hide_last_line_separator))
+        ? ' playlist-line-separator'
+        : '')
+    );
+  }
 
-    const classCss =
-      'playlist-unknown-grid playlist-grid' + (this.config.show_line_separator ? ' playlist-line-separator' : '');
+  private _formatUnknown(item, position, isLast) {
+    const isPlaying = item.id == this._currently_playing;
+    const classCss = this.getItemCss('playlist-unknown-grid playlist-grid', isLast);
+
     return html`<div class=${classCss}>
       ${this._prepareCover(
         item['thumbnail'],
@@ -196,7 +211,7 @@ export class KodiPlaylistCard extends LitElement {
         isPlaying,
         () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
       )}
-      <div class="playlist-unknown-message">type of media is... : ' + ${item['type']}</div>
+      <div class="playlist-unknown-message">type of media is... : ${item['type']}</div>
       <div class="playlist-unknown-title playlist-title">${item['title']}</div>
       ${this._createControl(
         isPlaying,
@@ -208,11 +223,10 @@ export class KodiPlaylistCard extends LitElement {
     </div>`;
   }
 
-  private _formatSong(song, position) {
+  private _formatSong(song, position, isLast) {
     const isPlaying = song.id == this._currently_playing;
 
-    const classCss =
-      'playlist-song-grid playlist-grid' + (this.config.show_line_separator ? ' playlist-line-separator' : '');
+    const classCss = this.getItemCss('playlist-song-grid playlist-grid', isLast);
     return html`<div class=${classCss}>
       ${this._prepareCover(
         song['thumbnail'],
@@ -232,11 +246,9 @@ export class KodiPlaylistCard extends LitElement {
     </div>`;
   }
 
-  private _formatMovie(item, position) {
+  private _formatMovie(item, position, isLast) {
     const isPlaying = item.id == this._currently_playing;
-
-    const classCss =
-      'playlist-movie-grid playlist-grid' + (this.config.show_line_separator ? ' playlist-line-separator' : '');
+    const classCss = this.getItemCss('playlist-movie-grid playlist-grid', isLast);
 
     const cover = item['poster'] && item['poster'] != '' ? item['poster'] : item['thumbnail'];
 
@@ -254,6 +266,39 @@ export class KodiPlaylistCard extends LitElement {
       <div class="playlist-movie-title playlist-title">${item['title']}</div>
       <div class="playlist-movie-genre playlist-genre">${item['genre'] ? item['genre'] : 'undefined'}</div>
       ${this._createControl(isPlaying, position, PLAYER_TYPE.video, 'playlist-song-playing', 'playlist-song-remove')}
+    </div>`;
+  }
+
+  private _formatEpisode(item, position, isLast) {
+    const isPlaying = item.id == this._currently_playing;
+    const classCss = this.getItemCss('playlist-episode-grid playlist-grid', isLast);
+
+    const cover = item['poster'] && item['poster'] != '' ? item['poster'] : item['thumbnail'];
+
+    return html`<div class=${classCss}>
+      ${this._prepareCover(
+        cover,
+        'playlist-episode-cover',
+        'playlist-episode-cover-image',
+        'playlist-episode-cover-image-default',
+        'mdi:play',
+        'mdi:movie',
+        isPlaying,
+        () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
+      )}
+      <div class="playlist-episode-title playlist-title">${item['title']}</div>
+      <div class="playlist-episode-genre playlist-genre">${item['genre'] ? item['genre'] : 'undefined'}</div>
+      <div class="playlist-episode-season">
+        Season ${item['season'] ? item['season'] : 'undefined'} - Episode
+        ${item['episode'] ? item['episode'] : 'undefined'}
+      </div>
+      ${this._createControl(
+        isPlaying,
+        position,
+        PLAYER_TYPE.video,
+        'playlist-episode-playing',
+        'playlist-episode-remove',
+      )}
     </div>`;
   }
 
@@ -525,6 +570,50 @@ export class KodiPlaylistCard extends LitElement {
         width: var(--movie-thumbnail-width);
         height: calc(var(--movie-thumbnail-width) / var(--movie-thumbnail-ratio));
         --mdc-icon-size: calc(var(--movie-thumbnail-width) - 30px);
+      }
+
+      /*
+                //// EPISODE
+               */
+      .playlist-episode-grid {
+        grid-template-columns: auto 1fr auto;
+        grid-auto-rows: auto;
+      }
+
+      .playlist-episode-title {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .playlist-episode-genre {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .playlist-episode-season {
+        grid-column: 2;
+        grid-row: 3;
+      }
+
+      .playlist-episode-remove,
+      .playlist-episode-playing {
+        grid-column: 3;
+        grid-row: 1 / 3;
+      }
+
+      .playlist-episode-cover {
+        grid-column: 1;
+        grid-row: 1 / 5;
+      }
+
+      .playlist-episode-cover-image {
+        width: var(--episode-thumbnail-width);
+      }
+
+      .playlist-episode-cover-image-default {
+        width: var(--episode-thumbnail-width);
+        height: calc(var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio));
+        --mdc-icon-size: calc((var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio)) - 30px);
       }
 
       /*

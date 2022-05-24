@@ -16,4 +16,5 @@ export interface KodiPlaylistCardConfig extends LovelaceCardConfig {
   show_thumbnail_overlay?: boolean;
   show_thumbnail_border?: boolean;
   show_line_separator?: boolean;
+  hide_last_line_separator?: boolean;
 }

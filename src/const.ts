@@ -25,4 +25,5 @@ export const DEFAULT_SHOW_THUMBNAIL = true;
 export const DEFAULT_SHOW_THUMBNAIL_OVERLAY = true;
 export const DEFAULT_SHOW_THUMBNAIL_BORDER = false;
 export const DEFAULT_SHOW_LINE_SEPARATOR = false;
+export const DEFAULT_HIDE_LAST_LINE_SEPARATOR = false;
 export const DEFAULT_OUTLINE_COLOR = 'var(--primary-text-color)';

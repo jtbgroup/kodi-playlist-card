@@ -65,6 +65,10 @@ export class KodiPlaylistCardEditor extends ScopedRegistryHost(LitElement) imple
     return this._config?.show_line_separator || false;
   }
 
+  get _hide_last_line_separator(): boolean {
+    return this._config?.hide_last_line_separator || false;
+  }
+
   get _outline_color(): string {
     return this._config?.outline_color || '';
   }
@@ -125,6 +129,15 @@ export class KodiPlaylistCardEditor extends ScopedRegistryHost(LitElement) imple
             <mwc-switch
               .checked=${this._show_line_separator !== false}
               .configValue=${'show_line_separator'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+        </div>
+        <div class="config">
+          <mwc-formfield label="Hide Last Line separator" }>
+            <mwc-switch
+              .checked=${this._hide_last_line_separator !== false}
+              .configValue=${'hide_last_line_separator'}
               @change=${this._valueChanged}
             ></mwc-switch>
           </mwc-formfield>
