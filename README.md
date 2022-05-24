@@ -28,14 +28,15 @@ Manual installation is of course possible, but not explained here as there are p
 
 | Name | Type | Default | Since | Description |
 |------|------|---------|-------|-------------|
-| type | string	| **required** | v1.0.0 | `custom:kodi-playlist-card` |
+| type | string | **required** | v1.0.0 | `custom:kodi-playlist-card` |
 | entity | string | **required** | v1.0.0 |  `sensor.kodi_playlist` |
 | title | string | optional | v1.0.0 | The title of the card |
 | show_thumbnail | boolean | `false` | v1.1.2 | Set to true if you want to show the thumbnails coming from kodi. Attention you can get problems when mixing http and https content; if so, leave it to false. |
-| show_thumbnail_overlay| boolean | `true` | v3.1 | When true, adds an lightgrey overlay above the thumbnail; this might be useful to see better the play icon displayed above the thumbnail.
-| show_thumbnail_border | boolean | `false` | v3.1 | When true, adds a 1px border around the thumbnails.
-| show_line_separator | boolean | `true` | v3.3 | When true, adds a 1 px border under each item of the playlist.
-| outline_color | string | optional<br/>default: `white` | v3.1 | This option is to use in combination with other properties (**show_thumbnail_border** and **show_line_separator**). The color can be a string (ex: 'white', 'red', 'green', ... ), rgb format (ex: 'rgb(10, 12, 250)') or hexa format (ex: '#EE22FF').
+| show_thumbnail_overlay| boolean | `true` | v3.1 | When true, adds an lightgrey overlay above the thumbnail; this might be useful to see better the play icon displayed above the thumbnail. |
+| show_thumbnail_border | boolean | `false` | v3.1 | When true, adds a 1px border around the thumbnails. |
+| show_line_separator | boolean | `true` | v3.3 | When true, adds a 1 px border under each item of the playlist. |
+| hide_last_line_separator | boolean | `false` | v4.0 | When true, the last line separator is hidden to avoid a last line (if show_line_separator is false). |
+| outline_color | string | optional<br/>default: `white` | v3.1 | This option is to use in combination with other properties (**show_thumbnail_border** and **show_line_separator**). The color can be a string (ex: 'white', 'red', 'green', ... ), rgb format (ex: 'rgb(10, 12, 250)') or hexa format (ex: '#EE22FF'). |
 
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
 
@@ -49,4 +50,4 @@ Example
     show_thumbnail_overlay: true
     show_line_separator: true
     outline_color: rgb(245,12,54)
-```
+``
