@@ -6,7 +6,7 @@ import { fireEvent, HomeAssistant, LovelaceCardEditor } from "custom-card-helper
 import { KodiPlaylistCardConfig } from "./types";
 
 @customElement("kodi-playlist-card-editor")
-export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCardEditor {
+export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEditor {
     @property({ attribute: false }) public hass?: HomeAssistant;
     @state() private _config?: KodiPlaylistCardConfig;
     @state() private _helpers?: any;
@@ -68,10 +68,9 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
 
         return html`
             <div class="card-config">
-
                 <div class="config">
                     <ha-textfield
-                        label='title'
+                        label="title"
                         .value=${this._title}
                         .configValue=${"title"}
                         @input=${this._valueChanged}></ha-textfield>
@@ -80,7 +79,8 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                     <ha-select
                         naturalMenuWidth
                         fixedMenuPosition
-                        label='Entity'}
+                        label="Entity"
+                        }
                         @selected=${this._valueChanged}
                         @closed=${ev => ev.stopPropagation()}
                         .configValue=${"entity"}
@@ -92,7 +92,7 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                 </div>
 
                 <div class="config">
-                    <ha-formfield class="switch-wrapper" label='Show Thumbnail'>
+                    <ha-formfield class="switch-wrapper" label="Show Thumbnail">
                         <ha-switch
                             .checked=${this._show_thumbnail !== false}
                             .configValue=${"show_thumbnail"}
@@ -101,7 +101,7 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                     </ha-formfield>
                 </div>
                 <div class="config">
-                    <ha-formfield class="switch-wrapper" label='Show thumbnail overlay'>
+                    <ha-formfield class="switch-wrapper" label="Show thumbnail overlay">
                         <ha-switch
                             .checked=${this._show_thumbnail_overlay !== false}
                             .configValue=${"show_thumbnail_overlay"}
@@ -109,7 +109,7 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                     </ha-formfield>
                 </div>
                 <div class="config">
-                    <ha-formfield class="switch-wrapper" label='Show Line separator'>
+                    <ha-formfield class="switch-wrapper" label="Show Line separator">
                         <ha-switch
                             .checked=${this._show_line_separator !== false}
                             .configValue=${"show_line_separator"}
@@ -117,9 +117,8 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                     </ha-formfield>
                 </div>
 
-
                 <div class="config">
-                    <ha-formfield class="switch-wrapper" label='Hide Last Line separator'>
+                    <ha-formfield class="switch-wrapper" label="Hide Last Line separator">
                         <ha-switch
                             .checked=${this._hide_last_line_separator !== false}
                             .configValue=${"hide_last_line_separator"}
@@ -127,7 +126,7 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
                     </ha-formfield>
                 </div>
                 <div class="config">
-                    <ha-formfield class="switch-wrapper" label='Show thumbnail border'>
+                    <ha-formfield class="switch-wrapper" label="Show thumbnail border">
                         <ha-switch
                             .checked=${this._show_thumbnail_border !== false}
                             .configValue=${"show_thumbnail_border"}
@@ -137,12 +136,11 @@ export class XiaomiVacuumMapCardEditor extends LitElement implements LovelaceCar
 
                 <div class="config">
                     <ha-textfield
-                        label='Outline Color (Optional)'
+                        label="Outline Color (Optional)"
                         .value=${this._outline_color}
                         .configValue=${"outline_color"}
                         @input=${this._valueChanged}></ha-textfield>
                 </div>
-
             </div>
         `;
     }

@@ -35,7 +35,7 @@ console.info(
 });
 
 @customElement("kodi-playlist-card")
-export class XiaomiVacuumMapCard extends LitElement {
+export class KodiPlaylistCard extends LitElement {
     public static async getConfigElement(): Promise<LovelaceCardEditor> {
         return document.createElement("kodi-playlist-card-editor");
     }
@@ -132,13 +132,12 @@ export class XiaomiVacuumMapCard extends LitElement {
         }
 
         const card = html`
-          <ha-card
-            .header=${this.config.title ? this.config.title : ""}
-            tabindex="0"
-            .label=${`Kodi Playlist ${this.config.entity || "No Entity Defined"}`}
-          >
-            <div class="card-container">${errorMessage ? errorMessage : this._buildCardContainer()}</div>
-          </ha-card>
+            <ha-card
+                .header=${this.config.title ? this.config.title : ""}
+                tabindex="0"
+                .label=${`Kodi Playlist ${this.config.entity || "No Entity Defined"}`}>
+                <div class="card-container">${errorMessage ? errorMessage : this._buildCardContainer()}</div>
+            </ha-card>
         `;
         return card;
     }
@@ -149,15 +148,15 @@ export class XiaomiVacuumMapCard extends LitElement {
             return html`<div>No Playlist found</div>`;
         } else {
             return html`<div id="card-container">
-            <div>${this._buildPlaylistType(playlistType)}</div>
-            <div>${this._buildResultContainer()}</div>
-          </div>`;
+                <div>${this._buildPlaylistType(playlistType)}</div>
+                <div>${this._buildResultContainer()}</div>
+            </div>`;
         }
     }
 
     private _buildPlaylistType(playlistType) {
         return html`<div class="playlist-playlisttype-title">
-          Playlist ${PLAYER_TYPE[playlistType].label} <ha-icon icon=${PLAYER_TYPE[playlistType].icon}></ha-icon>
+            Playlist ${PLAYER_TYPE[playlistType].label} <ha-icon icon=${PLAYER_TYPE[playlistType].icon}></ha-icon>
         </div>`;
     }
 
@@ -165,9 +164,9 @@ export class XiaomiVacuumMapCard extends LitElement {
         let position = 0;
         const resultCount = this._json_data.length;
         return html`
-          <div class="playlist-items-container">
-            ${this._json_data.map(item => this._formatItem(item, position++, resultCount - position == 0))}
-          </div>
+            <div class="playlist-items-container">
+                ${this._json_data.map(item => this._formatItem(item, position++, resultCount - position == 0))}
+            </div>
         `;
     }
 
@@ -199,25 +198,25 @@ export class XiaomiVacuumMapCard extends LitElement {
         const classCss = this.getItemCss("playlist-unknown-grid playlist-grid", isLast);
 
         return html`<div class=${classCss}>
-          ${this._prepareCover(
-              item["thumbnail"],
-              "playlist-unknown-cover",
-              "playlist-unknown-cover-image",
-              "playlist-unknown-cover-image-default",
-              "mdi:play",
-              "mdi:sparkles",
-              isPlaying,
-              () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
-          )}
-          <div class="playlist-unknown-message">type of media is... : ${item["type"]}</div>
-          <div class="playlist-unknown-title playlist-title">${item["title"]}</div>
-          ${this._createControl(
-              isPlaying,
-              position,
-              PLAYER_TYPE.audio,
-              "playlist-unknown-playing",
-              "playlist-unknown-remove",
-          )}
+            ${this._prepareCover(
+                item["thumbnail"],
+                "playlist-unknown-cover",
+                "playlist-unknown-cover-image",
+                "playlist-unknown-cover-image-default",
+                "mdi:play",
+                "mdi:sparkles",
+                isPlaying,
+                () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
+            )}
+            <div class="playlist-unknown-message">type of media is... : ${item["type"]}</div>
+            <div class="playlist-unknown-title playlist-title">${item["title"]}</div>
+            ${this._createControl(
+                isPlaying,
+                position,
+                PLAYER_TYPE.audio,
+                "playlist-unknown-playing",
+                "playlist-unknown-remove",
+            )}
         </div>`;
     }
 
@@ -226,27 +225,27 @@ export class XiaomiVacuumMapCard extends LitElement {
 
         const classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
         return html`<div class=${classCss}>
-          ${this._prepareCover(
-              song["thumbnail"],
-              "playlist-song-cover",
-              "playlist-song-cover-image",
-              "playlist-song-cover-image-default",
-              "mdi:play",
-              "mdi:music",
-              isPlaying,
-              () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
-          )}
-          <div class="playlist-song-title playlist-title">${song["artist"]} - ${song["title"]}</div>
-          <div class="playlist-song-genre playlist-genre">${song["genre"] ? song["genre"] : "undefined"}</div>
-          <div class="playlist-song-album playlist-album">${song["album"]} (${song["year"]}</div>
-          <div class="playlist-song-duration playlist-duration">${this._formatDuration(song["duration"])}</div>
-          ${this._createControl(
-              isPlaying,
-              position,
-              PLAYER_TYPE.audio,
-              "playlist-song-playing",
-              "playlist-song-remove",
-          )}
+            ${this._prepareCover(
+                song["thumbnail"],
+                "playlist-song-cover",
+                "playlist-song-cover-image",
+                "playlist-song-cover-image-default",
+                "mdi:play",
+                "mdi:music",
+                isPlaying,
+                () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
+            )}
+            <div class="playlist-song-title playlist-title">${song["artist"]} - ${song["title"]}</div>
+            <div class="playlist-song-genre playlist-genre">${song["genre"] ? song["genre"] : "undefined"}</div>
+            <div class="playlist-song-album playlist-album">${song["album"]} (${song["year"]}</div>
+            <div class="playlist-song-duration playlist-duration">${this._formatDuration(song["duration"])}</div>
+            ${this._createControl(
+                isPlaying,
+                position,
+                PLAYER_TYPE.audio,
+                "playlist-song-playing",
+                "playlist-song-remove",
+            )}
         </div>`;
     }
 
@@ -257,25 +256,25 @@ export class XiaomiVacuumMapCard extends LitElement {
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
         return html`<div class=${classCss}>
-          ${this._prepareCover(
-              cover,
-              "playlist-movie-cover",
-              "playlist-movie-cover-image",
-              "playlist-movie-cover-image-default",
-              "mdi:play",
-              "mdi:movie",
-              isPlaying,
-              () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
-          )}
-          <div class="playlist-movie-title playlist-title">${item["title"]}</div>
-          <div class="playlist-movie-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
-          ${this._createControl(
-              isPlaying,
-              position,
-              PLAYER_TYPE.video,
-              "playlist-song-playing",
-              "playlist-song-remove",
-          )}
+            ${this._prepareCover(
+                cover,
+                "playlist-movie-cover",
+                "playlist-movie-cover-image",
+                "playlist-movie-cover-image-default",
+                "mdi:play",
+                "mdi:movie",
+                isPlaying,
+                () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
+            )}
+            <div class="playlist-movie-title playlist-title">${item["title"]}</div>
+            <div class="playlist-movie-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
+            ${this._createControl(
+                isPlaying,
+                position,
+                PLAYER_TYPE.video,
+                "playlist-song-playing",
+                "playlist-song-remove",
+            )}
         </div>`;
     }
 
@@ -286,29 +285,29 @@ export class XiaomiVacuumMapCard extends LitElement {
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
         return html`<div class=${classCss}>
-          ${this._prepareCover(
-              cover,
-              "playlist-episode-cover",
-              "playlist-episode-cover-image",
-              "playlist-episode-cover-image-default",
-              "mdi:play",
-              "mdi:movie",
-              isPlaying,
-              () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
-          )}
-          <div class="playlist-episode-title playlist-title">${item["title"]}</div>
-          <div class="playlist-episode-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
-          <div class="playlist-episode-season">
-            Season ${item["season"] ? item["season"] : "undefined"} - Episode
-            ${item["episode"] ? item["episode"] : "undefined"}
-          </div>
-          ${this._createControl(
-              isPlaying,
-              position,
-              PLAYER_TYPE.video,
-              "playlist-episode-playing",
-              "playlist-episode-remove",
-          )}
+            ${this._prepareCover(
+                cover,
+                "playlist-episode-cover",
+                "playlist-episode-cover-image",
+                "playlist-episode-cover-image-default",
+                "mdi:play",
+                "mdi:movie",
+                isPlaying,
+                () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
+            )}
+            <div class="playlist-episode-title playlist-title">${item["title"]}</div>
+            <div class="playlist-episode-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
+            <div class="playlist-episode-season">
+                Season ${item["season"] ? item["season"] : "undefined"} - Episode
+                ${item["episode"] ? item["episode"] : "undefined"}
+            </div>
+            ${this._createControl(
+                isPlaying,
+                position,
+                PLAYER_TYPE.video,
+                "playlist-episode-playing",
+                "playlist-episode-remove",
+            )}
         </div>`;
     }
 
