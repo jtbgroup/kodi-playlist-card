@@ -4,6 +4,3 @@ resources:
 views:
   - cards:
       - type: custom:kodi-playlist-card
-        name: Kodi Playlist Card Development
-        entity: sun.sun
-        test_gui: true

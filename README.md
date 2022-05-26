@@ -1,3 +1,13 @@
+[![HACS Default][hacs_shield]][hacs]
+[![Buy me a coffee][buy_me_a_coffee_shield]][buy_me_a_coffee]
+
+[hacs_shield]: https://img.shields.io/static/v1.svg?label=HACS&message=Default&style=popout&color=green&labelColor=41bdf5&logo=HomeAssistantCommunityStore&logoColor=white
+[hacs]: https://hacs.xyz/docs/default_repositories
+
+[buy_me_a_coffee_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Buy%20me%20a%20coffee&color=6f4e37&logo=buy%20me%20a%20coffee&logoColor=white
+[buy_me_a_coffee]: https://www.buymeacoffee.com/jtbgroup
+
+
 # Kodi-Playlist-Card
 
 This card displays the playlist running on the kodi entity. The refresh is automatic based on events triggered by the entity.
