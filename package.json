@@ -11,7 +11,7 @@
         "custom-cards"
     ],
     "module": "kodi-playlist-card.js",
-    "repository": "git@github.com:jtbgroup/kodi-playlis-card.git",
+    "repository": "git@github.com:jtbgroup/kodi-playlist-card.git",
     "author": "Gautier Vanderslyen <gautier.vanderslyen@gmail.com>",
     "license": "MIT",
     "dependencies": {
