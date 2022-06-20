@@ -17,6 +17,8 @@ import {
     DEFAULT_OUTLINE_COLOR,
     DEFAULT_ENTITY_NAME,
     PLAYER_TYPE,
+    DEFAULT_ITEMS_CONTAINER_SCROLLABLE,
+    DEFAULT_ITEMS_CONTAINER_HEIGHT,
 } from "./const";
 
 /* eslint no-console: 0 */
@@ -49,6 +51,8 @@ export class KodiPlaylistCard extends LitElement {
             show_line_separator: DEFAULT_SHOW_LINE_SEPARATOR,
             hide_last_line_separator: DEFAULT_HIDE_LAST_LINE_SEPARATOR,
             outline_color: DEFAULT_OUTLINE_COLOR,
+            items_container_scrollable: DEFAULT_ITEMS_CONTAINER_SCROLLABLE,
+            items_container_height: DEFAULT_ITEMS_CONTAINER_HEIGHT,
         };
     }
 
@@ -81,10 +85,14 @@ export class KodiPlaylistCard extends LitElement {
             `--outline-color`,
             this.config.outline_color ? this.config.outline_color : DEFAULT_OUTLINE_COLOR,
         );
+        document.documentElement.style.setProperty(
+            `--items-container-height`,
+            this.config.items_container_height ? this.config.items_container_height : DEFAULT_ITEMS_CONTAINER_HEIGHT,
+        );
     }
 
     public getCardSize(): number {
-        return 12;
+        return 1;
     }
 
     // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
@@ -147,10 +155,10 @@ export class KodiPlaylistCard extends LitElement {
         if (!playlistType) {
             return html`<div>No Playlist found</div>`;
         } else {
-            return html`<div id="card-container">
+            return html`
                 <div>${this._buildPlaylistType(playlistType)}</div>
                 <div>${this._buildResultContainer()}</div>
-            </div>`;
+            `;
         }
     }
 
@@ -163,8 +171,14 @@ export class KodiPlaylistCard extends LitElement {
     private _buildResultContainer() {
         let position = 0;
         const resultCount = this._json_data.length;
+
+        let css = "playlist-items-container";
+        if (this.config.items_container_scrollable) {
+            css += " playlist-items-container-scrollable";
+        }
+
         return html`
-            <div class="playlist-items-container">
+            <div class=${css}>
                 ${this._json_data.map(item => this._formatItem(item, position++, resultCount - position == 0))}
             </div>
         `;
@@ -384,6 +398,7 @@ export class KodiPlaylistCard extends LitElement {
         return css`
             :root {
                 --outline-color: "-----";
+                --items-container-height: 300px;
             }
 
             :host {
@@ -429,6 +444,11 @@ export class KodiPlaylistCard extends LitElement {
                 grid-template-columns: 1fr;
                 grid-auto-rows: auto;
                 grid-gap: 15px;
+            }
+
+            .playlist-items-container-scrollable {
+                overflow-y: scroll;
+                height: var(--items-container-height);
             }
 
             .overlay-play {

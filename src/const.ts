@@ -1,4 +1,4 @@
-export const CARD_VERSION = "4.0.0";
+export const CARD_VERSION = "4.1.0";
 
 export const PLAYER_TYPE = {
     audio: { kodi_player_id: 0, label: "Audio", icon: "mdi:music" },
@@ -27,4 +27,6 @@ export const DEFAULT_SHOW_THUMBNAIL_BORDER = false;
 export const DEFAULT_SHOW_LINE_SEPARATOR = false;
 export const DEFAULT_HIDE_LAST_LINE_SEPARATOR = false;
 export const DEFAULT_OUTLINE_COLOR = "var(--primary-text-color)";
+export const DEFAULT_ITEMS_CONTAINER_SCROLLABLE = false;
+export const DEFAULT_ITEMS_CONTAINER_HEIGHT = "300px";
 

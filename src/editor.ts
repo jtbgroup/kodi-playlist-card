@@ -57,6 +57,14 @@ export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEd
         return this._config?.outline_color || "";
     }
 
+    get _items_container_scrollable(): boolean {
+        return this._config?.items_container_scrollable || false;
+    }
+
+    get _items_container_height(): string {
+        return this._config?.items_container_height || "";
+    }
+
     protected render(): TemplateResult | void {
         if (!this.hass || !this._helpers) {
             return html``;
@@ -139,6 +147,23 @@ export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEd
                         label="Outline Color (Optional)"
                         .value=${this._outline_color}
                         .configValue=${"outline_color"}
+                        @input=${this._valueChanged}></ha-textfield>
+                </div>
+
+                <div class="config">
+                    <ha-formfield class="switch-wrapper" label="Make Playlist scrollable">
+                        <ha-switch
+                            .checked=${this._items_container_scrollable !== false}
+                            .configValue=${"items_container_scrollable"}
+                            @change=${this._valueChanged}></ha-switch>
+                    </ha-formfield>
+                </div>
+
+                <div class="config">
+                    <ha-textfield
+                        label="Height of the card (used when playlist is made scrollable)"
+                        .value=${this._items_container_height}
+                        .configValue=${"items_container_height"}
                         @input=${this._valueChanged}></ha-textfield>
                 </div>
             </div>

@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 4.1.0
+
+- New feature allowing to make the playlist scrollable in order to make the navigation easier when very long playlists. Two new configuration options have been added (see README). See [issue #3](https://github.com/jtbgroup/kodi-playlist-card/issues/3) and [issue #14](https://github.com/jtbgroup/kodi-media-sensors/issues/14). Thanks [fax13](https://github.com/fax13).
+
 ## 4.0.0
 
 - Conversion of HTMLElement to LitElement

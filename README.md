@@ -47,6 +47,8 @@ Manual installation is of course possible, but not explained here as there are p
 | show_line_separator | boolean | `true` | v3.3 | When true, adds a 1 px border under each item of the playlist. |
 | hide_last_line_separator | boolean | `false` | v4.0 | When true, the last line separator is hidden to avoid a last line (if show_line_separator is false). |
 | outline_color | string | optional<br/>default: `white` | v3.1 | This option is to use in combination with other properties (**show_thumbnail_border** and **show_line_separator**). The color can be a string (ex: 'white', 'red', 'green', ... ), rgb format (ex: 'rgb(10, 12, 250)') or hexa format (ex: '#EE22FF'). |
+| items_container_scrollable | boolean | `false` | v4.1 | Allows to add a scroll bar in order to enhance the navigation in case of long playlists |
+| items_container_height | string | optional<br/>default: `300px` | v4.1 | Sets the height of the playlist when it's limited by the property `items_container_scrollable` |
 
 **No need to pass the entity of the Kodi player as it is embedded in the data of the sensor.**
 
