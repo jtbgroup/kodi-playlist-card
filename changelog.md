@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.2.0
+
+- Includes music video objects
 
 ## 4.1.0
 

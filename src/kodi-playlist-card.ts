@@ -190,6 +190,8 @@ export class KodiPlaylistCard extends LitElement {
                 return this._formatSong(item, position, isLast);
             case MEDIA_TYPE_PARAMS.movie.id:
                 return this._formatMovie(item, position, isLast);
+            case MEDIA_TYPE_PARAMS.musicvideo.id:
+                return this._formatMusicVideo(item, position, isLast);
             case MEDIA_TYPE_PARAMS.episode.id:
                 return this._formatEpisode(item, position, isLast);
             default:
@@ -282,6 +284,37 @@ export class KodiPlaylistCard extends LitElement {
             )}
             <div class="playlist-movie-title playlist-title">${item["title"]}</div>
             <div class="playlist-movie-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
+            <div class="playlist-movie-year playlist-year">${item["year"]}</div>
+            ${this._createControl(
+                isPlaying,
+                position,
+                PLAYER_TYPE.video,
+                "playlist-song-playing",
+                "playlist-song-remove",
+            )}
+        </div>`;
+    }
+
+    private _formatMusicVideo(item, position, isLast) {
+        const isPlaying = item.id == this._currently_playing;
+        const classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
+
+        const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
+
+        return html`<div class=${classCss}>
+            ${this._prepareCover(
+                cover,
+                "playlist-movie-cover",
+                "playlist-movie-cover-image",
+                "playlist-movie-cover-image-default",
+                "mdi:play",
+                "mdi:movie",
+                isPlaying,
+                () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id),
+            )}
+            <div class="playlist-movie-title playlist-title">${item["artist"]}: ${item["title"]}</div>
+            <div class="playlist-movie-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
+            <div class="playlist-movie-year playlist-year">${item["year"]}</div>
             ${this._createControl(
                 isPlaying,
                 position,
@@ -498,7 +531,8 @@ export class KodiPlaylistCard extends LitElement {
                 font-size: 14px;
             }
 
-            .playlist-genre {
+            .playlist-genre,
+            .playlist-year {
                 font-style: italic;
             }
 
@@ -584,6 +618,11 @@ export class KodiPlaylistCard extends LitElement {
                 grid-row: 2;
             }
 
+            .playlist-movie-year {
+                grid-column: 2;
+                grid-row: 3;
+            }
+
             .playlist-movie-remove,
             .playlist-movie-playing {
                 grid-column: 3;
@@ -592,7 +631,7 @@ export class KodiPlaylistCard extends LitElement {
 
             .playlist-movie-cover {
                 grid-column: 1;
-                grid-row: 1 / 4;
+                grid-row: 1 / 5;
             }
 
             .playlist-movie-cover-image {
