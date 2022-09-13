@@ -62,6 +62,7 @@ export class KodiPlaylistCard extends LitElement {
     private _json_data;
     private _service_domain;
     private _currently_playing;
+    private _currently_playing_file;
 
     // TODO Add any properities that should cause your element to re-render here
     // https://lit.dev/docs/components/properties/
@@ -133,6 +134,7 @@ export class KodiPlaylistCard extends LitElement {
                     }
                     this._service_domain = this._json_meta[0]["service_domain"];
                     this._currently_playing = this._json_meta[0]["currently_playing"];
+                    this._currently_playing_file = this._json_meta[0]["currently_playing_file"];
                     const data = this._entityState.attributes.data;
                     this._json_data = typeof data == "object" ? data : JSON.parse(data);
                 }
@@ -209,8 +211,17 @@ export class KodiPlaylistCard extends LitElement {
         );
     }
 
+    private checkIsPlaying(item) {
+        if (this._currently_playing) {
+            return item.id == this._currently_playing;
+        } else {
+            return item.file == this._currently_playing_file;
+        }
+    }
+
     private _formatUnknown(item, position, isLast) {
-        const isPlaying = item.id == this._currently_playing;
+        const isPlaying = this.checkIsPlaying(item);
+
         const classCss = this.getItemCss("playlist-unknown-grid playlist-grid", isLast);
 
         return html`<div class=${classCss}>
@@ -237,7 +248,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _formatSong(song, position, isLast) {
-        const isPlaying = song.id == this._currently_playing;
+        const isPlaying = this.checkIsPlaying(song);
 
         const classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
         return html`<div class=${classCss}>
@@ -253,7 +264,7 @@ export class KodiPlaylistCard extends LitElement {
             )}
             <div class="playlist-song-title playlist-title">${song["artist"]} - ${song["title"]}</div>
             <div class="playlist-song-genre playlist-genre">${song["genre"] ? song["genre"] : "undefined"}</div>
-            <div class="playlist-song-album playlist-album">${song["album"]} (${song["year"]})</div>
+            <div class="playlist-song-album playlist-album">${song["album"]} ${song["year"] ? song["year"] : ""}</div>
             <div class="playlist-song-duration playlist-duration">${this._formatDuration(song["duration"])}</div>
             ${this._createControl(
                 isPlaying,
@@ -266,7 +277,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _formatMovie(item, position, isLast) {
-        const isPlaying = item.id == this._currently_playing;
+        const isPlaying = this.checkIsPlaying(item);
         const classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
@@ -296,7 +307,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _formatMusicVideo(item, position, isLast) {
-        const isPlaying = item.id == this._currently_playing;
+        const isPlaying = this.checkIsPlaying(item);
         const classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
@@ -326,7 +337,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _formatEpisode(item, position, isLast) {
-        const isPlaying = item.id == this._currently_playing;
+        const isPlaying = this.checkIsPlaying(item);
         const classCss = this.getItemCss("playlist-episode-grid playlist-grid", isLast);
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];

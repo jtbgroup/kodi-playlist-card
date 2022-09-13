@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.0
+
+- Uses the file attribute in the meta data when no ID is present. 
+
 ## 4.2.0
 
 - Includes music video objects
