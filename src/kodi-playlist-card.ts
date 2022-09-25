@@ -63,6 +63,7 @@ export class KodiPlaylistCard extends LitElement {
     private _service_domain;
     private _currently_playing;
     private _currently_playing_file;
+    private dropTarget;
 
     // TODO Add any properities that should cause your element to re-render here
     // https://lit.dev/docs/components/properties/
@@ -250,8 +251,17 @@ export class KodiPlaylistCard extends LitElement {
     private _formatSong(song, position, isLast) {
         const isPlaying = this.checkIsPlaying(song);
 
-        const classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
-        return html`<div class=${classCss}>
+        const classCss = "dropzone " + this.getItemCss("playlist-song-grid playlist-grid", isLast);
+        return html`<div
+            class=${classCss}
+            draggable="true"
+            position=${position}
+            @drag="${this._drag}"
+            @dragend="${() => this._dragend(position)}"
+            @dragenter="${event => this._dragenter(event)}"
+            @dragleave="${this._dragleave}"
+            @dragover="${event => this._dragover(event)}"
+            @drop="${event => this._drop(event)}">
             ${this._prepareCover(
                 song["thumbnail"],
                 "playlist-song-cover",
@@ -274,6 +284,39 @@ export class KodiPlaylistCard extends LitElement {
                 "playlist-song-remove",
             )}
         </div>`;
+    }
+
+    private _drag() {
+        console.log("Drag in");
+    }
+
+    private _dragend(position) {
+        console.log("Drag end : " + position);
+    }
+
+    private _dragenter(event) {
+        // event.preventDefault();
+        this.dropTarget = event.target;
+        let isDropZone = this.dropTarget.classList.contains("dropzone");
+        if (!isDropZone) {
+            this.dropTarget = event.target.parentNode;
+            isDropZone = this.dropTarget.classList.contains("dropzone");
+        }
+        if (isDropZone) {
+            this.dropTarget.classList.add("dragover");
+        }
+    }
+
+    private _dragleave() {
+        this.dropTarget.classList.remove("dragover");
+    }
+    private _dragover(event) {
+        event.preventDefault();
+    }
+
+    private _drop(event) {
+        console.log("Drop ");
+        console.log(event);
     }
 
     private _formatMovie(item, position, isLast) {
@@ -736,6 +779,10 @@ export class KodiPlaylistCard extends LitElement {
                 width: var(--song-thumbnail-width);
                 height: var(--song-thumbnail-width);
                 --mdc-icon-size: calc(var(--song-thumbnail-width) - 30px);
+            }
+
+            .dropzone.dragover {
+                background-color: purple;
             }
         `;
     }
