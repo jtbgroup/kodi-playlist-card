@@ -64,6 +64,7 @@ export class KodiPlaylistCard extends LitElement {
     private _currently_playing;
     private _currently_playing_file;
     private dropTarget;
+    private dragTarget;
 
     // TODO Add any properities that should cause your element to re-render here
     // https://lit.dev/docs/components/properties/
@@ -254,14 +255,14 @@ export class KodiPlaylistCard extends LitElement {
         const classCss = "dropzone " + this.getItemCss("playlist-song-grid playlist-grid", isLast);
         return html`<div
             class=${classCss}
-            draggable="true"
+            draggable=${isPlaying ? "false" : "true"}
             position=${position}
-            @drag="${this._drag}"
-            @dragend="${() => this._dragend(position)}"
+            @dragstart="${event => this._dragstart(event)}"
+            @dragend="${() => this._dragend()}"
             @dragenter="${event => this._dragenter(event)}"
-            @dragleave="${this._dragleave}"
+            @dragleave="${event => this._dragleave(event)}"
             @dragover="${event => this._dragover(event)}"
-            @drop="${event => this._drop(event)}">
+            @drop="${event => this._drop(event, PLAYER_TYPE.audio.kodi_player_id)}">
             ${this._prepareCover(
                 song["thumbnail"],
                 "playlist-song-cover",
@@ -286,37 +287,50 @@ export class KodiPlaylistCard extends LitElement {
         </div>`;
     }
 
-    private _drag() {
-        console.log("Drag in");
+    private _dragstart(event) {
+        this.dragTarget = event.target;
     }
 
-    private _dragend(position) {
-        console.log("Drag end : " + position);
+    private _dragend() {
+        // console.log("Drag end : " + position);
     }
 
     private _dragenter(event) {
-        // event.preventDefault();
-        this.dropTarget = event.target;
-        let isDropZone = this.dropTarget.classList.contains("dropzone");
-        if (!isDropZone) {
-            this.dropTarget = event.target.parentNode;
-            isDropZone = this.dropTarget.classList.contains("dropzone");
+        event.preventDefault();
+        const t = this._getdropzone(event);
+
+        if (this.dropTarget != undefined && this.dropTarget != t) {
+            this.dropTarget.classList.remove("dragover");
         }
-        if (isDropZone) {
+        if (t != undefined) {
+            this.dropTarget = t;
             this.dropTarget.classList.add("dragover");
         }
     }
 
-    private _dragleave() {
-        this.dropTarget.classList.remove("dragover");
+    private _getdropzone(event) {
+        const dropzone = event.target.closest(".dropzone");
+        return dropzone;
+    }
+
+    private _dragleave(event) {
+        event.preventDefault();
     }
     private _dragover(event) {
         event.preventDefault();
     }
 
-    private _drop(event) {
-        console.log("Drop ");
-        console.log(event);
+    private _drop(event, player) {
+        event.preventDefault();
+        const t = this._getdropzone(event);
+        t.classList.remove("dragover");
+        const destination = this.dropTarget.getAttribute("position");
+        const origin = this.dragTarget.getAttribute("position");
+        this.dropTarget = undefined;
+        this.dragTarget = undefined;
+
+        console.log("from " + origin + " to " + destination);
+        this._moveTo(parseInt(origin), parseInt(destination), player);
     }
 
     private _formatMovie(item, position, isLast) {
@@ -797,6 +811,19 @@ export class KodiPlaylistCard extends LitElement {
                 playerid: player,
                 position: posn,
                 to: posn,
+            },
+        });
+    }
+
+    private _moveTo(from, to, player) {
+        // console.info(posn + " " + player + " / " + this._service_domain + " * " + this.config.entity);
+        this.hass.callService(this._service_domain, "call_method", {
+            entity_id: this.config.entity,
+            method: "moveto",
+            item: {
+                playlistid: player,
+                position_from: from,
+                position_to: to,
             },
         });
     }
