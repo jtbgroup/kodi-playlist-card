@@ -275,7 +275,9 @@ export class KodiPlaylistCard extends LitElement {
             )}
             <div class="playlist-song-title playlist-title">${song["artist"]} - ${song["title"]}</div>
             <div class="playlist-song-genre playlist-genre">${song["genre"] ? song["genre"] : "undefined"}</div>
-            <div class="playlist-song-album playlist-album">${song["album"]} ${song["year"] ? song["year"] : ""}</div>
+            <div class="playlist-song-album playlist-album">
+                ${song["album"]} ${song["year"] ? "(" + song["year"] + ")" : ""}
+            </div>
             <div class="playlist-song-duration playlist-duration">${this._formatDuration(song["duration"])}</div>
             ${this._createControl(
                 isPlaying,
@@ -796,7 +798,9 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             .dropzone.dragover {
-                background-color: purple;
+                background-color: var(--primary-color, #03a9f4);
+                /* color: var(--primary-text-color, #212121); */
+                /* opacity: 0.8; */
             }
         `;
     }
