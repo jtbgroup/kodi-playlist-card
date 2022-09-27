@@ -1,4 +1,4 @@
-export const CARD_VERSION = "4.3.0";
+export const CARD_VERSION = "4.4.0";
 
 export const PLAYER_TYPE = {
     audio: { kodi_player_id: 0, label: "Audio", icon: "mdi:music" },

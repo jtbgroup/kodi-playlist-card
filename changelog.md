@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.0
+
+- added the possibility to drag and drop a song in the playlist
+
 ## 4.3.0
 
 - Uses the file attribute in the meta data when no ID is present. 
