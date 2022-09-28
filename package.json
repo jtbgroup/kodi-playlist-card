@@ -21,6 +21,7 @@
         "home-assistant-js-websocket": "^5.11.1",
         "lit": "^2.0.0",
         "pointer-tracker": "^2.4.0",
+        "sortablejs": "^1.15.0",
         "transformation-matrix": "^2.8.0"
     },
     "devDependencies": {

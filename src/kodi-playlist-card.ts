@@ -3,6 +3,11 @@ import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult }
 import { customElement, property, state } from "lit/decorators";
 import { HomeAssistant, LovelaceCardEditor, getLovelace, hasConfigOrEntityChanged } from "custom-card-helpers";
 import { localize } from "./localize/localize";
+import { Sortable } from "sortablejs";
+import { loadSortable, SortableInstance } from "./sortable.ondemand";
+import type { SortableEvent } from "sortablejs";
+// import { sortableStyles } from "../../../resources/ha-sortable-style";
+// import { loadSortable, SortableInstance } from "../../../resources/sortable.ondemand";
 
 import "./editor";
 import type { KodiPlaylistCardConfig } from "./types";
@@ -63,8 +68,7 @@ export class KodiPlaylistCard extends LitElement {
     private _service_domain;
     private _currently_playing;
     private _currently_playing_file;
-    private dropTarget;
-    private dragTarget;
+    private sortable;
 
     // TODO Add any properities that should cause your element to re-render here
     // https://lit.dev/docs/components/properties/
@@ -110,6 +114,7 @@ export class KodiPlaylistCard extends LitElement {
     // https://lit.dev/docs/components/rendering/
     protected render(): TemplateResult | void {
         let errorMessage;
+        console.log(">>>>>>>>>>>>  render");
         const entity = this.config.entity;
         if (!entity) {
             errorMessage = "No Entity defined";
@@ -182,10 +187,43 @@ export class KodiPlaylistCard extends LitElement {
         }
 
         return html`
-            <div class=${css}>
+            <div class=${css} id="playlist">
                 ${this._json_data.map(item => this._formatItem(item, position++, resultCount - position == 0))}
             </div>
         `;
+    }
+
+    protected updated(): void {
+        if (this.sortable) {
+            const order = this.sortable.toArray();
+            this.sortable.sort(
+                order.sort(function (a, b) {
+                    return parseInt(a) - parseInt(b);
+                }),
+                false,
+            );
+        }
+    }
+
+    protected firstUpdated(): void {
+        this._createSortable();
+    }
+
+    private async _createSortable() {
+        const Sortable = await loadSortable();
+        this.sortable = new Sortable(this.shadowRoot!.querySelector("#playlist")!, {
+            filter: ".playing",
+            animation: 150,
+            dataIdAttr: "data-id",
+            onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
+        });
+    }
+
+    private onDragEnd(event) {
+        console.log(event.oldIndex);
+        console.log(event.newIndex);
+        const playlistType = this._json_meta[0].playlist_type;
+        this._moveTo(event.oldIndex, event.newIndex, PLAYER_TYPE[playlistType].kodi_player_id);
     }
 
     private _formatItem(item, position, isLast) {
@@ -223,10 +261,12 @@ export class KodiPlaylistCard extends LitElement {
 
     private _formatUnknown(item, position, isLast) {
         const isPlaying = this.checkIsPlaying(item);
+        let classCss = this.getItemCss("playlist-unknown-grid playlist-grid", isLast);
+        if (isPlaying) {
+            classCss += " playing";
+        }
 
-        const classCss = this.getItemCss("playlist-unknown-grid playlist-grid", isLast);
-
-        return html`<div class=${classCss}>
+        return html`<div class=${classCss} data-id=${position}>
             ${this._prepareCover(
                 item["thumbnail"],
                 "playlist-unknown-cover",
@@ -251,18 +291,12 @@ export class KodiPlaylistCard extends LitElement {
 
     private _formatSong(song, position, isLast) {
         const isPlaying = this.checkIsPlaying(song);
+        let classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
+        if (isPlaying) {
+            classCss += " playing";
+        }
 
-        const classCss = "dropzone " + this.getItemCss("playlist-song-grid playlist-grid", isLast);
-        return html`<div
-            class=${classCss}
-            draggable=${isPlaying ? "false" : "true"}
-            position=${position}
-            @dragstart="${event => this._dragstart(event)}"
-            @dragend="${() => this._dragend()}"
-            @dragenter="${event => this._dragenter(event)}"
-            @dragleave="${event => this._dragleave(event)}"
-            @dragover="${event => this._dragover(event)}"
-            @drop="${event => this._drop(event, PLAYER_TYPE.audio.kodi_player_id)}">
+        return html`<div class=${classCss} data-id=${position}>
             ${this._prepareCover(
                 song["thumbnail"],
                 "playlist-song-cover",
@@ -289,59 +323,16 @@ export class KodiPlaylistCard extends LitElement {
         </div>`;
     }
 
-    private _dragstart(event) {
-        this.dragTarget = event.target;
-    }
-
-    private _dragend() {
-        // console.log("Drag end : " + position);
-    }
-
-    private _dragenter(event) {
-        event.preventDefault();
-        const t = this._getdropzone(event);
-
-        if (this.dropTarget != undefined && this.dropTarget != t) {
-            this.dropTarget.classList.remove("dragover");
-        }
-        if (t != undefined) {
-            this.dropTarget = t;
-            this.dropTarget.classList.add("dragover");
-        }
-    }
-
-    private _getdropzone(event) {
-        const dropzone = event.target.closest(".dropzone");
-        return dropzone;
-    }
-
-    private _dragleave(event) {
-        event.preventDefault();
-    }
-    private _dragover(event) {
-        event.preventDefault();
-    }
-
-    private _drop(event, player) {
-        event.preventDefault();
-        const t = this._getdropzone(event);
-        t.classList.remove("dragover");
-        const destination = this.dropTarget.getAttribute("position");
-        const origin = this.dragTarget.getAttribute("position");
-        this.dropTarget = undefined;
-        this.dragTarget = undefined;
-
-        console.log("from " + origin + " to " + destination);
-        this._moveTo(parseInt(origin), parseInt(destination), player);
-    }
-
     private _formatMovie(item, position, isLast) {
         const isPlaying = this.checkIsPlaying(item);
-        const classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
+        let classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
+        if (isPlaying) {
+            classCss += " playing";
+        }
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss}>
+        return html`<div class=${classCss} data-id=${position}>
             ${this._prepareCover(
                 cover,
                 "playlist-movie-cover",
@@ -367,11 +358,14 @@ export class KodiPlaylistCard extends LitElement {
 
     private _formatMusicVideo(item, position, isLast) {
         const isPlaying = this.checkIsPlaying(item);
-        const classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
+        let classCss = this.getItemCss("playlist-movie-grid playlist-grid", isLast);
+        if (isPlaying) {
+            classCss += " playing";
+        }
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss}>
+        return html`<div class=${classCss} data-id=${position}>
             ${this._prepareCover(
                 cover,
                 "playlist-movie-cover",
@@ -397,11 +391,14 @@ export class KodiPlaylistCard extends LitElement {
 
     private _formatEpisode(item, position, isLast) {
         const isPlaying = this.checkIsPlaying(item);
-        const classCss = this.getItemCss("playlist-episode-grid playlist-grid", isLast);
+        let classCss = this.getItemCss("playlist-episode-grid playlist-grid", isLast);
+        if (isPlaying) {
+            classCss += " playing";
+        }
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss}>
+        return html`<div class=${classCss} data-id=${position}>
             ${this._prepareCover(
                 cover,
                 "playlist-episode-cover",
@@ -543,10 +540,10 @@ export class KodiPlaylistCard extends LitElement {
                 margin-bottom: 20px;
                 margin-left: 10px;
                 margin-right: 10px;
-                display: grid;
+                /* display: grid;
                 grid-template-columns: 1fr;
                 grid-auto-rows: auto;
-                grid-gap: 15px;
+                grid-gap: 15px; */
             }
 
             .playlist-items-container-scrollable {
@@ -795,12 +792,6 @@ export class KodiPlaylistCard extends LitElement {
                 width: var(--song-thumbnail-width);
                 height: var(--song-thumbnail-width);
                 --mdc-icon-size: calc(var(--song-thumbnail-width) - 30px);
-            }
-
-            .dropzone.dragover {
-                background-color: var(--primary-color, #03a9f4);
-                /* color: var(--primary-text-color, #212121); */
-                /* opacity: 0.8; */
             }
         `;
     }
