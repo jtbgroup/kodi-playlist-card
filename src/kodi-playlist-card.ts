@@ -3,11 +3,9 @@ import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult }
 import { customElement, property, state } from "lit/decorators";
 import { HomeAssistant, LovelaceCardEditor, getLovelace, hasConfigOrEntityChanged } from "custom-card-helpers";
 import { localize } from "./localize/localize";
-import { Sortable } from "sortablejs";
-import { loadSortable, SortableInstance } from "./sortable.ondemand";
+import Sortable from "sortablejs";
+// import { loadSortable } from "./sortable.ondemand";
 import type { SortableEvent } from "sortablejs";
-// import { sortableStyles } from "../../../resources/ha-sortable-style";
-// import { loadSortable, SortableInstance } from "../../../resources/sortable.ondemand";
 
 import "./editor";
 import type { KodiPlaylistCardConfig } from "./types";
@@ -114,7 +112,6 @@ export class KodiPlaylistCard extends LitElement {
     // https://lit.dev/docs/components/rendering/
     protected render(): TemplateResult | void {
         let errorMessage;
-        console.log(">>>>>>>>>>>>  render");
         const entity = this.config.entity;
         if (!entity) {
             errorMessage = "No Entity defined";
@@ -194,6 +191,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected updated(): void {
+        this._createSortable();
         if (this.sortable) {
             const order = this.sortable.toArray();
             this.sortable.sort(
@@ -210,18 +208,19 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private async _createSortable() {
-        const Sortable = await loadSortable();
-        this.sortable = new Sortable(this.shadowRoot!.querySelector("#playlist")!, {
-            filter: ".playing",
-            animation: 150,
-            dataIdAttr: "data-id",
-            onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
-        });
+        // const Sortable = await loadSortable();
+        const playlist = this.shadowRoot!.querySelector("#playlist")!;
+        if (playlist) {
+            this.sortable = Sortable.create(playlist, {
+                filter: ".playing",
+                animation: 150,
+                dataIdAttr: "data-id",
+                onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
+            });
+        }
     }
 
     private onDragEnd(event) {
-        console.log(event.oldIndex);
-        console.log(event.newIndex);
         const playlistType = this._json_meta[0].playlist_type;
         this._moveTo(event.oldIndex, event.newIndex, PLAYER_TYPE[playlistType].kodi_player_id);
     }
@@ -667,7 +666,7 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             /*
-                    //// MOVIES
+             //// MOVIES
                    */
 
             .playlist-movie-grid {
