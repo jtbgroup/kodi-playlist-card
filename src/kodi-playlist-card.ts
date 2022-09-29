@@ -215,7 +215,9 @@ export class KodiPlaylistCard extends LitElement {
                 filter: ".playing",
                 animation: 150,
                 dataIdAttr: "data-id",
-                handle: ".my-handle",
+                // handle: ".my-handle",
+                // forceFallback: true,
+                fallbackClass: "sortable-fallback",
                 onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
             });
         }
@@ -297,7 +299,7 @@ export class KodiPlaylistCard extends LitElement {
         }
 
         return html`<div class=${classCss} data-id=${position}>
-            <span class="my-handle playlist-song-handle">:::</span>
+            <!-- <span class="my-handle playlist-song-handle">:::</span> -->
             ${this._prepareCover(
                 song["thumbnail"],
                 "playlist-song-cover",
@@ -622,44 +624,39 @@ export class KodiPlaylistCard extends LitElement {
           */
 
             .playlist-song-grid {
-                grid-template-columns: auto auto 1fr auto auto;
+                grid-template-columns: auto 1fr auto auto;
                 grid-auto-rows: auto;
                 margin-top: 15px;
             }
 
-            .playlist-song-handle {
-                grid-column: 1;
-                grid-row: 2 / 5;
-            }
-
             .playlist-song-title {
-                grid-column: 3 / 5;
+                grid-column: 2 / 4;
                 grid-row: 1;
             }
 
             .playlist-song-genre {
-                grid-column: 3 / 5;
+                grid-column: 2 / 4;
                 grid-row: 2;
             }
 
             .playlist-song-album {
-                grid-column: 3 / 4;
+                grid-column: 2 / 3;
                 grid-row: 3;
             }
             .playlist-song-duration {
-                grid-column: 4 / 6;
+                grid-column: 3 / 5;
                 grid-row: 3;
                 text-align: right;
             }
 
             .playlist-song-remove,
             .playlist-song-playing {
-                grid-column: 5;
+                grid-column: 4;
                 grid-row: 1 / 3;
             }
 
             .playlist-song-cover {
-                grid-column: 2;
+                grid-column: 1;
                 grid-row: 1 / 5;
             }
 
@@ -673,9 +670,12 @@ export class KodiPlaylistCard extends LitElement {
                 --mdc-icon-size: calc(var(--song-thumbnail-width) - 30px);
             }
 
-            .my-handle {
+            /* .my-handle {
                 cursor: move;
                 cursor: -webkit-grabbing;
+            } */
+            .sortable-fallback {
+                border-radius: 50%;
             }
 
             /*
