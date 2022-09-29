@@ -810,7 +810,6 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _moveTo(from, to, player) {
-        // console.info(posn + " " + player + " / " + this._service_domain + " * " + this.config.entity);
         this.hass.callService(this._service_domain, "call_method", {
             entity_id: this.config.entity,
             method: "moveto",
