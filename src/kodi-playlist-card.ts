@@ -209,7 +209,7 @@ export class KodiPlaylistCard extends LitElement {
 
     private async _createSortable() {
         // const Sortable = await loadSortable();
-        const playlist = this.shadowRoot!.querySelector("#playlist")!;
+        const playlist = this.shadowRoot?.querySelector("#playlist");
         if (playlist) {
             this.sortable = Sortable.create(playlist, {
                 filter: ".playing",
