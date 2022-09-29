@@ -297,7 +297,7 @@ export class KodiPlaylistCard extends LitElement {
         }
 
         return html`<div class=${classCss} data-id=${position}>
-            <span class="my-handle playlist-song-handle">::</span>
+            <span class="my-handle playlist-song-handle">:::</span>
             ${this._prepareCover(
                 song["thumbnail"],
                 "playlist-song-cover",
