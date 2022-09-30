@@ -191,6 +191,8 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected updated(): void {
+        this.sortable?.destroy();
+        this.sortable = undefined;
         this._createSortable();
         if (this.sortable) {
             const order = this.sortable.toArray();
@@ -204,23 +206,23 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected firstUpdated(): void {
-        this._createSortable();
+        // this._createSortable();
     }
 
     private async _createSortable() {
         // const Sortable = await loadSortable();
-        const playlist = this.shadowRoot?.querySelector("#playlist");
-        if (playlist) {
-            this.sortable = Sortable.create(playlist, {
-                filter: ".playing",
-                animation: 150,
-                dataIdAttr: "data-id",
-                // handle: ".my-handle",
-                // forceFallback: true,
-                fallbackClass: "sortable-fallback",
-                onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
-            });
-        }
+        const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
+        if (!playlist) return;
+
+        this.sortable = Sortable.create(playlist, {
+            filter: ".playing",
+            animation: 150,
+            dataIdAttr: "data-id",
+            fallbackClass: "sortable-fallback",
+            // handle: ".my-handle",
+            // forceFallback: true,
+            onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
+        });
     }
 
     private onDragEnd(event) {
