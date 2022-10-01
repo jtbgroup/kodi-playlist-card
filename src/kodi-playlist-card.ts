@@ -162,6 +162,7 @@ export class KodiPlaylistCard extends LitElement {
             return html`<div>No Playlist found</div>`;
         } else {
             return html`
+                <div>${CARD_VERSION}</div>
                 <div>${this._buildPlaylistType(playlistType)}</div>
                 <div>${this._buildResultContainer()}</div>
             `;
@@ -218,9 +219,6 @@ export class KodiPlaylistCard extends LitElement {
             filter: ".playing",
             animation: 150,
             dataIdAttr: "data-id",
-            fallbackClass: "sortable-fallback",
-            // handle: ".my-handle",
-            // forceFallback: true,
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
         });
     }
@@ -626,10 +624,15 @@ export class KodiPlaylistCard extends LitElement {
           */
 
             .playlist-song-grid {
-                grid-template-columns: auto 1fr auto auto;
+                grid-template-columns: auto auto 1fr auto auto;
                 grid-auto-rows: auto;
                 margin-top: 15px;
             }
+
+            /* .playlist-song-handle {
+                grid-column: 1;
+                grid-row: 1 / 5;
+            } */
 
             .playlist-song-title {
                 grid-column: 2 / 4;
@@ -676,9 +679,11 @@ export class KodiPlaylistCard extends LitElement {
                 cursor: move;
                 cursor: -webkit-grabbing;
             } */
-            .sortable-fallback {
+
+            /* .sortable-fallback {
                 border-radius: 50%;
-            }
+                background: red;
+            } */
 
             /*
              //// MOVIES
