@@ -220,7 +220,8 @@ export class KodiPlaylistCard extends LitElement {
             animation: 150,
             dataIdAttr: "data-id",
             delayOnTouchOnly: true,
-            delay: 1000,
+            delay: 500,
+            fallbackClass: "sortable-fallback",
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
         });
     }
@@ -682,10 +683,11 @@ export class KodiPlaylistCard extends LitElement {
                 cursor: -webkit-grabbing;
             } */
 
-            /* .sortable-fallback {
+            .sortable-fallback {
                 border-radius: 50%;
                 background: red;
-            } */
+                position: absolute;
+            }
 
             /*
              //// MOVIES
