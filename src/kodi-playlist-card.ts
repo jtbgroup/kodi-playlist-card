@@ -220,9 +220,11 @@ export class KodiPlaylistCard extends LitElement {
             animation: 150,
             dataIdAttr: "data-id",
             delayOnTouchOnly: true,
-            delay: 500,
+            delay: 300,
             forceFallback: false,
-            // dragClass: "sortable-fallback",
+            // fallbackOnBody: true,
+            fallbackClass: "sortable-fallback",
+            ghostClass: "sortable-ghost",
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
         });
     }
@@ -523,6 +525,20 @@ export class KodiPlaylistCard extends LitElement {
                 --mdc-select-fill-color: rgba(0, 0, 0, 0);
             }
 
+            /* SORTABLE PLAYLIST */
+            .sortable-fallback {
+                visibility: hidden;
+            }
+
+            .sortable-ghost {
+                opacity: 0.8;
+                border-radius: 5px;
+                background: var(--primary-color, #03a9f4);
+            }
+            /*
+            PLAYLIST
+            */
+
             .playlist-line-separator {
                 border-bottom: 1px solid var(--outline-color);
             }
@@ -682,12 +698,6 @@ export class KodiPlaylistCard extends LitElement {
             /* .my-handle {
                 cursor: move;
                 cursor: -webkit-grabbing;
-            } */
-
-            /* .sortable-fallback {
-                border-radius: 50%;
-                background: red;
-                position: relative;
             } */
 
             /*
