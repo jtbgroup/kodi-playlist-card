@@ -221,7 +221,8 @@ export class KodiPlaylistCard extends LitElement {
             dataIdAttr: "data-id",
             delayOnTouchOnly: true,
             delay: 500,
-            fallbackClass: "sortable-fallback",
+            forceFallback: false,
+            dragClass: "sortable-fallback",
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
         });
     }
@@ -686,7 +687,7 @@ export class KodiPlaylistCard extends LitElement {
             .sortable-fallback {
                 border-radius: 50%;
                 background: red;
-                position: absolute;
+                position: relative;
             }
 
             /*
