@@ -219,6 +219,8 @@ export class KodiPlaylistCard extends LitElement {
             filter: ".playing",
             animation: 150,
             dataIdAttr: "data-id",
+            delayOnTouchOnly: true,
+            delay: 1000,
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),
         });
     }
