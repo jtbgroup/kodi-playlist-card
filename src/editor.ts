@@ -65,6 +65,10 @@ export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEd
         return this._config?.items_container_height || "";
     }
 
+    get _show_version(): boolean {
+        return this._config?.show_version || false;
+    }
+
     protected render(): TemplateResult | void {
         if (!this.hass || !this._helpers) {
             return html``;
@@ -165,6 +169,15 @@ export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEd
                         .value=${this._items_container_height}
                         .configValue=${"items_container_height"}
                         @input=${this._valueChanged}></ha-textfield>
+                </div>
+
+                <div class="config">
+                    <ha-formfield class="switch-wrapper" label="Show version on the card">
+                        <ha-switch
+                            .checked=${this._show_version !== false}
+                            .configValue=${"show_version"}
+                            @change=${this._valueChanged}></ha-switch>
+                    </ha-formfield>
                 </div>
             </div>
         `;

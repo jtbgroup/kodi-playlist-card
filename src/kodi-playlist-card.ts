@@ -22,6 +22,7 @@ import {
     PLAYER_TYPE,
     DEFAULT_ITEMS_CONTAINER_SCROLLABLE,
     DEFAULT_ITEMS_CONTAINER_HEIGHT,
+    DEFAULT_SHOW_VERSION,
 } from "./const";
 
 /* eslint no-console: 0 */
@@ -56,6 +57,7 @@ export class KodiPlaylistCard extends LitElement {
             outline_color: DEFAULT_OUTLINE_COLOR,
             items_container_scrollable: DEFAULT_ITEMS_CONTAINER_SCROLLABLE,
             items_container_height: DEFAULT_ITEMS_CONTAINER_HEIGHT,
+            show_version: DEFAULT_SHOW_VERSION,
         };
     }
 
@@ -162,7 +164,7 @@ export class KodiPlaylistCard extends LitElement {
             return html`<div>No Playlist found</div>`;
         } else {
             return html`
-                <div>${CARD_VERSION}</div>
+                ${this.config.show_version ? html`<div>${CARD_VERSION}</div>` : ""}
                 <div>${this._buildPlaylistType(playlistType)}</div>
                 <div>${this._buildResultContainer()}</div>
             `;
@@ -206,12 +208,7 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    protected firstUpdated(): void {
-        // this._createSortable();
-    }
-
     private async _createSortable() {
-        // const Sortable = await loadSortable();
         const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
         if (!playlist) return;
 
@@ -222,7 +219,6 @@ export class KodiPlaylistCard extends LitElement {
             delayOnTouchOnly: true,
             delay: 300,
             forceFallback: false,
-            // fallbackOnBody: true,
             fallbackClass: "sortable-fallback",
             ghostClass: "sortable-ghost",
             onEnd: (evt: SortableEvent) => this.onDragEnd(evt),

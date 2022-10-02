@@ -2,11 +2,11 @@
 
 ## 4.4.0
 
-- added the possibility to drag and drop a song in the playlist
+- Added new feature. The items in the playlist can be dragged and dropped to reorder the playlist. The trigger to drag an element is sent after 400ms. This is needed for touchscreen.
 
 ## 4.3.0
 
-- Uses the file attribute in the meta data when no ID is present. 
+- Uses the file attribute in the meta data when no ID is present.
 
 ## 4.2.0
 
