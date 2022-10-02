@@ -1,6 +1,6 @@
 {
     "name": "kodi-playlist-card",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "description": "Kodi Playlist Card",
     "keywords": [
         "home-assistant",
@@ -43,6 +43,7 @@
         "rollup-plugin-serve": "^1.1.0",
         "rollup-plugin-terser": "^7.0.2",
         "rollup-plugin-typescript2": "^0.30.0",
+        "sortablejs": "^1.15.0",
         "typescript": "^4.4.3"
     },
     "scripts": {
@@ -52,4 +53,3 @@
         "rollup": "rollup -c"
     }
 }
-
