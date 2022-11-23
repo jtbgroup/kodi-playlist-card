@@ -4,9 +4,9 @@ resources:
 views:
   - cards:
       - type: custom:kodi-playlist{
-    "name": "kodi-search-card",
-    "version": "4.0.0",
-    "description": "Kodi Search Card",
+    "name": "kodi-playlist-card",
+    "version": "4.4.0",
+    "description": "Kodi Playlist Card",
     "keywords": [
         "home-assistant",
         "homeassistant",
@@ -15,8 +15,8 @@ views:
         "lovelace",
         "custom-cards"
     ],
-    "module": "kodi-search-card.js",
-    "repository": "git@github.com:jtbgroup/kodi-search-card.git",
+    "module": "kodi-playlist-card.js",
+    "repository": "git@github.com:jtbgroup/kodi-playlist-card.git",
     "author": "Gautier Vanderslyen <gautier.vanderslyen@gmail.com>",
     "license": "MIT",
     "dependencies": {

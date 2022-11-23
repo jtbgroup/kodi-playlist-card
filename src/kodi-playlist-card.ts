@@ -69,6 +69,7 @@ export class KodiPlaylistCard extends LitElement {
     private _currently_playing;
     private _currently_playing_file;
     private sortable;
+    private _playlistElementId;
 
     // TODO Add any properities that should cause your element to re-render here
     // https://lit.dev/docs/components/properties/
@@ -186,8 +187,10 @@ export class KodiPlaylistCard extends LitElement {
             css += " playlist-items-container-scrollable";
         }
 
+        const random = Math.floor(Math.random() * 1000 + 1);
+        this._playlistElementId = "playlist_" + random;
         return html`
-            <div class=${css} id="playlist">
+            <div class=${css} id=${this._playlistElementId}>
                 ${this._json_data.map(item => this._formatItem(item, position++, resultCount - position == 0))}
             </div>
         `;
@@ -209,7 +212,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private async _createSortable() {
-        const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
+        const playlist = this.shadowRoot?.querySelector(this._playlistElementId) as HTMLElement;
         if (!playlist) return;
 
         this.sortable = Sortable.create(playlist, {
