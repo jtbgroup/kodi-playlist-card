@@ -1,6 +1,6 @@
 {
     "name": "kodi-playlist-card",
-    "version": "4.4.0",
+    "version": "4.4.1",
     "description": "Kodi Playlist Card",
     "keywords": [
         "home-assistant",
@@ -53,3 +53,4 @@
         "rollup": "rollup -c"
     }
 }
+

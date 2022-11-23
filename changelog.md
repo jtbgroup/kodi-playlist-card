@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.1
+
+- Bugfix: Added random ID to the playlist to prevent bug when deleting an entry.
+
 ## 4.4.0
 
 - Added new feature. The items in the playlist can be dragged and dropped to reorder the playlist. The trigger to drag an element is sent after 400ms. This is needed for touchscreen.
