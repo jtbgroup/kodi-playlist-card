@@ -210,6 +210,24 @@ export class KodiPlaylistCard extends LitElement {
                 false,
             );
         }
+
+        // This part of the update is necessary to tackle the remove method. For some reason, the refresh is not done well and we need to manually remove it.
+        const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
+        console.log(playlist.children.length);
+        let idx = 0;
+        for (const child of playlist.children) {
+            const dataEntry = this._json_data[idx];
+            const childrenKodiId = child.getAttribute("kodi-id");
+            if (dataEntry) {
+                if (dataEntry.id != childrenKodiId) {
+                    window.location.reload();
+                    break;
+                }
+                idx++;
+            } else {
+                playlist.removeChild(child);
+            }
+        }
     }
 
     private async _createSortable() {
@@ -305,7 +323,7 @@ export class KodiPlaylistCard extends LitElement {
             classCss += " playing";
         }
 
-        return html`<div class=${classCss} data-id=${position}>
+        return html`<div class=${classCss} data-id=${position} kodi-id=${song["id"]}>
             <!-- <span class="my-handle playlist-song-handle">:::</span> -->
             ${this._prepareCover(
                 song["thumbnail"],
@@ -866,7 +884,7 @@ export class KodiPlaylistCard extends LitElement {
                 position: posn,
             },
         });
-        window.location.reload();
+        // window.location.reload();
     }
 }
 

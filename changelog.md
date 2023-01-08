@@ -1,8 +1,12 @@
 # Changelog
 
+## 4.4.2
+
+- Bugfix: Fixed the workaround of the 4.4.1
+
 ## 4.4.1
 
-- Bugfix: Added random ID to the playlist to prevent bug when deleting an entry.
+- Bugfix: refresh page after removing a playlist entry. Not the cleanest workaround...
 
 ## 4.4.0
 
