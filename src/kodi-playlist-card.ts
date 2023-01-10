@@ -213,7 +213,6 @@ export class KodiPlaylistCard extends LitElement {
 
         // This part of the update is necessary to tackle the remove method. For some reason, the refresh is not done well and we need to manually remove it.
         const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
-        console.log(playlist.children.length);
         let idx = 0;
         for (const child of playlist.children) {
             const dataEntry = this._json_data[idx];
