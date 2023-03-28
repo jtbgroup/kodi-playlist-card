@@ -886,4 +886,3 @@ export class KodiPlaylistCard extends LitElement {
         // window.location.reload();
     }
 }
-
