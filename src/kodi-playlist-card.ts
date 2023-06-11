@@ -211,20 +211,23 @@ export class KodiPlaylistCard extends LitElement {
             );
         }
 
+
         // This part of the update is necessary to tackle the remove method. For some reason, the refresh is not done well and we need to manually remove it.
         const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
         let idx = 0;
-        for (const child of playlist.children) {
-            const dataEntry = this._json_data[idx];
-            const childrenKodiId = child.getAttribute("kodi-id");
-            if (dataEntry) {
-                if (dataEntry.id != childrenKodiId) {
-                    window.location.reload();
-                    break;
+        if (playlist != null) {
+            for (const child of playlist.children) {
+                const dataEntry = this._json_data[idx];
+                const childrenKodiId = child.getAttribute("kodi-id");
+                if (dataEntry) {
+                    if (dataEntry.id != childrenKodiId) {
+                        window.location.reload();
+                        break;
+                    }
+                    idx++;
+                } else {
+                    playlist.removeChild(child);
                 }
-                idx++;
-            } else {
-                playlist.removeChild(child);
             }
         }
     }
@@ -315,17 +318,17 @@ export class KodiPlaylistCard extends LitElement {
         </div>`;
     }
 
-    private _formatSong(song, position, isLast) {
-        const isPlaying = this.checkIsPlaying(song);
+    private _formatSong(item, position, isLast) {
+        const isPlaying = this.checkIsPlaying(item);
         let classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
         if (isPlaying) {
             classCss += " playing";
         }
 
-        return html`<div class=${classCss} data-id=${position} kodi-id=${song["id"]}>
+        return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
             <!-- <span class="my-handle playlist-song-handle">:::</span> -->
             ${this._prepareCover(
-                song["thumbnail"],
+                item["thumbnail"],
                 "playlist-song-cover",
                 "playlist-song-cover-image",
                 "playlist-song-cover-image-default",
@@ -334,12 +337,12 @@ export class KodiPlaylistCard extends LitElement {
                 isPlaying,
                 () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
             )}
-            <div class="playlist-song-title playlist-title">${song["artist"]} - ${song["title"]}</div>
-            <div class="playlist-song-genre playlist-genre">${song["genre"] ? song["genre"] : "undefined"}</div>
+            <div class="playlist-song-title playlist-title">${item["artist"]} - ${item["title"]}</div>
+            <div class="playlist-song-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
             <div class="playlist-song-album playlist-album">
-                ${song["album"]} ${song["year"] ? "(" + song["year"] + ")" : ""}
+                ${item["album"]} ${item["year"] ? "(" + item["year"] + ")" : ""}
             </div>
-            <div class="playlist-song-duration playlist-duration">${this._formatDuration(song["duration"])}</div>
+            <div class="playlist-song-duration playlist-duration">${this._formatDuration(item["duration"])}</div>
             ${this._createControl(
                 isPlaying,
                 position,
@@ -359,7 +362,7 @@ export class KodiPlaylistCard extends LitElement {
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss} data-id=${position}>
+        return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
             ${this._prepareCover(
                 cover,
                 "playlist-movie-cover",
@@ -392,7 +395,7 @@ export class KodiPlaylistCard extends LitElement {
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss} data-id=${position}>
+        return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
             ${this._prepareCover(
                 cover,
                 "playlist-movie-cover",
@@ -425,7 +428,7 @@ export class KodiPlaylistCard extends LitElement {
 
         const cover = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
 
-        return html`<div class=${classCss} data-id=${position}>
+        return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
             ${this._prepareCover(
                 cover,
                 "playlist-episode-cover",

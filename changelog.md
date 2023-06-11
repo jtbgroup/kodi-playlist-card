@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.3
+
+- Bugfix: Added the `kodi-id` attribute to other items than songs to avoid the playlist to flash
+
 ## 4.4.2
 
 - Bugfix: Fixed the workaround of the 4.4.1
