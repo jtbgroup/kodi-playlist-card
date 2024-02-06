@@ -582,9 +582,9 @@ export class KodiPlaylistCard extends LitElement {
         // isPlaying,
         // action_click,
     ) {
-        let icon_default = "mdi:music";
+        const icon_default = "mdi:music";
 
-        let imgapiurl = "/api/media_player_proxy/"+this._kodi_entity_id+"/browse_media/album/"+albumid
+        const imgapiurl = "/api/media_player_proxy/"+this._kodi_entity_id+"/browse_media/album/"+albumid
         const cover = imgapiurl ? this._getThumbnailURLorBase64(imgapiurl).then((value) => `url(${value})`) : "none";
 
         const cssClass =
