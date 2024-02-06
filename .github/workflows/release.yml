@@ -24,7 +24,7 @@ jobs:
       # Build
       - name: Build the file
         run: |
-          cd /home/runner/work/kodi-musicbrainz-card/kodi-musicbrainz-card
+          cd /home/runner/work/kodi-playlist-card/kodi-playlist-card
           npm install
           npm run build
 
