@@ -6,6 +6,7 @@ import { localize } from "./localize/localize";
 import Sortable from "sortablejs";
 // import { loadSortable } from "./sortable.ondemand";
 import type { SortableEvent } from "sortablejs";
+import { until } from "lit/directives/until";
 
 import "./editor";
 import type { KodiPlaylistCardConfig } from "./types";
@@ -65,6 +66,7 @@ export class KodiPlaylistCard extends LitElement {
     private _entityState;
     private _json_meta;
     private _json_data;
+    private _kodi_entity_id;
     private _service_domain;
     private _currently_playing;
     private _currently_playing_file;
@@ -139,6 +141,7 @@ export class KodiPlaylistCard extends LitElement {
                         return;
                     }
                     this._service_domain = this._json_meta[0]["service_domain"];
+                    this._kodi_entity_id = this._json_meta[0]["kodi_entity_id"];
                     this._currently_playing = this._json_meta[0]["currently_playing"];
                     this._currently_playing_file = this._json_meta[0]["currently_playing_file"];
                     const data = this._entityState.attributes.data;
@@ -160,6 +163,7 @@ export class KodiPlaylistCard extends LitElement {
 
     private _buildCardContainer() {
         const playlistType = this._json_meta[0].playlist_type;
+
         if (!playlistType) {
             return html`<div>No Playlist found</div>`;
         } else {
@@ -318,6 +322,32 @@ export class KodiPlaylistCard extends LitElement {
         </div>`;
     }
 
+    private _getThumbnailURLorBase64(thumbnailUrl){
+        if (thumbnailUrl.startsWith("/")) {
+            // Thumbnails served by local API require authentication
+            return new Promise((resolve, reject) => {
+              this.hass
+                .fetchWithAuth(thumbnailUrl!)
+                // Since we are fetching with an authorization header, we cannot just put the
+                // URL directly into the document; we need to embed the image. We could do this
+                // using blob URLs, but then we would need to keep track of them in order to
+                // release them properly. Instead, we embed the thumbnail using base64.
+                .then((response) => response.blob())
+                .then((blob) => {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const result = reader.result;
+                    resolve(typeof result === "string" ? result : "");
+                  };
+                  reader.onerror = (e) => reject(e);
+                  reader.readAsDataURL(blob);
+                });
+            });
+          }
+
+        return thumbnailUrl;
+    }
+
     private _formatSong(item, position, isLast) {
         const isPlaying = this.checkIsPlaying(item);
         let classCss = this.getItemCss("playlist-song-grid playlist-grid", isLast);
@@ -325,17 +355,34 @@ export class KodiPlaylistCard extends LitElement {
             classCss += " playing";
         }
 
+        // let test = this._getThumbnailURLorBase64(item["api_image"]);
+        // console.info("***************************************************");
+        // console.info(test);
+
+        // const protocol = window.location.protocol;
+        // const host = window.location.host;
+        // const beginUrl = protocol+"//"+host;
+        // console.info(beginUrl+item["api_image"]);
+
+        // const cover = beginUrl+item["api_image"];
+
+
+    //     <div style="background-size: contain;width:100px;height:100px;border-width:1px;border-style:solid;border-color:red;background-image: ${until(backgroundImage, "")}">aaaaa
+    //     skdfsdkl,fallbacksldfsldf
+    // qsldqpsld</div>
+
+
         return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
             <!-- <span class="my-handle playlist-song-handle">:::</span> -->
-            ${this._prepareCover(
-                item["thumbnail"],
-                "playlist-song-cover",
+            ${this._prepareCover2(
+                item["albumid"],
+                // "playlist-song-cover",
                 "playlist-song-cover-image",
                 "playlist-song-cover-image-default",
-                "mdi:play",
-                "mdi:music",
-                isPlaying,
-                () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
+                // "mdi:play",
+                // "mdi:music",
+                // isPlaying,
+                // () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id),
             )}
             <div class="playlist-song-title playlist-title">${item["artist"]} - ${item["title"]}</div>
             <div class="playlist-song-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
@@ -524,6 +571,85 @@ export class KodiPlaylistCard extends LitElement {
         return html`${coverDiv}`;
     }
 
+    private _prepareCover2(
+        albumid
+        ,
+        // class_cover,
+        class_cover_image,
+        class_cover_image_default,
+        // icon_overlay,
+        // icon_default,
+        // isPlaying,
+        // action_click,
+    ) {
+        let icon_default = "mdi:music";
+
+        let imgapiurl = "/api/media_player_proxy/"+this._kodi_entity_id+"/browse_media/album/"+albumid
+        const cover = imgapiurl ? this._getThumbnailURLorBase64(imgapiurl).then((value) => `url(${value})`) : "none";
+
+        const cssClass =
+            "playlist-cover-container" + (this.config.show_thumbnail_border ? " playlist-thumbnail-border" : "");
+        return html`
+        <div class="class_cover">
+            <div class=${cssClass}>
+                <!-- <ha-icon icon=${icon_default} class=${class_cover_image_default}></ha-icon> -->
+                <div class="class_cover_image ${class_cover_image}" style="background-size: contain; background-image: ${until(cover, "")}"></div>
+            </div>
+        </div>
+        `
+
+
+        // const coverDiv = document.createElement("div");
+        // // coverDiv.setAttribute("class", class_cover);
+
+        // const coverContainer = document.createElement("div");
+        // // coverContainer.setAttribute("class", cssClass);
+        // coverDiv.appendChild(coverContainer);
+
+        // const coverImgDefault = document.createElement("ha-icon");
+        // coverImgDefault.setAttribute("icon", "mdi:music");
+        // coverContainer.appendChild(coverImgDefault);
+
+
+        // const coverImg = document.createElement("div");
+        // coverContainer.appendChild(coverImg);
+        // until(cover => {
+        //     html`<span>ready</span>`
+        // }, html`<span>loading...</span>`);
+
+        // if (this.config.show_thumbnail) {
+        //     const coverImg = document.createElement("div");
+        //     coverImg.setAttribute("style", background-image: ${until(cover, ""));
+        //     coverImg.onerror = function () {
+        //         coverImg.remove();
+
+        //         const coverImgDefault = document.createElement("ha-icon");
+        //         coverImgDefault.setAttribute("class", "playlist-cover-image-default " + class_cover_image_default);
+        //         coverImgDefault.setAttribute("icon", icon_default);
+        //         coverContainer.appendChild(coverImgDefault);
+        //     };
+        //     coverImg.setAttribute("class", class_cover_image + " playlist-cover-image");
+        //     coverContainer.appendChild(coverImg);
+        // } else {
+        //     const coverImgDefault = document.createElement("ha-icon");
+        //     coverImgDefault.setAttribute("class", "playlist-cover-image-default " + class_cover_image_default);
+        //     coverImgDefault.setAttribute("icon", icon_default);
+        //     coverContainer.appendChild(coverImgDefault);
+        // }
+
+        // if (!this.config.show_thumbnail_overlay) {
+        //     coverContainer.addEventListener("click", action_click);
+        // } else if (this.config.show_thumbnail_overlay && !isPlaying) {
+        //     const overlayImg = document.createElement("ha-icon");
+        //     overlayImg.setAttribute("class", "overlay-play");
+        //     overlayImg.setAttribute("icon", icon_overlay);
+        //     overlayImg.addEventListener("click", action_click);
+        //     coverContainer.appendChild(overlayImg);
+        // }
+
+        // return html`${coverDiv}`;
+    }
+
     static get styles(): CSSResultGroup {
         return css`
             :root {
@@ -708,6 +834,7 @@ export class KodiPlaylistCard extends LitElement {
 
             .playlist-song-cover-image {
                 width: var(--song-thumbnail-width);
+                height: var(--song-thumbnail-width);
             }
 
             .playlist-song-cover-image-default {
