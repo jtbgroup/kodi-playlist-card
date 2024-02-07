@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.0
+
+- Images are now retrieved by using home assistant api, which means there is no problem anymore of cors error when mixing http and https.
+
 ## 4.4.3
 
 - Bugfix: Added the `kodi-id` attribute to other items than songs to avoid the playlist to flash
