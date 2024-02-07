@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { HomeAssistant, LovelaceCardEditor, getLovelace, hasConfigOrEntityChanged } from "custom-card-helpers";
 import { localize } from "./localize/localize";
 import Sortable from "sortablejs";
-// import { loadSortable } from "./sortable.ondemand";
 import type { SortableEvent } from "sortablejs";
 import { until } from "lit/directives/until";
 
@@ -26,7 +24,6 @@ import {
     DEFAULT_SHOW_VERSION,
 } from "./const";
 
-/* eslint no-console: 0 */
 console.info(
     `%c  KODI-PLAYLIST-CARD\n%c  ${localize("common.version")} ${CARD_VERSION}    `,
     "color: orange; font-weight: bold; background: black",
@@ -240,7 +237,6 @@ export class KodiPlaylistCard extends LitElement {
         const playlist = this.shadowRoot?.querySelector("#playlist") as HTMLElement;
         if (!playlist) return;
 
-        // this.sortable = Sortable.create(playlist, {
         this.sortable = new Sortable(this.shadowRoot!.querySelector("#playlist")!, {
             filter: ".playing",
             animation: 150,
@@ -313,6 +309,7 @@ export class KodiPlaylistCard extends LitElement {
         </div>`;
     }
 
+    // For more example on implementation, see https://github.com/home-assistant/frontend/blob/dev/src/components/media-player/ha-media-player-browse.ts#L675
     private _getThumbnailURLorBase64(thumbnailUrl){
         if (thumbnailUrl.startsWith("/")) {
             // Thumbnails served by local API require authentication
