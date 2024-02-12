@@ -444,29 +444,6 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _createAlbumCover(item,position) {
-<<<<<<< HEAD
-        const imgapiurl = "/api/media_player_proxy/"+this._kodi_entity_id+"/browse_media/album/"+item["albumid"]
-        const icon_default = "mdi:music";
-        const icon_overlay ="mdi:play";
-        const isPlaying = this.checkIsPlaying(item);
-        const class_cover_image =  "playlist-song-cover-image";
-        const class_cover_image_default =  "playlist-song-cover-image-default";
-        const class_cover = "playlist-song-cover"
-        const class_cover_container= "playlist-song-cover-container";
-        return this._createCoverElement (imgapiurl, class_cover,class_cover_container,class_cover_image,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id))
-    }
-
-    private _createMovieCover(item,position) {
-        const imgapiurl = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
-        const icon_default = "mdi:movie";
-        const icon_overlay ="mdi:play";
-        const isPlaying = this.checkIsPlaying(item);
-        const class_cover_image =  "playlist-movie-cover-image";
-        const class_cover_image_default =  "playlist-movie-cover-image-default";
-        const class_cover = "playlist-movie-cover"
-        const class_cover_container= "playlist-movie-cover-container";
-        return this._createCoverElement (imgapiurl, class_cover,class_cover_container,class_cover_image,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
-=======
         const image_url = "/api/media_player_proxy/"+this._kodi_entity_id+"/browse_media/album/"+item["albumid"]
         const class_cover = "playlist-song-cover"
         const class_cover_image_default =  "playlist-song-cover-image-default";
@@ -484,41 +461,10 @@ export class KodiPlaylistCard extends LitElement {
         const icon_overlay ="mdi:play";
         const isPlaying = this.checkIsPlaying(item);
         return this._createCoverElement (image_url, class_cover,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
->>>>>>> develop
     }
 
 
     private _createEpisodeCover(item,position) {
-<<<<<<< HEAD
-        const imgapiurl = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
-        const icon_default = "mdi:movie";
-        const icon_overlay ="mdi:play";
-        const isPlaying = this.checkIsPlaying(item);
-        const class_cover_image =  "playlist-episode-cover-image";
-        const class_cover_image_default =  "playlist-episode-cover-image-default";
-        const class_cover = "playlist-episode-cover"
-        const class_cover_container= "playlist-episode-cover-container";
-        return this._createCoverElement (imgapiurl, class_cover,class_cover_container,class_cover_image,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
-    }
-
-    private _createUnknownCover(item,position) {
-        const imgapiurl = item["thumbnail"];
-        const icon_default = "mdi:sparkles";
-        const icon_overlay ="mdi:play";
-        const isPlaying = this.checkIsPlaying(item);
-        const class_cover_image =  "playlist-unknown-cover-image";
-        const class_cover_image_default =  "playlist-unknown-cover-image-default";
-        const class_cover = "playlist-unknown-cover"
-        const class_cover_container= "playlist-unknown-cover-container";
-        return this._createCoverElement (imgapiurl, class_cover,class_cover_container,class_cover_image,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.audio.kodi_player_id))
-    }
-
-    private _createCoverElement(
-            imgapiurl,
-            class_cover,
-            class_cover_container,
-            class_cover_image,
-=======
         const image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
         const class_cover = "playlist-episode-cover"
         const class_cover_image_default =  "playlist-episode-cover-image-default";
@@ -541,7 +487,6 @@ export class KodiPlaylistCard extends LitElement {
     private _createCoverElement(
             image_url,
             class_cover,
->>>>>>> develop
             class_cover_image_default,
             icon_overlay,
             icon_default,
@@ -549,18 +494,6 @@ export class KodiPlaylistCard extends LitElement {
             action_click,
         ) {
 
-<<<<<<< HEAD
-        const class_cover_div = "playlist-cover-container " + class_cover + (this.config.show_thumbnail_border ? " playlist-thumbnail-border" : "");
-        let cover_api = false;
-        let cover = imgapiurl;
-        if (imgapiurl.startsWith("/api")){
-            console.info("sdfsdf");
-            cover =   imgapiurl ? this._getThumbnailURLorBase64(imgapiurl).then((value) => `url(${value})`) : "none";
-            cover_api = true;
-        }
-
-        const class_cover_container_div = class_cover_container+" playlist-cover-image-default"
-=======
         const class_cover_div = class_cover + " playlist-item-cover" + (this.config.show_thumbnail_border ? " cover-image-outline-border" : "");
         const class_cover_container_div = "playlist-item-cover-container";
 
@@ -573,24 +506,15 @@ export class KodiPlaylistCard extends LitElement {
 
         const class_default_image = class_cover_image_default + " playlist-item-cover-image-default";
         const class_cover_image = "playlist-item-cover-image";
->>>>>>> develop
 
         return html`
         <div class=${class_cover_div}>
             <div class=${class_cover_container_div}>
-<<<<<<< HEAD
-                <ha-icon icon=${icon_default} class=${class_cover_image_default}></ha-icon>
-                ${
-                    cover_api?
-                    html`<div class="class_cover_image ${class_cover_image}" @click="${!this.config.show_thumbnail_overlay?action_click:''}" style="background-size: contain; background-image: ${until(cover, "")}"></div>`:
-                    html`<img class="class_cover_image ${class_cover_image}" @click="${!this.config.show_thumbnail_overlay?action_click:''}" src="${cover}"></img>`
-=======
                 <ha-icon icon=${icon_default} class=${class_default_image}></ha-icon>
                 ${
                     cover_api?
                     html`<div class=${class_cover_image} @click="${!this.config.show_thumbnail_overlay?action_click:''}" style="background-size: contain; background-image: ${until(cover, "")}"></div>`:
                     html`<img class=${class_cover_image}" @click="${!this.config.show_thumbnail_overlay?action_click:''}" src="${cover}"></img>`
->>>>>>> develop
                 }
                 ${this.config.show_thumbnail_overlay && !isPlaying ? html`<ha-icon class="overlay-play" icon=${icon_overlay} @click="${action_click}"></ha-icon>`:html``}
             </div>
@@ -796,33 +720,14 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-song-cover {
                 grid-column: 1;
                 grid-row: 1 / 5;
-<<<<<<< HEAD
-                position: relative;
                 width: var(--song-thumbnail-width);
                 height: var(--song-thumbnail-width);
-            }
-
-
-            .playlist-song-cover-image {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-=======
-                width: var(--song-thumbnail-width);
-                height: var(--song-thumbnail-width);
->>>>>>> develop
             }
 
             .playlist-song-cover-image-default {
                 --mdc-icon-size: calc(var(--song-thumbnail-width) - 30px);
             }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
             /*
              //// MOVIES
                    */
@@ -856,24 +761,8 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-movie-cover {
                 grid-column: 1;
                 grid-row: 1 / 5;
-<<<<<<< HEAD
-
-                position: relative;
                 width: var(--movie-thumbnail-width);
                 height: calc(var(--movie-thumbnail-width) / var(--movie-thumbnail-ratio));
-            }
-
-            .playlist-movie-cover-image {
-                width: var(--movie-thumbnail-width);
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-=======
-                width: var(--movie-thumbnail-width);
-                height: calc(var(--movie-thumbnail-width) / var(--movie-thumbnail-ratio));
->>>>>>> develop
             }
 
             .playlist-movie-cover-image-default {
@@ -912,30 +801,12 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-episode-cover {
                 grid-column: 1;
                 grid-row: 1 / 5;
-<<<<<<< HEAD
-                position: relative;
-                width: var(--episode-thumbnail-width);
-                height: calc(var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio));
-            }
-
-            .playlist-episode-cover-image {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-            }
-
-            .playlist-episode-cover-image-default {
-                --mdc-icon-size: calc((var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio)) - 30px);
-=======
                 width: var(--episode-thumbnail-width);
                 height: calc(var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio));
             }
 
             .playlist-episode-cover-image-default {
                 --mdc-icon-size: calc(var(--episode-thumbnail-width) - 30px);
->>>>>>> develop
             }
 
             /*
@@ -965,22 +836,8 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-unknown-cover {
                 grid-column: 1;
                 grid-row: 1 / 3;
-<<<<<<< HEAD
-                position: relative;
                 width: var(--song-thumbnail-width);
                 height: var(--song-thumbnail-width);
-            }
-
-            .playlist-unknown-cover-image {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-=======
-                width: var(--song-thumbnail-width);
-                height: var(--song-thumbnail-width);
->>>>>>> develop
             }
 
             .playlist-unknown-cover-image-default {
