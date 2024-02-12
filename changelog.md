@@ -2,9 +2,13 @@
 
 ## 4.5.0
 
+<<<<<<< HEAD
+- Images are now retrieved by using home assistant api, which means there is no problem anymore of cors error when mixing http and https.
+=======
 - Images retrieved by the api to avoid http / https problems (see [Issue #9](https://github.com/jtbgroup/kodi-media-sensors/issues/9))
 
 **This version needs at least the version 5.3.0 of the [Kodi Media Sendor](https://github.com/jtbgroup/kodi-media-sensors) integration**
+>>>>>>> develop
 
 ## 4.4.3
 
