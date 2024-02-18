@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.1
+
+- Make use of source url directly instead of using the image api of kodi (to avoid http / https issues) for tvshow episodes and music videos.
+
 ## 4.5.0
 
 - Images retrieved by the api to avoid http / https problems (see [Issue #9](https://github.com/jtbgroup/kodi-media-sensors/issues/9))

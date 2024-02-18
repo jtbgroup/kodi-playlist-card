@@ -465,7 +465,23 @@ export class KodiPlaylistCard extends LitElement {
 
 
     private _createEpisodeCover(item,position) {
-        const image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
+        // const image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
+
+        const to_search = "image://";
+        let image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
+        image_url = decodeURIComponent(decodeURI(image_url));
+
+        if(image_url.indexOf(to_search) > 0){
+            const index = image_url.indexOf(to_search)+to_search.length;
+            const last_slash = image_url.endsWith("/");
+            if (last_slash){
+                image_url = image_url.substring(index, image_url.length-1);
+            }else{
+                image_url = image_url.substring(index);
+            }
+        }
+
+
         const class_cover = "playlist-episode-cover"
         const class_cover_image_default =  "playlist-episode-cover-image-default";
         const icon_default = "mdi:movie";
@@ -498,9 +514,9 @@ export class KodiPlaylistCard extends LitElement {
         const class_cover_container_div = "playlist-item-cover-container";
 
         let cover_api = false;
-        let cover = image_url;
-        if (image_url.startsWith("/api")){
-            cover =   image_url ? this._getThumbnailURLorBase64(image_url).then((value) => `url(${value})`) : "none";
+        let cover_image = image_url;
+        if (image_url != null && image_url != "" && image_url.startsWith("/api")){
+            cover_image =   image_url ? this._getThumbnailURLorBase64(image_url).then((value) => `url(${value})`) : "none";
             cover_api = true;
         }
 
@@ -511,11 +527,15 @@ export class KodiPlaylistCard extends LitElement {
         <div class=${class_cover_div}>
             <div class=${class_cover_container_div}>
                 <ha-icon icon=${icon_default} class=${class_default_image}></ha-icon>
-                ${
-                    cover_api?
-                    html`<div class=${class_cover_image} @click="${!this.config.show_thumbnail_overlay?action_click:''}" style="background-size: contain; background-image: ${until(cover, "")}"></div>`:
-                    html`<img class=${class_cover_image}" @click="${!this.config.show_thumbnail_overlay?action_click:''}" src="${cover}"></img>`
+
+               ${
+                    cover_image != null && cover_image != "" ?
+                        (cover_api?
+                        html`<div class="${class_cover_image}" @click="${this.config.show_thumbnail_overlay?'':action_click}" style="background-size: contain; background-image: ${until(cover_image, "")}"></div>`:
+                        html`<img class="${class_cover_image}" @click="${this.config.show_thumbnail_overlay?'':action_click}" src="${cover_image}"></img>`
+                    ) : html`<div class="${class_cover_image}" @click="${this.config.show_thumbnail_overlay?'':action_click}"></div>`
                 }
+
                 ${this.config.show_thumbnail_overlay && !isPlaying ? html`<ha-icon class="overlay-play" icon=${icon_overlay} @click="${action_click}"></ha-icon>`:html``}
             </div>
         </div>
@@ -538,7 +558,7 @@ export class KodiPlaylistCard extends LitElement {
                 --channel-thumbnail-ratio: 1.5;
                 --artist-thumbnail-width: 130px;
                 --episode-thumbnail-width: 180px;
-                --episode-thumbnail-ratio: 1.7;
+                --episode-thumbnail-ratio: 1.5;
                 --background-basic-color: #9b9595;
                 --container-rows-gap: 10px;
                 --mdc-select-fill-color: rgba(0, 0, 0, 0);
@@ -735,6 +755,7 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-movie-grid {
                 grid-template-columns: auto 1fr auto;
                 grid-auto-rows: auto;
+                margin-top: 15px
             }
 
             .playlist-movie-title {
@@ -775,6 +796,7 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-episode-grid {
                 grid-template-columns: auto 1fr auto;
                 grid-auto-rows: auto;
+                margin-top: 15px
             }
 
             .playlist-episode-title {
@@ -806,15 +828,16 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             .playlist-episode-cover-image-default {
-                --mdc-icon-size: calc(var(--episode-thumbnail-width) - 30px);
+                --mdc-icon-size: calc((var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio)) - 30px);
             }
 
             /*
-                    //// UNKNOWN
-                   */
+            //// UNKNOWN
+            */
             .playlist-unknown-grid {
                 grid-template-columns: auto 1fr auto;
                 grid-auto-rows: auto;
+                margin-top: 15px
             }
 
             .playlist-unknown-message {
