@@ -371,8 +371,8 @@ export class KodiPlaylistCard extends LitElement {
                 isPlaying,
                 position,
                 PLAYER_TYPE.video,
-                "playlist-song-playing",
-                "playlist-song-remove",
+                "playlist-movie-playing",
+                "playlist-movie-remove",
             )}
         </div>`;
     }
@@ -382,16 +382,16 @@ export class KodiPlaylistCard extends LitElement {
         const classCss = this._getItemClass(isPlaying, isLast, "playlist-movie-grid");
 
         return html`<div class=${classCss} data-id=${position} kodi-id=${item["id"]}>
-            ${this._createMovieCover(item,position)}
-            <div class="playlist-movie-title playlist-title">${item["artist"]}: ${item["title"]}</div>
-            <div class="playlist-movie-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
-            <div class="playlist-movie-year playlist-year">${item["year"]}</div>
+            ${this._createMusicVideoCover(item,position)}
+            <div class="playlist-musicvideo-title playlist-title">${item["artist"]}: ${item["title"]}</div>
+            <div class="playlist-musicvideo-genre playlist-genre">${item["genre"] ? item["genre"] : "undefined"}</div>
+            <div class="playlist-musicvideo-year playlist-year">${item["year"]}</div>
             ${this._createControl(
                 isPlaying,
                 position,
                 PLAYER_TYPE.video,
-                "playlist-song-playing",
-                "playlist-song-remove",
+                "playlist-musicvideo-playing",
+                "playlist-musicvideo-remove",
             )}
         </div>`;
     }
@@ -465,8 +465,6 @@ export class KodiPlaylistCard extends LitElement {
 
 
     private _createEpisodeCover(item,position) {
-        // const image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
-
         const to_search = "image://";
         let image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
         image_url = decodeURIComponent(decodeURI(image_url));
@@ -487,8 +485,32 @@ export class KodiPlaylistCard extends LitElement {
         const icon_default = "mdi:movie";
         const icon_overlay ="mdi:play";
         const isPlaying = this.checkIsPlaying(item);
-        return this._createCoverElement (image_url, class_cover,class_cover_image_default, icon_overlay, icon_default,isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
+        return this._createCoverElement (image_url, class_cover,class_cover_image_default, icon_overlay, icon_default, isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
     }
+
+    private _createMusicVideoCover(item,position) {
+        const to_search = "image://";
+        let image_url = item["poster"] && item["poster"] != "" ? item["poster"] : item["thumbnail"];
+        image_url = decodeURIComponent(decodeURI(image_url));
+
+        if(image_url.indexOf(to_search) > 0){
+            const index = image_url.indexOf(to_search)+to_search.length;
+            const last_slash = image_url.endsWith("/");
+            if (last_slash){
+                image_url = image_url.substring(index, image_url.length-1);
+            }else{
+                image_url = image_url.substring(index);
+            }
+        }
+
+        const class_cover = "playlist-musicvideo-cover";
+        const class_cover_image_default =  "playlist-musicvideo-cover-image-default";
+        const icon_default = "mdi:movie";
+        const icon_overlay = "mdi:play";
+        const isPlaying = this.checkIsPlaying(item);
+        return this._createCoverElement (image_url, class_cover,class_cover_image_default, icon_overlay, icon_default, isPlaying, () => this._goTo(position, PLAYER_TYPE.video.kodi_player_id))
+    }
+
 
     private _createUnknownCover(item,position) {
         const image_url = item["thumbnail"];
@@ -559,6 +581,8 @@ export class KodiPlaylistCard extends LitElement {
                 --artist-thumbnail-width: 130px;
                 --episode-thumbnail-width: 180px;
                 --episode-thumbnail-ratio: 1.5;
+                --musicvideo-thumbnail-width: 120px;
+                --musicvideo-thumbnail-ratio: 1;
                 --background-basic-color: #9b9595;
                 --container-rows-gap: 10px;
                 --mdc-select-fill-color: rgba(0, 0, 0, 0);
@@ -830,6 +854,50 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-episode-cover-image-default {
                 --mdc-icon-size: calc((var(--episode-thumbnail-width) / var(--episode-thumbnail-ratio)) - 30px);
             }
+
+
+            /*
+                    //// MUSIC VIDEO
+                   */
+            .playlist-musicvideo-grid {
+                grid-template-columns: auto 1fr auto;
+                grid-auto-rows: auto;
+                margin-top: 15px
+            }
+
+            .playlist-musicvideo-title {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .playlist-musicvideo-genre {
+                grid-column: 2;
+                grid-row: 2;
+            }
+
+            .playlist-musicvideo-year {
+                grid-column: 2;
+                grid-row: 3;
+            }
+
+            .playlist-musicvideo-remove,
+            .playlist-musicvideo-playing {
+                grid-column: 3;
+                grid-row: 1 / 3;
+            }
+
+            .playlist-musicvideo-cover {
+                grid-column: 1;
+                grid-row: 1 / 5;
+                width: var(--musicvideo-thumbnail-width);
+                height: calc(var(--musicvideo-thumbnail-width) / var(--musicvideo-thumbnail-ratio));
+            }
+
+            .playlist-musicvideo-cover-image-default {
+                --mdc-icon-size: calc(var(--musicvideo-thumbnail-width) - 30px);
+            }
+
+
 
             /*
             //// UNKNOWN
