@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2022",
         "module": "esnext",
         "moduleResolution": "node",
-        "lib": ["es6", "dom", "dom.iterable", "esnext"],
+        "ignoreDeprecations": "6.0",
+        "lib": ["es2022", "dom", "dom.iterable"],
         "noEmit": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
@@ -12,6 +13,7 @@
         "noImplicitAny": false,
         "skipLibCheck": true,
         "resolveJsonModule": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false
     }
 }

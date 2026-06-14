@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.error {
+  color: var(--error-color);
+  padding: 16px;
+}
+
+.loading {
+  padding: 16px;
+  color: var(--secondary-text-color);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 8px;
+    border-bottom: 1px solid var(--divider-color);
+
+    &.active {
+      color: var(--accent-color);
+      font-weight: bold;
+      background-color: var(--secondary-background-color);
+    }
+  }
+}
