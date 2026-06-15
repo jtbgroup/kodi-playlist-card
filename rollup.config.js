@@ -3,48 +3,40 @@ import commonjs from "rollup-plugin-commonjs";
 import nodeResolve from "rollup-plugin-node-resolve";
 import babel from "rollup-plugin-babel";
 import terser from "@rollup/plugin-terser";
-import serve from "rollup-plugin-serve";
 import json from "@rollup/plugin-json";
 import litCss from "rollup-plugin-lit-css";
-import { string } from "rollup-plugin-string"; // 🔥 Import the string loader
 
 const dev = process.env.ROLLUP_WATCH;
 
-const serveopts = {
-    contentBase: ["./dist"],
-    host: "0.0.0.0",
-    port: 5000,
-    allowCrossOrigin: true,
-    headers: {
-        "Access-Control-Allow-Origin": "*",
-    },
-};
-
 const plugins = [
-    // 1. Intercept asset files FIRST and turn them into JS-readable formats
-    string({
-        include: "**/*.html", // 📦 Loads your .html template as a plain text string
-    }),
+    // 1. Convert SCSS to Lit CSS Results
     litCss({
-        include: ["**/*.scss", "**/*.css"], // 🎨 Turns your .scss directly into Lit CSS results
+        include: ["**/*.scss"],
         uglify: !dev,
     }),
-    
-    // 2. Run the official TypeScript compiler on your code
+
+    // 2. Compile TypeScript
     typescript({
         tsconfig: "./tsconfig.json",
     }),
 
-    // 3. Standard resolution and bundling
+    // 3. Resolve node modules
     nodeResolve({
         browser: true,
     }),
+
+    // 4. Handle CommonJS modules
     commonjs(),
+
+    // 5. Parse JSON
     json(),
+
+    // 6. Transpile with Babel for broader compatibility
     babel({
         exclude: "node_modules/**",
     }),
-    dev && serve(serveopts),
+
+    // 7. Minify for production
     !dev && terser(),
 ];
 
@@ -54,6 +46,7 @@ export default [
         output: {
             dir: "dist",
             format: "es",
+            entryFileNames: "kodi-playlist-card.js",
         },
         plugins: [...plugins],
     },

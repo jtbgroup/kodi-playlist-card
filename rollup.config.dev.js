@@ -3,6 +3,7 @@ import commonjs from "rollup-plugin-commonjs";
 import nodeResolve from "rollup-plugin-node-resolve";
 import serve from "rollup-plugin-serve";
 import json from "@rollup/plugin-json";
+import litCss from "rollup-plugin-lit-css";
 
 const serveopts = {
     contentBase: ["./dist"],
@@ -23,23 +24,29 @@ export default [
             entryFileNames: "kodi-playlist-card.js",
         },
         plugins: [
-            // 1. Compile TypeScript directly to ES2022
+            // 1. Convert SCSS to Lit CSS Results
+            litCss({
+                include: ["**/*.scss"],
+                uglify: false,
+            }),
+
+            // 2. Compile TypeScript
             typescript({
                 tsconfig: "./tsconfig.json",
             }),
 
-            // 2. Resolve external dependencies within node_modules
+            // 3. Resolve node modules
             nodeResolve({
                 browser: true,
             }),
 
-            // 3. Convert legacy modules to native ES Module formats
+            // 4. Handle CommonJS modules
             commonjs(),
+
+            // 5. Parse JSON
             json(),
-            
-            // NOTE: Babel is intentionally omitted to prevent "invalid template strings array" compilation errors with Lit 2+.
-            
-            // 4. Stand up the local static preview server
+
+            // 6. Serve locally for development
             serve(serveopts),
         ],
     },
