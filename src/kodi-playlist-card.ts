@@ -1,19 +1,32 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant } from "custom-card-helpers";
-declare module "custom-card-helpers" {
-    interface HomeAssistant {
-        hassUrl(path: string): string;
-    }
-}
 
 interface PlaylistItem {
     title?: string;
     artist?: string | string[];
     album?: string;
+    albumid?: number;
     duration?: number;
     thumbnail?: string;
+    poster?: string;
+    type?: string;
+    showtitle?: string;
+    season?: number;
+    episode?: number;
 }
+
+interface PlaylistUpdateEvent {
+    type: "playlist_update";
+    items: PlaylistItem[];
+    kodi_state: "playing" | "paused" | "idle" | string;
+}
+
+interface KodiUnavailableEvent {
+    type: "kodi_unavailable";
+}
+
+type KodiMediaSensorEvent = PlaylistUpdateEvent | KodiUnavailableEvent;
 
 @customElement("kodi-playlist-card")
 export class KodiPlaylistCard extends LitElement {
@@ -22,14 +35,19 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _config?: any;
     @state() private _items: PlaylistItem[] = [];
     @state() private _currentIndex = -1;
-    @state() private _loading = false;
+    @state() private _kodiState = "idle";
+    @state() private _isAvailable = true;
+    @state() private _thumbnailCache: Map<string, string> = new Map();
 
-    private _lastMediaId?: string;
-    private _unsubEvents?: Promise<() => void>;
+    private _unsubscribe?: Promise<() => void>;
+    private _thumbnailPromiseCache: Map<string, Promise<string>> = new Map();
+    private _thumbnailLoadingSet: Set<string> = new Set();
 
     public setConfig(config: any): void {
         if (!config) throw new Error("Configuration invalide.");
-        this._config = { entity: "media_player.kodi", playlistid: 0, ...config };
+        if (!config.entry_id) throw new Error('Configuration invalide: "entry_id" is required.');
+        this._config = { ...config };
+        console.log("Kodi card config:", this._config);
     }
 
     static get styles() {
@@ -63,25 +81,39 @@ export class KodiPlaylistCard extends LitElement {
                 border-radius: 50%;
                 background: var(--disabled-text-color);
             }
-            .status-dot.connected {
+            .status-dot.available {
                 background: var(--success-color);
+                animation: pulse 2s infinite;
             }
-            .status-dot.loading {
-                background: var(--warning-color);
-                animation: pulse 1.5s infinite;
+            .status-dot.unavailable {
+                background: var(--error-color);
             }
             @keyframes pulse {
                 0%,
                 100% {
-                    opacity: 0.4;
+                    opacity: 1;
                 }
                 50% {
-                    opacity: 1;
+                    opacity: 0.5;
                 }
             }
             .playlist-container {
                 max-height: 400px;
                 overflow-y: auto;
+            }
+            .empty-state {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: 12px;
+                padding: 40px 16px;
+                color: var(--secondary-text-color);
+                text-align: center;
+            }
+            .empty-state ha-icon {
+                --icon-size: 48px;
+                opacity: 0.5;
             }
             .playlist-item {
                 display: flex;
@@ -90,6 +122,7 @@ export class KodiPlaylistCard extends LitElement {
                 padding: 8px 16px;
                 cursor: pointer;
                 border-bottom: 1px solid var(--divider-color);
+                transition: background-color 0.2s;
             }
             .playlist-item:hover {
                 background: var(--secondary-background-color);
@@ -97,12 +130,14 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-item.active {
                 background: rgba(3, 169, 244, 0.1);
                 border-left: 4px solid var(--accent-color);
+                padding-left: 12px;
             }
             .track-thumb {
                 width: 45px;
                 height: 45px;
                 object-fit: cover;
                 border-radius: 4px;
+                flex-shrink: 0;
             }
             .thumb-placeholder {
                 width: 45px;
@@ -112,6 +147,7 @@ export class KodiPlaylistCard extends LitElement {
                 justify-content: center;
                 background: var(--secondary-background-color);
                 border-radius: 4px;
+                flex-shrink: 0;
             }
             .track-info {
                 display: flex;
@@ -128,131 +164,291 @@ export class KodiPlaylistCard extends LitElement {
             .track-meta {
                 font-size: 0.8rem;
                 color: var(--secondary-text-color);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .track-duration {
+                font-size: 0.85rem;
+                color: var(--secondary-text-color);
+                flex-shrink: 0;
             }
         `;
     }
 
     public connectedCallback(): void {
         super.connectedCallback();
-        this._subscribeKodiEvents();
+        this._subscribe();
     }
 
     public disconnectedCallback(): void {
         super.disconnectedCallback();
-
-        if (this._unsubEvents) {
-            // On appelle la promesse, on récupère la fonction d'annulation et on l'exécute
-            this._unsubEvents.then(unsub => {
+        if (this._unsubscribe) {
+            this._unsubscribe.then(unsub => {
                 unsub();
             });
-            this._unsubEvents = undefined;
+            this._unsubscribe = undefined;
         }
     }
 
-    protected updated(changedProperties: PropertyValues): void {
-        super.updated(changedProperties);
-        if (!this.hass || !this._config) return;
-        const stateObj = this.hass.states[this._config.entity];
-        if (stateObj) {
-            const currentMediaId = `${stateObj.state}-${stateObj.attributes.media_title}`;
-            if (currentMediaId !== this._lastMediaId) {
-                this._lastMediaId = currentMediaId;
-                this._queryKodiData();
-            }
+    private _subscribe(): void {
+        if (!this.hass?.connection || !this._config?.entry_id) {
+            console.warn("Kodi card: Cannot subscribe - missing hass connection or entry_id");
+            return;
         }
-    }
 
-    private _subscribeKodiEvents(): void {
-        if (!this.hass?.connection) return;
-        this._unsubEvents = this.hass.connection.subscribeEvents<any>(
-            e => this._handleKodiResultEvent(e),
-            "kodi_call_method_result",
+        console.log("Kodi card: Subscribing to playlist updates for entry_id:", this._config.entry_id);
+
+        this._unsubscribe = this.hass.connection.subscribeMessage<KodiMediaSensorEvent>(
+            (message: KodiMediaSensorEvent) => this._handlePlaylistMessage(message),
+            {
+                type: "kodi_media_sensors/subscribe_playlist",
+                entry_id: this._config.entry_id,
+            } as any,
         );
     }
 
-    private _handleKodiResultEvent(event: any): void {
-        if (event.data.entity_id !== this._config.entity) return;
-        const { input, result } = event.data;
-        if (input.method === "Playlist.GetItems") {
-            this._items = result?.items || [];
-            this._loading = false;
-        } else if (input.method === "Player.GetProperties") {
-            this._currentIndex = result?.position ?? -1;
+    private _handlePlaylistMessage(message: KodiMediaSensorEvent): void {
+        console.log("Kodi card: Message received", message);
+
+        if (message.type === "playlist_update") {
+            this._items = message.items || [];
+            this._kodiState = message.kodi_state || "idle";
+            this._isAvailable = true;
+            this._thumbnailLoadingSet.clear(); // Reset loading state on new playlist
+            console.log("Kodi card: Playlist updated", this._items.length, "items, state:", this._kodiState);
+
+            // Log first item properties for debugging
+            if (this._items.length > 0) {
+                console.log("Kodi card: First item properties:", Object.keys(this._items[0]));
+                console.log("Kodi card: First item:", this._items[0]);
+            }
+        } else if (message.type === "kodi_unavailable") {
+            this._isAvailable = false;
+            this._items = [];
+            this._thumbnailLoadingSet.clear();
+            console.log("Kodi card: Kodi is unavailable");
         }
     }
 
-    private _queryKodiData(): void {
-        this._loading = true;
-        this.hass.callService("kodi", "call_method", {
-            entity_id: this._config.entity,
-            method: "Playlist.GetItems",
-            playlistid: this._config.playlistid,
-            properties: ["title", "artist", "album", "duration", "thumbnail"],
-        });
+    /**
+     * Gets thumbnail URL based on item type and properties
+     */
+    private _getItemThumbnailUrl(item: PlaylistItem): string | undefined {
+        const itemType = (item as any).type;
+
+        // For audio items, use the album proxy if albumid is available
+        if (itemType === "song" || itemType === "music") {
+            const albumId = (item as any).albumid;
+            if (albumId) {
+                return `/api/media_player_proxy/media_player.kodi/browse_media/album/${albumId}`;
+            }
+        }
+
+        // For video items, prefer poster over thumbnail
+        if (itemType === "movie" || itemType === "episode" || itemType === "video") {
+            const poster = (item as any).poster;
+            if (poster && poster !== "") {
+                return poster;
+            }
+        }
+
+        // Fallback to thumbnail for any type
+        return item.thumbnail;
     }
 
-    private _playPlaylistItem(index: number): void {
-        this.hass.callService("kodi", "call_method", {
-            entity_id: this._config.entity,
-            method: "Player.GoTo",
-            playerid: this._config.playlistid === 0 ? 0 : 1,
-            to: index,
-        });
+    /**
+     * Gets metadata string based on item type
+     */
+    private _getItemMetadata(item: PlaylistItem): string {
+        const itemType = (item as any).type;
+
+        if (itemType === "song" || itemType === "music") {
+            const artist = Array.isArray(item.artist) ? item.artist.join(", ") : item.artist || "Unknown Artist";
+            const album = item.album ? ` • ${item.album}` : "";
+            return `${artist}${album}`;
+        }
+
+        if (itemType === "episode") {
+            const showTitle = (item as any).showtitle || "Unknown Show";
+            const season = (item as any).season ?? "?";
+            const episode = (item as any).episode ?? "?";
+            return `${showTitle} • S${season}E${episode}`;
+        }
+
+        // Default for movies and others
+        return "";
     }
 
-    private _formatDuration(s: number): string {
-        return `${Math.floor(s / 60)}:${Math.floor(s % 60)
-            .toString()
-            .padStart(2, "0")}`;
+    /**
+     * Gets the icon based on item type
+     */
+    private _getItemIcon(item: PlaylistItem): string {
+        const itemType = (item as any).type;
+
+        if (itemType === "song" || itemType === "music") {
+            return "mdi:music";
+        }
+        if (itemType === "movie") {
+            return "mdi:movie";
+        }
+        if (itemType === "episode") {
+            return "mdi:television";
+        }
+        return "mdi:play";
+    }
+
+    private _formatDuration(seconds: number | undefined): string {
+        if (!seconds) return "";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
     }
 
     protected render() {
-        const stateObj = this.hass.states[this._config.entity];
-        const isConnected = stateObj?.state !== "unavailable" && stateObj?.state !== "off";
+        const statusClass = this._isAvailable ? "available" : "unavailable";
 
         return html`
             <div class="card-header">
                 <h3 class="card-title">
-                    <ha-icon class="kodi-icon" icon="mdi:kodi"></ha-icon> ${this._config.name || "Kodi"}
+                    <ha-icon class="kodi-icon" icon="mdi:kodi"></ha-icon> ${this._config?.title || "Kodi Playlist"}
                 </h3>
-                <div class="status-dot ${this._loading ? "loading" : isConnected ? "connected" : ""}"></div>
+                <div class="status-dot ${statusClass}"></div>
             </div>
-            <div class="playlist-container">
-                ${this._items.map((item, index) => {
-                    const isActive = index === this._currentIndex;
-                    const stateObj = this.hass.states[this._config.entity];
-                    const thumbUrl = item.thumbnail || stateObj?.attributes.entity_picture;
 
-                    const thumb = thumbUrl
-                        ? html`<img class="track-thumb" src="${this.hass.hassUrl(thumbUrl)}" />`
-                        : html`<div class="thumb-placeholder"><ha-icon icon="mdi:music"></ha-icon></div>`;
-                    return html` <li
-                        class="playlist-item ${isActive ? "active" : ""}"
-                        @click=${() => this._playPlaylistItem(index)}>
-                        ${thumb}
-                        <div class="track-info">
-                            <span class="track-title">${item.title || "Inconnu"}</span>
-                            <span class="track-meta"
-                                >${Array.isArray(item.artist)
-                                    ? item.artist.join(", ")
-                                    : item.artist || "Artiste inconnu"}</span
-                            >
-                        </div>
-                        ${item.duration ? html`<span>${this._formatDuration(item.duration)}</span>` : ""}
-                    </li>`;
-                })}
-            </div>
+            ${!this._isAvailable
+                ? html`
+                    <div class="empty-state">
+                        <ha-icon icon="mdi:wifi-off"></ha-icon>
+                        <div>Kodi is unavailable</div>
+                    </div>
+                `
+                : this._items.length === 0
+                  ? html`
+                    <div class="empty-state">
+                        <ha-icon icon="mdi:playlist-music"></ha-icon>
+                        <div>Empty playlist</div>
+                    </div>
+                `
+                  : html`
+                    <div class="playlist-container">
+                        ${this._items.map((item) => this._renderPlaylistItem(item))}
+                    </div>
+                `}
         `;
     }
 
-    private _getProxyUrl(url: string): string {
-        // Si c'est déjà une URL complète (http), on la retourne
-        if (url.startsWith("http")) return url;
+    private _renderPlaylistItem(item: PlaylistItem) {
+        const thumbUrl = this._getItemThumbnailUrl(item);
+        const metadata = this._getItemMetadata(item);
+        const icon = this._getItemIcon(item);
 
-        // Si c'est un format kodi "image://", il faut l'encoder
-        // On passe par le proxy de l'intégration kodi
-        const encodedUrl = encodeURIComponent(url);
-        return `${this.hass.hassUrl("")}/api/kodi/image/${encodedUrl}?entity_id=${this._config.entity}`;
+        return html`
+            <li class="playlist-item">
+                ${this._renderThumbnail(thumbUrl, icon)}
+                <div class="track-info">
+                    <span class="track-title">${item.title || "Unknown"}</span>
+                    ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
+                </div>
+                ${item.duration ? html`<span class="track-duration">${this._formatDuration(item.duration)}</span>` : ""}
+            </li>
+        `;
+    }
+
+    private _renderThumbnail(thumbnailUrl: string | undefined, icon = "mdi:music") {
+        if (!thumbnailUrl) {
+            return html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`;
+        }
+
+        // Check cache first
+        const cachedUrl = this._thumbnailCache.get(thumbnailUrl);
+        if (cachedUrl) {
+            return html`<img class="track-thumb" src="${cachedUrl}" alt="Album art" />`;
+        }
+
+        // Only trigger loading if we haven't started yet
+        if (!this._thumbnailLoadingSet.has(thumbnailUrl)) {
+            this._thumbnailLoadingSet.add(thumbnailUrl);
+            this._getThumbnailURL(thumbnailUrl).then(() => {
+                this.requestUpdate();
+            });
+        }
+
+        // Show placeholder while loading
+        return html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`;
+    }
+
+    /**
+     * Converts a thumbnail URL to base64 if it's a local API URL (requires auth)
+     * Otherwise returns the URL as-is for external images
+     */
+    private async _getThumbnailURL(thumbnailUrl: string | undefined): Promise<string | undefined> {
+        if (!thumbnailUrl) return undefined;
+
+        // Check cache first
+        const cached = this._thumbnailCache.get(thumbnailUrl);
+        if (cached) return cached;
+
+        // Check if already loading
+        if (this._thumbnailPromiseCache.has(thumbnailUrl)) {
+            return this._thumbnailPromiseCache.get(thumbnailUrl);
+        }
+
+        // External URLs (http/https) can be used directly
+        if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
+            this._thumbnailCache.set(thumbnailUrl, thumbnailUrl);
+            return thumbnailUrl;
+        }
+
+        // Kodi image:// URLs - skip these as they need special handling
+        if (thumbnailUrl.startsWith("image://")) {
+            console.warn("Skipping Kodi image:// URL:", thumbnailUrl);
+            this._thumbnailCache.set(thumbnailUrl, "");
+            return undefined;
+        }
+
+        // Local API URLs (starting with /) require authentication
+        if (thumbnailUrl.startsWith("/")) {
+            const promise = this._loadLocalImageAsBase64(thumbnailUrl);
+            this._thumbnailPromiseCache.set(thumbnailUrl, promise);
+            try {
+                const result = await promise;
+                this._thumbnailCache.set(thumbnailUrl, result);
+                return result;
+            } catch (e) {
+                console.error("Failed to load local image:", e);
+                this._thumbnailCache.set(thumbnailUrl, "");
+                return undefined;
+            } finally {
+                this._thumbnailPromiseCache.delete(thumbnailUrl);
+            }
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Loads a local API image with authentication and converts to base64
+     */
+    private async _loadLocalImageAsBase64(url: string): Promise<string> {
+        try {
+            const response = await this.hass.fetchWithAuth(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+            }
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result;
+                    resolve(typeof result === "string" ? result : "");
+                };
+                reader.onerror = e => reject(e);
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error("Error loading image:", error);
+            throw error;
+        }
     }
 }
-
