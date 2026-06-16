@@ -120,7 +120,6 @@ export class KodiPlaylistCard extends LitElement {
                 align-items: center;
                 gap: 12px;
                 padding: 8px 16px;
-                cursor: pointer;
                 border-bottom: 1px solid var(--divider-color);
                 transition: background-color 0.2s;
             }
@@ -132,23 +131,66 @@ export class KodiPlaylistCard extends LitElement {
                 border-left: 4px solid var(--accent-color);
                 padding-left: 12px;
             }
-            .track-thumb {
+            
+            /* Thumbnail button styling */
+            .thumbnail-button {
+                position: relative;
                 width: 45px;
                 height: 45px;
+                flex-shrink: 0;
+                cursor: pointer;
+                border-radius: 4px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--secondary-background-color);
+            }
+            
+            .track-thumb {
+                width: 100%;
+                height: 100%;
                 object-fit: cover;
                 border-radius: 4px;
-                flex-shrink: 0;
             }
+            
             .thumb-placeholder {
-                width: 45px;
-                height: 45px;
+                width: 100%;
+                height: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 background: var(--secondary-background-color);
                 border-radius: 4px;
-                flex-shrink: 0;
             }
+            
+            /* Play overlay - hidden by default */
+            .play-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.4);
+                opacity: 0;
+                transition: opacity 0.2s ease-in-out;
+                border-radius: 4px;
+            }
+            
+            .play-overlay ha-icon {
+                --icon-size: 24px;
+                color: white;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            }
+            
+            /* Show overlay on hover */
+            .thumbnail-button:hover .play-overlay {
+                opacity: 1;
+            }
+            
             .track-info {
                 display: flex;
                 flex-direction: column;
@@ -202,7 +244,7 @@ export class KodiPlaylistCard extends LitElement {
         this._unsubscribe = this.hass.connection.subscribeMessage<KodiMediaSensorEvent>(
             (message: KodiMediaSensorEvent) => this._handlePlaylistMessage(message),
             {
-                type: "kodi_media_sensors/subscribe_playlist",
+                type: "kodi_media_sensors/playlist_subscribe",
                 entry_id: this._config.entry_id,
             } as any,
         );
@@ -229,6 +271,24 @@ export class KodiPlaylistCard extends LitElement {
             this._thumbnailLoadingSet.clear();
             console.log("Kodi card: Kodi is unavailable");
         }
+    }
+
+    /**
+     * Sends a command to play a specific item in the playlist
+     */
+    private _playItem(itemIndex: number): void {
+        if (!this.hass?.connection) {
+            console.error("Kodi card: Cannot play item - missing hass connection");
+            return;
+        }
+
+        console.log("Kodi card: Playing item at index", itemIndex);
+
+        this.hass.connection.sendMessage({
+            type: "kodi_media_sensors/playlist_play_item",
+            entry_id: this._config.entry_id,
+            index: itemIndex,
+        } as any);
     }
 
     /**
@@ -332,20 +392,20 @@ export class KodiPlaylistCard extends LitElement {
                 `
                   : html`
                     <div class="playlist-container">
-                        ${this._items.map((item) => this._renderPlaylistItem(item))}
+                        ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
                     </div>
                 `}
         `;
     }
 
-    private _renderPlaylistItem(item: PlaylistItem) {
+    private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const thumbUrl = this._getItemThumbnailUrl(item);
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
 
         return html`
             <li class="playlist-item">
-                ${this._renderThumbnail(thumbUrl, icon)}
+                ${this._renderThumbnailButton(thumbUrl, icon, index)}
                 <div class="track-info">
                     <span class="track-title">${item.title || "Unknown"}</span>
                     ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
@@ -355,7 +415,18 @@ export class KodiPlaylistCard extends LitElement {
         `;
     }
 
-    private _renderThumbnail(thumbnailUrl: string | undefined, icon = "mdi:music") {
+    private _renderThumbnailButton(thumbnailUrl: string | undefined, icon = "mdi:music", itemIndex: number) {
+        return html`
+            <div class="thumbnail-button" @click="${() => this._playItem(itemIndex)}">
+                ${this._renderThumbnailContent(thumbnailUrl, icon)}
+                <div class="play-overlay">
+                    <ha-icon icon="mdi:play-circle"></ha-icon>
+                </div>
+            </div>
+        `;
+    }
+
+    private _renderThumbnailContent(thumbnailUrl: string | undefined, icon = "mdi:music") {
         if (!thumbnailUrl) {
             return html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`;
         }
