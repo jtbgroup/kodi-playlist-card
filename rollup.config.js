@@ -42,7 +42,7 @@ const plugins = [
 
 export default [
     {
-        input: "src/kodi-playlist-card.ts",
+        input: ["src/kodi-playlist-card.ts", "src/kodi-playlist-card-editor.ts"],
         output: {
             dir: "dist",
             format: "es",

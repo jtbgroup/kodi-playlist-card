@@ -1,6 +1,14 @@
+/**
+ * EXEMPLE COMPLET : kodi-playlist-card.ts modifié
+ * 
+ * Ceci montre comment intégrer l'éditeur dans votre carte existante.
+ * Copiez/modifiez les parties pertinentes dans votre kodi-playlist-card.ts
+ */
+
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
+
 
 interface PlaylistItem {
     title?: string;
@@ -22,7 +30,7 @@ interface PlaylistUpdateEvent {
     type: "playlist_update";
     items: PlaylistItem[];
     kodi_state: "playing" | "paused" | "idle" | string;
-    current_index?: number; // Index of the currently playing item (-1 if none)
+    current_index?: number;
 }
 
 interface KodiUnavailableEvent {
@@ -46,10 +54,37 @@ export class KodiPlaylistCard extends LitElement {
     private _thumbnailPromiseCache: Map<string, Promise<string>> = new Map();
     private _thumbnailLoadingSet: Set<string> = new Set();
 
+ 
+  static getConfigElement(): LovelaceCardEditor {
+    return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
+}
+
+    static getStubConfig(): Record<string, unknown> {
+        return {
+            entry_id: "sensor.kodi_playlist",
+            title: "Kodi Playlist",
+            show_thumbnail: false,
+            show_thumbnail_overlay: true,
+            show_thumbnail_border: false,
+            show_line_separator: true,
+            hide_last_line_separator: false,
+            outline_color: "white",
+            items_container_scrollable: false,
+            items_container_height: "300px",
+            show_version: false,
+        };
+    }
+
     public setConfig(config: any): void {
         if (!config) throw new Error("Configuration invalide.");
         if (!config.entry_id) throw new Error('Configuration invalide: "entry_id" is required.');
+        
         this._config = { ...config };
+        
+        // ✅ OPTIONNEL : Valider avec le nouveau système
+        // const validatedConfig = validateConfig(config);
+        // this._config = validatedConfig;
+        
         console.log("Kodi card config:", this._config);
     }
 
@@ -86,28 +121,23 @@ export class KodiPlaylistCard extends LitElement {
                 transition: background 0.3s ease;
             }
 
-            /* Green fix (défaut) */
             .status-dot.fixed-green {
                 background: var(--success-color);
             }
 
-            /* Orange fixe */
             .status-dot.fixed-orange {
                 background: var(--warning-color);
             }
 
-            /* Red fix */
             .status-dot.fixed-red {
                 background: var(--error-color);
             }
 
-            /* Green blinking */
             .status-dot.flashing-green {
                 background: var(--success-color);
                 animation: pulse-dot 1s infinite;
             }
 
-            /* Container pour l'action à droite */
             .item-action {
                 display: flex;
                 align-items: center;
@@ -116,7 +146,6 @@ export class KodiPlaylistCard extends LitElement {
                 margin-left: auto;
             }
 
-            /* Style du marqueur "En lecture" */
             .playing-marker {
                 color: var(--accent-color);
                 --icon-size: 24px;
@@ -178,7 +207,6 @@ export class KodiPlaylistCard extends LitElement {
                 padding-left: 12px;
             }
 
-            /* Thumbnail button styling */
             .thumbnail-button {
                 position: relative;
                 width: 45px;
@@ -193,7 +221,6 @@ export class KodiPlaylistCard extends LitElement {
                 background: var(--secondary-background-color);
             }
 
-            /* Disabled state for playing item */
             .thumbnail-button.disabled {
                 cursor: not-allowed;
                 opacity: 0.6;
@@ -216,7 +243,6 @@ export class KodiPlaylistCard extends LitElement {
                 border-radius: 4px;
             }
 
-            /* Play overlay - hidden by default */
             .play-overlay {
                 position: absolute;
                 top: 0;
@@ -238,7 +264,6 @@ export class KodiPlaylistCard extends LitElement {
                 text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
             }
 
-            /* Show overlay on hover - but not if disabled */
             .thumbnail-button:not(.disabled):hover .play-overlay {
                 opacity: 1;
             }
@@ -274,7 +299,6 @@ export class KodiPlaylistCard extends LitElement {
                 margin-top: 2px;
             }
 
-            /* Remove button styling */
             .remove-button {
                 flex-shrink: 0;
                 cursor: pointer;
@@ -345,7 +369,7 @@ export class KodiPlaylistCard extends LitElement {
         if (message.type === "playlist_update") {
             this._items = message.items || [];
             this._kodiState = message.kodi_state || "idle";
-            this._currentIndex = message.current_index ?? -1; // Update current index from backend
+            this._currentIndex = message.current_index ?? -1;
             this._isAvailable = true;
             this._thumbnailLoadingSet.clear();
             console.log(
@@ -357,7 +381,6 @@ export class KodiPlaylistCard extends LitElement {
                 this._currentIndex,
             );
 
-            // Log first item properties for debugging
             if (this._items.length > 0) {
                 console.log("Kodi card: First item properties:", Object.keys(this._items[0]));
                 console.log("Kodi card: First item:", this._items[0]);
@@ -371,11 +394,7 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    /**
-     * Sends a command to play a specific item in the playlist
-     */
     private _playItem(itemIndex: number): void {
-        // Prevent playing the already playing item
         if (itemIndex === this._currentIndex) {
             console.log("Kodi card: Item is already playing");
             return;
@@ -395,11 +414,7 @@ export class KodiPlaylistCard extends LitElement {
         } as any);
     }
 
-    /**
-     * Sends a command to remove a specific item from the playlist
-     */
     private _removeItem(itemIndex: number): void {
-        // Prevent removing the currently playing item
         if (itemIndex === this._currentIndex) {
             console.log("Kodi card: Cannot remove the currently playing item");
             return;
@@ -436,13 +451,9 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    /**
-     * Gets thumbnail URL based on item type and properties
-     */
     private _getItemThumbnailUrl(item: PlaylistItem): string | undefined {
         const itemType = (item as any).type;
 
-        // For audio items, use the album proxy if albumid is available
         if (itemType === "song" || itemType === "music") {
             const albumId = (item as any).albumid;
             if (albumId) {
@@ -450,7 +461,6 @@ export class KodiPlaylistCard extends LitElement {
             }
         }
 
-        // For video items, prefer poster over thumbnail
         if (itemType === "movie" || itemType === "episode" || itemType === "video") {
             const poster = (item as any).poster;
             if (poster && poster !== "") {
@@ -458,13 +468,9 @@ export class KodiPlaylistCard extends LitElement {
             }
         }
 
-        // Fallback to thumbnail for any type
         return item.thumbnail;
     }
 
-    /**
-     * Gets metadata string based on item type
-     */
     private _getItemMetadata(item: PlaylistItem): string {
         const itemType = (item as any).type;
 
@@ -485,9 +491,6 @@ export class KodiPlaylistCard extends LitElement {
         return "";
     }
 
-    /**
-     * Gets genre string from item
-     */
     private _getItemGenre(item: PlaylistItem): string {
         const genre = (item as any).genre;
         if (!genre) return "";
@@ -497,9 +500,6 @@ export class KodiPlaylistCard extends LitElement {
         return genre;
     }
 
-    /**
-     * Gets the icon based on item type
-     */
     private _getItemIcon(item: PlaylistItem): string {
         const itemType = (item as any).type;
 
@@ -523,7 +523,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected render() {
-        let statusClass = "fixed-green"; // par défaut
+        let statusClass = "fixed-green";
 
         if (!this._isAvailable) {
             statusClass = "fixed-red";
@@ -571,7 +571,6 @@ export class KodiPlaylistCard extends LitElement {
         const icon = this._getItemIcon(item);
         const genre = this._getItemGenre(item);
 
-        // Check if this item is currently playing
         const isPlaying = index === this._currentIndex;
 
         return html`
@@ -619,13 +618,11 @@ export class KodiPlaylistCard extends LitElement {
             return html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`;
         }
 
-        // Check cache first
         const cachedUrl = this._thumbnailCache.get(thumbnailUrl);
         if (cachedUrl) {
             return html`<img class="track-thumb" src="${cachedUrl}" alt="Album art" />`;
         }
 
-        // Only trigger loading if we haven't started yet
         if (!this._thumbnailLoadingSet.has(thumbnailUrl)) {
             this._thumbnailLoadingSet.add(thumbnailUrl);
             this._getThumbnailURL(thumbnailUrl).then(() => {
@@ -633,40 +630,30 @@ export class KodiPlaylistCard extends LitElement {
             });
         }
 
-        // Show placeholder while loading
         return html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`;
     }
 
-    /**
-     * Converts a thumbnail URL to base64 if it's a local API URL (requires auth)
-     * Otherwise returns the URL as-is for external images
-     */
     private async _getThumbnailURL(thumbnailUrl: string | undefined): Promise<string | undefined> {
         if (!thumbnailUrl) return undefined;
 
-        // Check cache first
         const cached = this._thumbnailCache.get(thumbnailUrl);
         if (cached) return cached;
 
-        // Check if already loading
         if (this._thumbnailPromiseCache.has(thumbnailUrl)) {
             return this._thumbnailPromiseCache.get(thumbnailUrl);
         }
 
-        // External URLs (http/https) can be used directly
         if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
             this._thumbnailCache.set(thumbnailUrl, thumbnailUrl);
             return thumbnailUrl;
         }
 
-        // Kodi image:// URLs - skip these as they need special handling
         if (thumbnailUrl.startsWith("image://")) {
             console.warn("Skipping Kodi image:// URL:", thumbnailUrl);
             this._thumbnailCache.set(thumbnailUrl, "");
             return undefined;
         }
 
-        // Local API URLs (starting with /) require authentication
         if (thumbnailUrl.startsWith("/")) {
             const promise = this._loadLocalImageAsBase64(thumbnailUrl);
             this._thumbnailPromiseCache.set(thumbnailUrl, promise);
@@ -686,9 +673,6 @@ export class KodiPlaylistCard extends LitElement {
         return undefined;
     }
 
-    /**
-     * Loads a local API image with authentication and converts to base64
-     */
     private async _loadLocalImageAsBase64(url: string): Promise<string> {
         try {
             const response = await this.hass.fetchWithAuth(url);
