@@ -14,6 +14,8 @@ interface PlaylistItem {
     showtitle?: string;
     season?: number;
     episode?: number;
+    year?: number;
+    genre?: string | string[];
 }
 
 interface PlaylistUpdateEvent {
@@ -75,19 +77,66 @@ export class KodiPlaylistCard extends LitElement {
             .kodi-icon {
                 color: var(--accent-color);
             }
+
             .status-dot {
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
-                background: var(--disabled-text-color);
+                transition: background 0.3s ease;
             }
-            .status-dot.available {
+
+            /* Green fix (défaut) */
+            .status-dot.fixed-green {
                 background: var(--success-color);
-                animation: pulse 2s infinite;
             }
-            .status-dot.unavailable {
+
+            /* Orange fixe */
+            .status-dot.fixed-orange {
+                background: var(--warning-color);
+            }
+
+            /* Red fix */
+            .status-dot.fixed-red {
                 background: var(--error-color);
             }
+
+            /* Green blinking */
+            .status-dot.flashing-green {
+                background: var(--success-color);
+                animation: pulse 1s infinite;
+            }
+
+            /* Container pour l'action à droite */
+.item-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    margin-left: auto;
+}
+
+/* Style du marqueur "En lecture" */
+.playing-marker {
+    color: var(--accent-color);
+    --icon-size: 24px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+    
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+
             @keyframes pulse {
                 0%,
                 100% {
@@ -131,7 +180,7 @@ export class KodiPlaylistCard extends LitElement {
                 border-left: 4px solid var(--accent-color);
                 padding-left: 12px;
             }
-            
+
             /* Thumbnail button styling */
             .thumbnail-button {
                 position: relative;
@@ -146,14 +195,14 @@ export class KodiPlaylistCard extends LitElement {
                 justify-content: center;
                 background: var(--secondary-background-color);
             }
-            
+
             .track-thumb {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
                 border-radius: 4px;
             }
-            
+
             .thumb-placeholder {
                 width: 100%;
                 height: 100%;
@@ -163,7 +212,7 @@ export class KodiPlaylistCard extends LitElement {
                 background: var(--secondary-background-color);
                 border-radius: 4px;
             }
-            
+
             /* Play overlay - hidden by default */
             .play-overlay {
                 position: absolute;
@@ -179,18 +228,18 @@ export class KodiPlaylistCard extends LitElement {
                 transition: opacity 0.2s ease-in-out;
                 border-radius: 4px;
             }
-            
+
             .play-overlay ha-icon {
                 --icon-size: 24px;
                 color: white;
                 text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
             }
-            
+
             /* Show overlay on hover */
             .thumbnail-button:hover .play-overlay {
                 opacity: 1;
             }
-            
+
             .track-info {
                 display: flex;
                 flex-direction: column;
@@ -214,6 +263,48 @@ export class KodiPlaylistCard extends LitElement {
                 font-size: 0.85rem;
                 color: var(--secondary-text-color);
                 flex-shrink: 0;
+            }
+                .track-genre {
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+            /* Remove button styling */
+            .remove-button {
+                flex-shrink: 0;
+                cursor: pointer;
+                background: transparent;
+                border: none;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--secondary-text-color);
+                transition: all 0.2s ease;
+                opacity: 0.5;
+                margin-left: auto;
+                border-radius: 4px;
+                user-select: none;
+            }
+
+            // .playlist-item:hover .remove-button {
+            //     opacity: 1;
+            // }
+
+            .remove-button:hover {
+                color: var(--error-color);
+                background: rgba(255, 0, 0, 0.1);
+                transform: scale(1.1);
+            }
+
+            .remove-button:active {
+                transform: scale(0.95);
+            }
+
+            .remove-button ha-icon {
+                --icon-size: 20px;
             }
         `;
     }
@@ -292,6 +383,41 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     /**
+     * Sends a command to remove a specific item from the playlist
+     */
+    private _removeItem(itemIndex: number): void {
+        console.log("=== REMOVE ITEM CALLED ===");
+        console.log("Item index:", itemIndex);
+        console.log("Hass connection exists:", !!this.hass?.connection);
+        console.log("Config:", this._config);
+
+        if (!this.hass?.connection) {
+            console.error("Kodi card: Cannot remove item - missing hass connection");
+            return;
+        }
+
+        if (!this._config?.entry_id) {
+            console.error("Kodi card: Cannot remove item - missing entry_id");
+            return;
+        }
+
+        const message = {
+            type: "kodi_media_sensors/playlist_remove_item",
+            entry_id: this._config.entry_id,
+            index: itemIndex,
+        };
+
+        console.log("Kodi card: Sending remove message:", message);
+
+        try {
+            this.hass.connection.sendMessage(message as any);
+            console.log("Message sent successfully");
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    }
+
+    /**
      * Gets thumbnail URL based on item type and properties
      */
     private _getItemThumbnailUrl(item: PlaylistItem): string | undefined {
@@ -320,23 +446,23 @@ export class KodiPlaylistCard extends LitElement {
     /**
      * Gets metadata string based on item type
      */
-    private _getItemMetadata(item: PlaylistItem): string {
+private _getItemMetadata(item: PlaylistItem): string {
         const itemType = (item as any).type;
 
         if (itemType === "song" || itemType === "music") {
             const artist = Array.isArray(item.artist) ? item.artist.join(", ") : item.artist || "Unknown Artist";
             const album = item.album ? ` • ${item.album}` : "";
-            return `${artist}${album}`;
+            const year = item.year ? ` (${item.year})` : "";
+            return `${artist}${album}${year}`; 
         }
 
         if (itemType === "episode") {
             const showTitle = (item as any).showtitle || "Unknown Show";
             const season = (item as any).season ?? "?";
             const episode = (item as any).episode ?? "?";
-            return `${showTitle} • S${season}E${episode}`;
+            return `${showTitle} • S${season}E${episode}`; 
         }
 
-        // Default for movies and others
         return "";
     }
 
@@ -366,7 +492,17 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected render() {
-        const statusClass = this._isAvailable ? "available" : "unavailable";
+        let statusClass = "fixed-green"; // par défaut
+
+        if (!this._isAvailable) {
+            statusClass = "fixed-red";
+        } else if (this._kodiState === "playing") {
+            statusClass = "flashing-green";
+        } else if (["paused", "stopped"].includes(this._kodiState)) {
+            statusClass = "fixed-green";
+        } else if (this._kodiState === "idle") {
+            statusClass = "fixed-orange";
+        }
 
         return html`
             <div class="card-header">
@@ -378,39 +514,53 @@ export class KodiPlaylistCard extends LitElement {
 
             ${!this._isAvailable
                 ? html`
-                    <div class="empty-state">
-                        <ha-icon icon="mdi:wifi-off"></ha-icon>
-                        <div>Kodi is unavailable</div>
-                    </div>
-                `
+                      <div class="empty-state">
+                          <ha-icon icon="mdi:wifi-off"></ha-icon>
+                          <div>Kodi is unavailable</div>
+                      </div>
+                  `
                 : this._items.length === 0
-                  ? html`
-                    <div class="empty-state">
-                        <ha-icon icon="mdi:playlist-music"></ha-icon>
-                        <div>Empty playlist</div>
-                    </div>
-                `
-                  : html`
-                    <div class="playlist-container">
-                        ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
-                    </div>
-                `}
+                ? html`
+                      <div class="empty-state">
+                          <ha-icon icon="mdi:playlist-music"></ha-icon>
+                          <div>Empty playlist</div>
+                      </div>
+                  `
+                : html`
+                      <div class="playlist-container">
+                          ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
+                      </div>
+                  `}
         `;
     }
 
-    private _renderPlaylistItem(item: PlaylistItem, index: number) {
+private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const thumbUrl = this._getItemThumbnailUrl(item);
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
+        
+        // On vérifie si cet index est celui en cours de lecture
+        const isPlaying = index === this._currentIndex;
 
         return html`
-            <li class="playlist-item">
+            <li class="playlist-item ${isPlaying ? 'active' : ''}">
                 ${this._renderThumbnailButton(thumbUrl, icon, index)}
                 <div class="track-info">
                     <span class="track-title">${item.title || "Unknown"}</span>
                     ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
                 </div>
                 ${item.duration ? html`<span class="track-duration">${this._formatDuration(item.duration)}</span>` : ""}
+                
+                <div class="item-action">
+                    ${isPlaying 
+                        ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
+                        : html`
+                            <div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
+                                <ha-icon icon="mdi:trash-can"></ha-icon>
+                            </div>
+                        `
+                    }
+                </div>
             </li>
         `;
     }
