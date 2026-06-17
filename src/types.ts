@@ -12,6 +12,8 @@ export interface PlaylistItem {
     episode?: number;
     season?: number;
     type?: string;
+    year?: number;
+    genre?: string | string[];
 }
 
 /**
@@ -21,6 +23,7 @@ export interface PlaylistUpdateEvent {
     type: "playlist_update";
     items: PlaylistItem[];
     kodi_state: "playing" | "paused" | "idle" | string;
+    current_index?: number; // Index of the currently playing item (-1 if none)
 }
 
 /**
@@ -53,5 +56,3 @@ export enum ConnectionState {
     UNAVAILABLE = "unavailable",
     ERROR = "error",
 }
-
-

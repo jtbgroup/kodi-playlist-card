@@ -22,6 +22,7 @@ interface PlaylistUpdateEvent {
     type: "playlist_update";
     items: PlaylistItem[];
     kodi_state: "playing" | "paused" | "idle" | string;
+    current_index?: number; // Index of the currently playing item (-1 if none)
 }
 
 interface KodiUnavailableEvent {
@@ -103,33 +104,27 @@ export class KodiPlaylistCard extends LitElement {
             /* Green blinking */
             .status-dot.flashing-green {
                 background: var(--success-color);
-                animation: pulse 1s infinite;
+                animation: pulse-dot 1s infinite;
             }
 
             /* Container pour l'action à droite */
-.item-action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    margin-left: auto;
-}
+            .item-action {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                margin-left: auto;
+            }
 
-/* Style du marqueur "En lecture" */
-.playing-marker {
-    color: var(--accent-color);
-    --icon-size: 24px;
-    animation: pulse 2s infinite;
-}
+            /* Style du marqueur "En lecture" */
+            .playing-marker {
+                color: var(--accent-color);
+                --icon-size: 24px;
+                animation: pulse-marker 1.5s infinite;
+            }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.7; }
-}
-    
-            @keyframes pulse {
-                0%,
-                100% {
+            @keyframes pulse-dot {
+                0%, 100% {
                     opacity: 1;
                 }
                 50% {
@@ -137,15 +132,17 @@ export class KodiPlaylistCard extends LitElement {
                 }
             }
 
-            @keyframes pulse {
-                0%,
-                100% {
+            @keyframes pulse-marker {
+                0%, 100% {
+                    transform: scale(1);
                     opacity: 1;
                 }
                 50% {
-                    opacity: 0.5;
+                    transform: scale(1.1);
+                    opacity: 0.8;
                 }
             }
+
             .playlist-container {
                 max-height: 400px;
                 overflow-y: auto;
@@ -196,6 +193,12 @@ export class KodiPlaylistCard extends LitElement {
                 background: var(--secondary-background-color);
             }
 
+            /* Disabled state for playing item */
+            .thumbnail-button.disabled {
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+
             .track-thumb {
                 width: 100%;
                 height: 100%;
@@ -235,8 +238,8 @@ export class KodiPlaylistCard extends LitElement {
                 text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
             }
 
-            /* Show overlay on hover */
-            .thumbnail-button:hover .play-overlay {
+            /* Show overlay on hover - but not if disabled */
+            .thumbnail-button:not(.disabled):hover .play-overlay {
                 opacity: 1;
             }
 
@@ -264,12 +267,12 @@ export class KodiPlaylistCard extends LitElement {
                 color: var(--secondary-text-color);
                 flex-shrink: 0;
             }
-                .track-genre {
-    font-size: 0.8rem;
-    color: var(--secondary-text-color);
-    font-style: italic;
-    margin-top: 2px;
-}
+            .track-genre {
+                font-size: 0.8rem;
+                color: var(--secondary-text-color);
+                font-style: italic;
+                margin-top: 2px;
+            }
 
             /* Remove button styling */
             .remove-button {
@@ -284,14 +287,9 @@ export class KodiPlaylistCard extends LitElement {
                 color: var(--secondary-text-color);
                 transition: all 0.2s ease;
                 opacity: 0.5;
-                margin-left: auto;
                 border-radius: 4px;
                 user-select: none;
             }
-
-            // .playlist-item:hover .remove-button {
-            //     opacity: 1;
-            // }
 
             .remove-button:hover {
                 color: var(--error-color);
@@ -347,9 +345,17 @@ export class KodiPlaylistCard extends LitElement {
         if (message.type === "playlist_update") {
             this._items = message.items || [];
             this._kodiState = message.kodi_state || "idle";
+            this._currentIndex = message.current_index ?? -1; // Update current index from backend
             this._isAvailable = true;
-            this._thumbnailLoadingSet.clear(); // Reset loading state on new playlist
-            console.log("Kodi card: Playlist updated", this._items.length, "items, state:", this._kodiState);
+            this._thumbnailLoadingSet.clear();
+            console.log(
+                "Kodi card: Playlist updated",
+                this._items.length,
+                "items, state:",
+                this._kodiState,
+                "current index:",
+                this._currentIndex,
+            );
 
             // Log first item properties for debugging
             if (this._items.length > 0) {
@@ -359,6 +365,7 @@ export class KodiPlaylistCard extends LitElement {
         } else if (message.type === "kodi_unavailable") {
             this._isAvailable = false;
             this._items = [];
+            this._currentIndex = -1;
             this._thumbnailLoadingSet.clear();
             console.log("Kodi card: Kodi is unavailable");
         }
@@ -368,6 +375,12 @@ export class KodiPlaylistCard extends LitElement {
      * Sends a command to play a specific item in the playlist
      */
     private _playItem(itemIndex: number): void {
+        // Prevent playing the already playing item
+        if (itemIndex === this._currentIndex) {
+            console.log("Kodi card: Item is already playing");
+            return;
+        }
+
         if (!this.hass?.connection) {
             console.error("Kodi card: Cannot play item - missing hass connection");
             return;
@@ -386,6 +399,12 @@ export class KodiPlaylistCard extends LitElement {
      * Sends a command to remove a specific item from the playlist
      */
     private _removeItem(itemIndex: number): void {
+        // Prevent removing the currently playing item
+        if (itemIndex === this._currentIndex) {
+            console.log("Kodi card: Cannot remove the currently playing item");
+            return;
+        }
+
         console.log("=== REMOVE ITEM CALLED ===");
         console.log("Item index:", itemIndex);
         console.log("Hass connection exists:", !!this.hass?.connection);
@@ -446,24 +465,36 @@ export class KodiPlaylistCard extends LitElement {
     /**
      * Gets metadata string based on item type
      */
-private _getItemMetadata(item: PlaylistItem): string {
+    private _getItemMetadata(item: PlaylistItem): string {
         const itemType = (item as any).type;
 
         if (itemType === "song" || itemType === "music") {
             const artist = Array.isArray(item.artist) ? item.artist.join(", ") : item.artist || "Unknown Artist";
             const album = item.album ? ` • ${item.album}` : "";
             const year = item.year ? ` (${item.year})` : "";
-            return `${artist}${album}${year}`; 
+            return `${artist}${album}${year}`;
         }
 
         if (itemType === "episode") {
             const showTitle = (item as any).showtitle || "Unknown Show";
             const season = (item as any).season ?? "?";
             const episode = (item as any).episode ?? "?";
-            return `${showTitle} • S${season}E${episode}`; 
+            return `${showTitle} • S${season}E${episode}`;
         }
 
         return "";
+    }
+
+    /**
+     * Gets genre string from item
+     */
+    private _getItemGenre(item: PlaylistItem): string {
+        const genre = (item as any).genre;
+        if (!genre) return "";
+        if (Array.isArray(genre)) {
+            return genre.length > 0 ? genre.join(", ") : "";
+        }
+        return genre;
     }
 
     /**
@@ -520,58 +551,65 @@ private _getItemMetadata(item: PlaylistItem): string {
                       </div>
                   `
                 : this._items.length === 0
-                ? html`
-                      <div class="empty-state">
-                          <ha-icon icon="mdi:playlist-music"></ha-icon>
-                          <div>Empty playlist</div>
-                      </div>
-                  `
-                : html`
-                      <div class="playlist-container">
-                          ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
-                      </div>
-                  `}
+                  ? html`
+                        <div class="empty-state">
+                            <ha-icon icon="mdi:playlist-music"></ha-icon>
+                            <div>Empty playlist</div>
+                        </div>
+                    `
+                  : html`
+                        <div class="playlist-container">
+                            ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
+                        </div>
+                    `}
         `;
     }
 
-private _renderPlaylistItem(item: PlaylistItem, index: number) {
+    private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const thumbUrl = this._getItemThumbnailUrl(item);
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
-        
-        // On vérifie si cet index est celui en cours de lecture
+        const genre = this._getItemGenre(item);
+
+        // Check if this item is currently playing
         const isPlaying = index === this._currentIndex;
 
         return html`
-            <li class="playlist-item ${isPlaying ? 'active' : ''}">
-                ${this._renderThumbnailButton(thumbUrl, icon, index)}
+            <li class="playlist-item ${isPlaying ? "active" : ""}">
+                ${this._renderThumbnailButton(thumbUrl, icon, index, isPlaying)}
                 <div class="track-info">
                     <span class="track-title">${item.title || "Unknown"}</span>
+                    ${genre ? html`<span class="track-genre">${genre}</span>` : ""}
                     ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
                 </div>
                 ${item.duration ? html`<span class="track-duration">${this._formatDuration(item.duration)}</span>` : ""}
-                
+
                 <div class="item-action">
-                    ${isPlaying 
+                    ${isPlaying
                         ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
                         : html`
-                            <div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
-                                <ha-icon icon="mdi:trash-can"></ha-icon>
-                            </div>
-                        `
-                    }
+                              <div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
+                                  <ha-icon icon="mdi:trash-can"></ha-icon>
+                              </div>
+                          `}
                 </div>
             </li>
         `;
     }
 
-    private _renderThumbnailButton(thumbnailUrl: string | undefined, icon = "mdi:music", itemIndex: number) {
+    private _renderThumbnailButton(
+        thumbnailUrl: string | undefined,
+        icon = "mdi:music",
+        itemIndex: number,
+        isPlaying: boolean,
+    ) {
         return html`
-            <div class="thumbnail-button" @click="${() => this._playItem(itemIndex)}">
+            <div
+                class="thumbnail-button ${isPlaying ? "disabled" : ""}"
+                @click="${() => this._playItem(itemIndex)}"
+                title="${isPlaying ? "Currently playing" : "Play"}">
                 ${this._renderThumbnailContent(thumbnailUrl, icon)}
-                <div class="play-overlay">
-                    <ha-icon icon="mdi:play-circle"></ha-icon>
-                </div>
+                ${!isPlaying ? html`<div class="play-overlay"><ha-icon icon="mdi:play-circle"></ha-icon></div>` : ""}
             </div>
         `;
     }
