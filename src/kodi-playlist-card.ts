@@ -8,7 +8,9 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
+import "./kodi-playlist-card-editor"; 
 
+const CARD_VERSION = "1.2.3";
 
 interface PlaylistItem {
     title?: string;
@@ -328,6 +330,13 @@ export class KodiPlaylistCard extends LitElement {
             .remove-button ha-icon {
                 --icon-size: 20px;
             }
+                .version-footer {
+            text-align: right;
+            font-size: 0.7em;
+            color: var(--secondary-text-color);
+            padding: 8px;
+            opacity: 0.6;
+        }
         `;
     }
 
@@ -535,6 +544,8 @@ export class KodiPlaylistCard extends LitElement {
             statusClass = "fixed-orange";
         }
 
+        const showVersion = this._config?.show_version ?? false;
+
         return html`
             <div class="card-header">
                 <h3 class="card-title">
@@ -562,6 +573,11 @@ export class KodiPlaylistCard extends LitElement {
                             ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
                         </div>
                     `}
+                    ${showVersion ? html`
+                <div class="version-footer">
+                    Version: ${CARD_VERSION}
+                </div>
+            ` : ""}
         `;
     }
 

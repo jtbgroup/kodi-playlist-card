@@ -1,8 +1,22 @@
-import { LitElement, html, css } from "lit";
+/**
+ * KODI PLAYLIST CARD - Éditeur amélioré avec combobox pour entry_id
+ * 
+ * Cette version améliore le champ entry_id en proposant une liste déroulante
+ * filtrée des intégrations kodi_media_sensors disponibles.
+ */
+
+import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { fireEvent } from "custom-card-helpers";
 import { KodiPlaylistCardConfig, EDITOR_SCHEMA, DEFAULT_CONFIG } from "./types";
 import { KodiPlaylistCardEditor } from "./editor";
+
+interface ConfigEntry {
+    entry_id: string;
+    domain: string;
+    title: string;
+    state: "loaded" | "failed" | "not_loaded";
+}
 
 @customElement("kodi-playlist-card-editor")
 export class KodiPlaylistCardEditorElement extends LitElement {
@@ -12,12 +26,70 @@ export class KodiPlaylistCardEditorElement extends LitElement {
     @state() private _config?: KodiPlaylistCardConfig;
     @state() private _editor?: KodiPlaylistCardEditor;
     @state() private _errors: Record<string, string> = {};
+    @state() private _kodiIntegrations: ConfigEntry[] = []; // 👈 NOUVEAU
 
     public setConfig(config: KodiPlaylistCardConfig): void {
         this._config = config;
         this._editor = new KodiPlaylistCardEditor(config);
         this._validateConfig();
+        this._loadKodiIntegrations(); // 👈 NOUVEAU
     }
+
+
+private async _fetchConfigEntries(): Promise<void> {
+    // Si l'objet hass n'est pas prêt, on réessaye
+    if (!this.hass) {
+        setTimeout(() => this._fetchConfigEntries(), 500);
+        return;
+    }
+
+    try {
+        // La méthode officielle pour récupérer les entrées de configuration
+        // via l'API interne du frontend Home Assistant
+        const entries = await this.hass.callWS({ type: "config_entries/get" });
+        
+        this._kodiIntegrations = entries
+            .filter((entry: any) => entry.domain === "kodi_media_sensors")
+            .map((entry: any) => ({
+                entry_id: entry.entry_id,
+                domain: entry.domain,
+                title: entry.title || entry.entry_id,
+                state: entry.state
+            }));
+            
+        this.requestUpdate();
+    } catch (err) {
+        console.error("Erreur lors de la récupération des config_entries :", err);
+    }
+}
+
+connectedCallback(): void {
+    super.connectedCallback();
+    this._loadKodiIntegrations(); // Appel unique et propre
+}
+
+private async _loadKodiIntegrations(): Promise<void> {
+    if (!this.hass) return;
+
+    try {
+        const entries = await this.hass.callWS({ type: "config_entries/get" });
+        
+        this._kodiIntegrations = entries
+            .filter((entry: any) => entry.domain === "kodi_media_sensors")
+            .map((entry: any) => ({
+                // L'entry_id reste la valeur technique pure
+                entry_id: entry.entry_id, 
+                domain: entry.domain,
+                // Le titre affiché combine le nom et l'ID
+                title: `${entry.title || 'Kodi'} (ID: ${entry.entry_id})`,
+                state: entry.state
+            }));
+            
+        this.requestUpdate();
+    } catch (err) {
+        console.error("Erreur chargement intégrations Kodi:", err);
+    }
+}
 
     static get styles() {
         return css`
@@ -36,8 +108,14 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                 color: var(--primary-text-color);
             }
 
-            .form-group input[type="text"],
-            .form-group input[type="color"] {
+            /* Styles pour le select/combobox */
+            ha-select {
+                width: 100%;
+                --ha-select-minimum-line-height: 40px;
+            }
+
+            /* Fallback pour le champ texte */
+            .input-fallback {
                 width: 100%;
                 padding: 8px 12px;
                 border: 1px solid var(--divider-color);
@@ -49,27 +127,16 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                 box-sizing: border-box;
             }
 
-            .form-group input[type="text"]:focus,
-            .form-group input[type="color"]:focus {
+            .input-fallback:focus {
                 border-color: var(--primary-color);
                 outline: none;
             }
 
-            .form-group input[type="checkbox"] {
-                width: 20px;
-                height: 20px;
-                cursor: pointer;
-                margin-right: 8px;
-            }
-
-            .checkbox-label {
-                display: flex;
-                align-items: center;
-                cursor: pointer;
-            }
-
-            .checkbox-label input[type="checkbox"] {
-                margin: 0 8px 0 0;
+            .description {
+                color: var(--secondary-text-color);
+                font-size: 12px;
+                margin-top: 4px;
+                font-style: italic;
             }
 
             .error-message {
@@ -78,11 +145,15 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                 margin-top: 4px;
             }
 
-            .description {
-                color: var(--secondary-text-color);
+            .info-message {
+                color: var(--warning-color);
                 font-size: 12px;
                 margin-top: 4px;
-                font-style: italic;
+                padding: 8px;
+                background: rgba(255, 152, 0, 0.1);
+                border-radius: 4px;
+                border-left: 3px solid var(--warning-color);
+                padding-left: 8px;
             }
 
             .section-title {
@@ -98,10 +169,6 @@ export class KodiPlaylistCardEditorElement extends LitElement {
             .form-group:first-child .section-title {
                 margin-top: 0;
             }
-
-            ha-select {
-                width: 100%;
-            }
         `;
     }
 
@@ -112,36 +179,97 @@ export class KodiPlaylistCardEditorElement extends LitElement {
 
         return html`
             <!-- Required Section -->
-            <div class="section-title">Entity Configuration</div>
 
-            ${this._renderField("entry_id")}
+            <!-- Champ entry_id amélioré avec combobox -->
+            ${this._renderEntryIdField()}
 
-            <!-- Display Section -->
+            <!-- Display Options -->
             <div class="section-title">Display Options</div>
-
             ${this._renderField("title")}
             ${this._renderField("show_version")}
 
             <!-- Thumbnail Section -->
             <div class="section-title">Thumbnail Options</div>
-
             ${this._renderField("show_thumbnail")}
             ${this._renderField("show_thumbnail_overlay")}
             ${this._renderField("show_thumbnail_border")}
 
             <!-- Separator Section -->
             <div class="section-title">Separator & Styling</div>
-
             ${this._renderField("show_line_separator")}
             ${this._renderField("hide_last_line_separator")}
             ${this._renderField("outline_color")}
 
             <!-- Container Section -->
             <div class="section-title">Playlist Container</div>
-
             ${this._renderField("items_container_scrollable")}
             ${this._renderField("items_container_height")}
         `;
+    }
+
+    /**
+     * Rend le champ entry_id avec combobox ou fallback texte
+     */
+    private _renderEntryIdField() {
+        const value = this._config?.entry_id || "";
+        const error = this._errors["entry_id"];
+        const hasIntegrations = this._kodiIntegrations.length > 0;
+
+        if (hasIntegrations) {
+            // Mode combobox : affiche la liste déroulante
+            return html`
+                <div class="form-group">
+                    <label for="entry_id">Kodi Media Sensors Integration</label>
+                    <ha-select
+                        id="entry_id"
+                        .value="${value}"
+                        @change="${(e: Event) => this._updateConfig("entry_id", (e.target as any).value)}"
+                        natural-menu-width>
+                        <mwc-list-item value="">
+                            -- Select an integration --
+                        </mwc-list-item>
+                        ${this._kodiIntegrations.map(
+                            integration => html`
+                                <mwc-list-item value="${integration.entry_id}">
+                                    ${integration.title || integration.entry_id}
+                                </mwc-list-item>
+                            `
+                        )}
+                    </ha-select>
+                    <div class="description">
+                        Select the kodi media sensors integration to use
+                    </div>
+                    ${error ? html`<div class="error-message">${error}</div>` : ""}
+                </div>
+            `;
+        } else {
+            // Mode fallback : affiche un champ texte avec avertissement
+            return html`
+                <div class="form-group">
+                    <label for="entry_id">Entity</label>
+                    <input
+                        type="text"
+                        id="entry_id"
+                        class="input-fallback"
+                        .value="${value || ""}"
+                        placeholder="sensor.kodi_media_sensor_playlist"
+                        @input="${(e: Event) =>
+                            this._updateConfig("entry_id", (e.target as HTMLInputElement).value)}" />
+                    <div class="description">
+                        Sensor entity that provides Kodi playlist data
+                    </div>
+                    ${this._kodiIntegrations.length === 0
+                        ? html`
+                              <div class="info-message">
+                                  ℹ️ No kodi_media_sensors integration found. 
+                                  Please install it first via HACS or manually.
+                              </div>
+                          `
+                        : ""}
+                    ${error ? html`<div class="error-message">${error}</div>` : ""}
+                </div>
+            `;
+        }
     }
 
     /**
@@ -178,6 +306,7 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                 <input
                     type="text"
                     id="${field.key}"
+                    class="input-fallback"
                     .value="${value || ""}"
                     placeholder="${field.placeholder || ""}"
                     @input="${(e: Event) => this._updateConfig(key, (e.target as HTMLInputElement).value)}" />
@@ -193,7 +322,7 @@ export class KodiPlaylistCardEditorElement extends LitElement {
     private _renderBooleanField(field: any, value: boolean, key: keyof KodiPlaylistCardConfig) {
         return html`
             <div class="form-group">
-                <label class="checkbox-label">
+                <label>
                     <input
                         type="checkbox"
                         .checked="${value || false}"
@@ -222,10 +351,11 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                         style="width: 60px; height: 40px; padding: 4px;" />
                     <input
                         type="text"
+                        class="input-fallback"
                         .value="${value || ""}"
                         placeholder="white, #fff, rgb(255,255,255)"
-                        @input="${(e: Event) => this._updateConfig(key, (e.target as HTMLInputElement).value)}"
-                        style="flex: 1;" />
+                        style="flex: 1;"
+                        @input="${(e: Event) => this._updateConfig(key, (e.target as HTMLInputElement).value)}" />
                 </div>
                 ${field.description ? html`<div class="description">${field.description}</div>` : ""}
                 ${this._errors[key] ? html`<div class="error-message">${this._errors[key]}</div>` : ""}
@@ -243,6 +373,7 @@ export class KodiPlaylistCardEditorElement extends LitElement {
                 <input
                     type="number"
                     id="${field.key}"
+                    class="input-fallback"
                     .value="${value || 0}"
                     min="${field.min || 0}"
                     max="${field.max || 999}"
@@ -256,12 +387,14 @@ export class KodiPlaylistCardEditorElement extends LitElement {
     /**
      * Update configuration and emit change event
      */
-    private _updateConfig(key: keyof KodiPlaylistCardConfig, value: any): void {
+    private _updateConfig(key: keyof KodiPlaylistCardConfig | string, value: any): void {
         if (!this._config) return;
 
         const newConfig = { ...this._config, [key]: value };
         this._config = newConfig;
-        this._editor?.setConfigValue(key, value);
+        if (this._editor) {
+            this._editor.setConfigValue(key as keyof KodiPlaylistCardConfig, value);
+        }
 
         // Validate and update errors
         this._validateConfig();
@@ -279,17 +412,13 @@ export class KodiPlaylistCardEditorElement extends LitElement {
     }
 
     /**
-     * Convert hex color to CSS color format (or return as-is if already a color name)
+     * Convert hex color to CSS color format
      */
     private _hexToColor(value: string): string {
         if (!value) return "#ffffff";
-        
-        // If it's already a hex color, return it
         if (value.startsWith("#")) {
             return value;
         }
-        
-        // For color names and rgb values, try to return white as default
         return "#ffffff";
     }
 }
