@@ -52,6 +52,10 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _isAvailable = true;
     @state() private _thumbnailCache: Map<string, string> = new Map();
 
+    @state() private _draggedIndex= -1;
+    @state() private _dragOverIndex = -1;
+    @state() private _isDragging = false;
+
     private _unsubscribe?: Promise<() => void>;
     private _thumbnailPromiseCache: Map<string, Promise<string>> = new Map();
     private _thumbnailLoadingSet: Set<string> = new Set();
@@ -194,23 +198,23 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             .playlist-items-container {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-    /* Amélioration du scroll */
-    -webkit-overflow-scrolling: touch; 
-}
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                box-sizing: border-box;
+                /* Amélioration du scroll */
+                -webkit-overflow-scrolling: touch;
+            }
 
-/* Optionnel : pour éviter que le scroll ne chevauche le contenu */
-.playlist-items-container::-webkit-scrollbar {
-    width: 6px;
-}
-.playlist-items-container::-webkit-scrollbar-thumb {
-    background-color: var(--divider-color);
-    border-radius: 3px;
-}
+            /* Optionnel : pour éviter que le scroll ne chevauche le contenu */
+            .playlist-items-container::-webkit-scrollbar {
+                width: 6px;
+            }
+            .playlist-items-container::-webkit-scrollbar-thumb {
+                background-color: var(--divider-color);
+                border-radius: 3px;
+            }
 
             .playlist-item {
                 display: flex;
@@ -220,6 +224,57 @@ export class KodiPlaylistCard extends LitElement {
                 /* La bordure est définie par défaut ici, on la contrôlera via une classe */
                 border-bottom: 1px solid transparent;
                 transition: background-color 0.2s;
+                transition: all 0.2s ease;
+                user-select: none;
+                position: relative;
+            }
+
+            // Item qu'on est en train de draguer
+            .playlist-item.dragging {
+                opacity: 0.5;
+                background: var(--secondary-background-color);
+                border-left: 4px solid var(--warning-color);
+                padding-left: calc(12px - 4px);
+            }
+
+            // Zone où on peut dropper
+            .playlist-item.drag-over {
+                background: rgba(3, 169, 244, 0.15);
+                border-top: 2px solid var(--primary-color);
+                padding-top: calc(8px - 2px);
+                margin-top: 2px;
+            }
+
+            // Drag handle (icône de 6 points)
+            .drag-handle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                cursor: grab;
+                color: var(--secondary-text-color);
+                opacity: 0;
+                transition: opacity 0.2s;
+                flex-shrink: 0;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+
+            // Montrer le drag handle au hover
+            .playlist-item:not(.active):hover .drag-handle {
+                opacity: 1;
+            }
+
+            // Désactiver le drag sur l'item en cours de lecture
+            .playlist-item.active {
+                cursor: not-allowed;
+
+                .drag-handle {
+                    display: none;
+                }
             }
 
             /* Classe appliquée si show_line_separator est true */
@@ -601,64 +656,76 @@ export class KodiPlaylistCard extends LitElement {
                   `
                 : html`
                       <div class="card-content">
-        <ul 
-            class="playlist-items-container" 
-            style="${this._getContainerStyle()}">
-            ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
-        </ul>
-    </div>
+                          <ul class="playlist-items-container" style="${this._getContainerStyle()}">
+                              ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
+                          </ul>
+                      </div>
                   `}
             ${showVersion ? html` <div class="version-footer">Version: ${CARD_VERSION}</div> ` : ""}
         `;
     }
 
-private _getContainerStyle() {
-    // 1. Si scroll désactivé, on laisse tout s'afficher
-    if (!this._config?.items_container_scrollable) {
-        return "overflow-y: visible; display: flex; flex-direction: column;";
-    }
+    private _getContainerStyle() {
+        // 1. Si scroll désactivé, on laisse tout s'afficher
+        if (!this._config?.items_container_scrollable) {
+            return "overflow-y: visible; display: flex; flex-direction: column;";
+        }
 
-    // 2. On récupère le nombre d'items (DÉBOGAGE : on force une valeur pour tester)
-    const count = Number(this._config?.visible_items_count || 5);
-    const heightPerItem = 60;
-    const totalHeight = count * heightPerItem;
+        // 2. On récupère le nombre d'items (DÉBOGAGE : on force une valeur pour tester)
+        const count = Number(this._config?.visible_items_count || 5);
+        const heightPerItem = 60;
+        const totalHeight = count * heightPerItem;
 
-    // 3. On affiche le calcul dans la console F12 pour voir ce qui se passe
-    console.log("Calcul :", count, "items *", heightPerItem, "px =", totalHeight, "px");
+        // 3. On affiche le calcul dans la console F12 pour voir ce qui se passe
+        console.log("Calcul :", count, "items *", heightPerItem, "px =", totalHeight, "px");
 
-    // 4. On retourne la valeur calculée
-    return `
+        // 4. On retourne la valeur calculée
+        return `
         overflow-y: auto !important;
         max-height: ${totalHeight}px !important;
         display: flex;
         flex-direction: column;
     `;
-}
+    }
 
     private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const thumbUrl = this._getItemThumbnailUrl(item);
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
         const genre = this._getItemGenre(item);
-
         const isPlaying = index === this._currentIndex;
 
-        const showSeparator = this._config?.show_line_separator ?? true;
-    const hideLast = this._config?.hide_last_line_separator ?? false;
-    const outlineColor = this._config?.outline_color || "var(--divider-color)";
-
-    const itemClasses = [
-        "playlist-item",
-        isPlaying ? "active" : "",
-        showSeparator ? "with-separator" : "",
-        hideLast ? "hide-last" : ""
-    ].join(" ");
-    
+        // Classes dynamiques pour le drag
+        const dragClasses = [
+            "playlist-item",
+            isPlaying ? "active" : "",
+            this._draggedIndex === index ? "dragging" : "",
+            this._dragOverIndex === index ? "drag-over" : "",
+            this._config?.show_line_separator ? "with-separator" : "",
+            this._config?.hide_last_line_separator ? "hide-last" : "",
+        ]
+            .filter(Boolean)
+            .join(" ");
 
         return html`
-            <li 
-            class="${itemClasses}" 
-            style="${showSeparator ? `--outline-color: ${outlineColor};` : ""}">
+            <li
+                class="${dragClasses}"
+                draggable="${!isPlaying}"
+                @dragstart="${(e: DragEvent) => this._handleDragStart(e, index)}"
+                @dragover="${(e: DragEvent) => this._handleDragOver(e, index)}"
+                @dragleave="${() => this._handleDragLeave()}"
+                @drop="${(e: DragEvent) => this._handleDrop(e, index)}"
+                style="${this._config?.show_line_separator
+                    ? `--outline-color: ${this._config?.outline_color || "var(--divider-color)"}`
+                    : ""}">
+                <!-- Drag handle indicator -->
+                ${!isPlaying
+                    ? html`
+                          <div class="drag-handle" title="Drag to reorder">
+                              <ha-icon icon="mdi:drag"></ha-icon>
+                          </div>
+                      `
+                    : ""}
                 ${this._renderThumbnailButton(thumbUrl, icon, index, isPlaying)}
                 <div class="track-info">
                     <span class="track-title">${item.title || "Unknown"}</span>
@@ -670,11 +737,9 @@ private _getContainerStyle() {
                 <div class="item-action">
                     ${isPlaying
                         ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
-                        : html`
-                              <div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
-                                  <ha-icon icon="mdi:trash-can"></ha-icon>
-                              </div>
-                          `}
+                        : html`<div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
+                              <ha-icon icon="mdi:trash-can"></ha-icon>
+                          </div>`}
                 </div>
             </li>
         `;
@@ -791,4 +856,98 @@ private _getContainerStyle() {
             throw error;
         }
     }
+
+    /**
+     * Handle drag start - sauvegarde l'index source
+     */
+    private _handleDragStart(event: DragEvent, fromIndex: number): void {
+        this._draggedIndex = fromIndex;
+        this._isDragging = true;
+
+        // Configure le drag
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", fromIndex.toString());
+        }
+
+        console.log("🎯 Drag start from index:", fromIndex);
+        this.requestUpdate();
+    }
+
+    /**
+     * Handle drag over - montre où l'item va être droppé
+     */
+    private _handleDragOver(event: DragEvent, overIndex: number): void {
+        event.preventDefault(); // ✅ IMPORTANT pour autoriser le drop
+
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = "move";
+        }
+
+        this._dragOverIndex = overIndex;
+        this.requestUpdate();
+    }
+
+    /**
+     * Handle drag leave
+     */
+    private _handleDragLeave(): void {
+        this._dragOverIndex = -1;
+        this.requestUpdate();
+    }
+
+    /**
+     * Handle drop - envoie le reorder au back
+     */
+    private _handleDrop(event: DragEvent, toIndex: number): void {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const fromIndex = this._draggedIndex;
+
+        // Reset état
+        this._draggedIndex = -1;
+        this._dragOverIndex = -1;
+        this._isDragging = false;
+
+        console.log(`📦 Drop: ${fromIndex} → ${toIndex}`);
+
+        // Validations
+        if (fromIndex === -1 || fromIndex === toIndex) {
+            this.requestUpdate();
+            return;
+        }
+
+        // Éviter les bugs si on drag le current playing
+        if (fromIndex === this._currentIndex) {
+            console.warn("Cannot reorder currently playing item");
+            this.requestUpdate();
+            return;
+        }
+
+        // Envoyer au back
+        this._reorderPlaylist(fromIndex, toIndex);
+
+        this.requestUpdate();
+    }
+
+    /**
+     * Appel au back pour reorder la playlist
+     */
+    private _reorderPlaylist(fromIndex: number, toIndex: number): void {
+        if (!this.hass?.connection || !this._config?.entry_id) {
+            console.error("Cannot reorder: missing connection or entry_id");
+            return;
+        }
+
+        console.log("📡 Sending reorder request:", { fromIndex, toIndex });
+
+        this.hass.connection.sendMessage({
+            type: "kodi_media_sensors/playlist_reorder",
+            entry_id: this._config.entry_id,
+            from_index: fromIndex,
+            to_index: toIndex,
+        } as any);
+    }
 }
+
