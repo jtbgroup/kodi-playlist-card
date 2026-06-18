@@ -4,6 +4,9 @@
 # Ignore all Python bytecode cache directories and files starting with __
 **/__*
 
+# VSCODE
+/.vscode
+
 /.rpt2_cache/
 package-lock.json
 /dist
