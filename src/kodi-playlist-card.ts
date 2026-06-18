@@ -565,7 +565,7 @@ export class KodiPlaylistCard extends LitElement {
     protected render() {
         let statusClass = "fixed-green";
 
-        if (!this._isAvailable) {
+        if (!this._isAvailable || this._kodiState === "off") {
             statusClass = "fixed-red";
         } else if (this._kodiState === "playing") {
             statusClass = "flashing-green";
