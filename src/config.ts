@@ -34,7 +34,7 @@ export function validateConfig(config: any): KodiPlaylistCardConfig {
 
         // Container options
         items_container_scrollable: config.items_container_scrollable ?? DEFAULT_CONFIG.items_container_scrollable,
-        items_container_height: config.items_container_height ?? DEFAULT_CONFIG.items_container_height,
+        visible_items_count: config.visible_items_count ?? DEFAULT_CONFIG.visible_items_count,
     };
 
     // Validate outline color if provided
@@ -48,15 +48,15 @@ export function validateConfig(config: any): KodiPlaylistCardConfig {
     // Validate container height if scrollable is enabled
     if (
         validatedConfig.items_container_scrollable &&
-        validatedConfig.items_container_height 
+        validatedConfig.visible_items_count 
         // &&
         // !isValidDimension(validatedConfig.items_container_height
         )
      {
         console.warn(
-            `Invalid items_container_height "${validatedConfig.items_container_height}", using default: ${DEFAULT_CONFIG.items_container_height}`,
+            `Invalid items_container_height "${validatedConfig.visible_items_count}", using default: ${DEFAULT_CONFIG.visible_items_count}`,
         );
-        validatedConfig.items_container_height = DEFAULT_CONFIG.items_container_height;
+        validatedConfig.visible_items_count = DEFAULT_CONFIG.visible_items_count;
     }
 
     return validatedConfig;

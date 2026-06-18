@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.0
+
+- new development to fit with the new kodi-media sensor integration (version 6.0.0)
+
 ## 4.5.1
 
 - Make use of source url directly instead of using the image api of kodi (to avoid http / https issues) for tvshow episodes and music videos.

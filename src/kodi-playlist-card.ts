@@ -10,7 +10,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./kodi-playlist-card-editor";
 
-const CARD_VERSION = "1.2.3";
+const CARD_VERSION = "5.0.0";
 
 interface PlaylistItem {
     title?: string;
