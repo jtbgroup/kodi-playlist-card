@@ -129,6 +129,10 @@ export class KodiPlaylistCardEditor {
             }
         }
 
+        if (this._config.visible_items_count && (this._config.visible_items_count < 1)) {
+        errors.visible_items_count = "Must be at least 1";
+    }
+    
         // Validate height format if scrollable
         // if (this._config.items_container_scrollable && this._config.items_container_height) {
         //     if (!this._isValidDimension(this._config.items_container_height)) {

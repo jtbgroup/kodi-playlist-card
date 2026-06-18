@@ -203,7 +203,15 @@ private async _loadKodiIntegrations(): Promise<void> {
             <!-- Container Section -->
             <div class="section-title">Playlist Container</div>
             ${this._renderField("items_container_scrollable")}
-            ${this._renderField("items_container_height")}
+
+
+
+            ${this._config.items_container_scrollable ? html`
+                <div class="nested-options" style="padding-left: 20px; border-left: 2px solid var(--primary-color); margin-bottom: 10px;">
+                    ${this._renderField("visible_items_count")}
+                  
+                </div>
+            ` : ""}
         `;
     }
 

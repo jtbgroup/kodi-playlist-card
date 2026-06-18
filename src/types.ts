@@ -42,26 +42,23 @@ export type KodiMediaSensorEvent = PlaylistUpdateEvent | KodiUnavailableEvent;
  * Card configuration - All supported options
  */
 export interface KodiPlaylistCardConfig {
-    // Required fields
     entry_id: string;
-    
-    // Display options
     title?: string;
     show_version?: boolean;
-    
-    // Thumbnail options
+
+    // Thumbnails
     show_thumbnail?: boolean;
     show_thumbnail_overlay?: boolean;
     show_thumbnail_border?: boolean;
-    
-    // Separator and styling options
+
+    // Separators & Colors
     show_line_separator?: boolean;
     hide_last_line_separator?: boolean;
     outline_color?: string;
-    
-    // Container options
+
+    // Scroll & Height
     items_container_scrollable?: boolean;
-    items_container_height?: number;
+    visible_items_count?: number;
 }
 
 /**
@@ -76,8 +73,7 @@ export const DEFAULT_CONFIG: Partial<KodiPlaylistCardConfig> = {
     hide_last_line_separator: false,
     outline_color: "white",
     items_container_scrollable: false,
-    items_container_height: 300,
-    show_version: false,
+    visible_items_count: 5,
 };
 
 /**
@@ -163,15 +159,7 @@ export const EDITOR_SCHEMA: EditorField[] = [
         default: false,
         description: "Add scrollbar for long playlists",
     },
-    {
-        key: "items_container_height",
-        label: "Playlist Container Height (pixels)",
-        type: "number", // Changé de "text" à "number"
-        default: 300,
-        min: 100,
-        max: 1000,
-        description: "Height in pixels",
-    },
+    { key: "visible_items_count", label: "Number of visible items (based on the default item height)", type: "number", min: 1, max: 20 },
     {
         key: "show_version",
         label: "Show Version",
@@ -191,3 +179,4 @@ export enum ConnectionState {
     UNAVAILABLE = "unavailable",
     ERROR = "error",
 }
+

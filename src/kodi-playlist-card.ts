@@ -1,6 +1,6 @@
 /**
  * EXEMPLE COMPLET : kodi-playlist-card.ts modifié
- * 
+ *
  * Ceci montre comment intégrer l'éditeur dans votre carte existante.
  * Copiez/modifiez les parties pertinentes dans votre kodi-playlist-card.ts
  */
@@ -8,7 +8,7 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
-import "./kodi-playlist-card-editor"; 
+import "./kodi-playlist-card-editor";
 
 const CARD_VERSION = "1.2.3";
 
@@ -56,10 +56,9 @@ export class KodiPlaylistCard extends LitElement {
     private _thumbnailPromiseCache: Map<string, Promise<string>> = new Map();
     private _thumbnailLoadingSet: Set<string> = new Set();
 
- 
-  static getConfigElement(): LovelaceCardEditor {
-    return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
-}
+    static getConfigElement(): LovelaceCardEditor {
+        return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
+    }
 
     static getStubConfig(): Record<string, unknown> {
         return {
@@ -80,13 +79,13 @@ export class KodiPlaylistCard extends LitElement {
     public setConfig(config: any): void {
         if (!config) throw new Error("Configuration invalide.");
         if (!config.entry_id) throw new Error('Configuration invalide: "entry_id" is required.');
-        
+
         this._config = { ...config };
-        
+
         // ✅ OPTIONNEL : Valider avec le nouveau système
         // const validatedConfig = validateConfig(config);
         // this._config = validatedConfig;
-        
+
         console.log("Kodi card config:", this._config);
     }
 
@@ -155,7 +154,8 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             @keyframes pulse-dot {
-                0%, 100% {
+                0%,
+                100% {
                     opacity: 1;
                 }
                 50% {
@@ -164,7 +164,8 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             @keyframes pulse-marker {
-                0%, 100% {
+                0%,
+                100% {
                     transform: scale(1);
                     opacity: 1;
                 }
@@ -175,7 +176,6 @@ export class KodiPlaylistCard extends LitElement {
             }
 
             .playlist-container {
-                max-height: 400px;
                 overflow-y: auto;
             }
             .empty-state {
@@ -192,13 +192,44 @@ export class KodiPlaylistCard extends LitElement {
                 --icon-size: 48px;
                 opacity: 0.5;
             }
+
+            .playlist-items-container {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    /* Amélioration du scroll */
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* Optionnel : pour éviter que le scroll ne chevauche le contenu */
+.playlist-items-container::-webkit-scrollbar {
+    width: 6px;
+}
+.playlist-items-container::-webkit-scrollbar-thumb {
+    background-color: var(--divider-color);
+    border-radius: 3px;
+}
+
             .playlist-item {
                 display: flex;
                 align-items: center;
                 gap: 12px;
                 padding: 8px 16px;
-                border-bottom: 1px solid var(--divider-color);
+                /* La bordure est définie par défaut ici, on la contrôlera via une classe */
+                border-bottom: 1px solid transparent;
                 transition: background-color 0.2s;
+            }
+
+            /* Classe appliquée si show_line_separator est true */
+            .playlist-item.with-separator {
+                border-bottom: 1px solid var(--outline-color);
+            }
+
+            /* Si hide_last_line_separator est true, on masque la bordure sur le dernier élément */
+            .playlist-item.hide-last.with-separator:last-child {
+                border-bottom: none;
             }
             .playlist-item:hover {
                 background: var(--secondary-background-color);
@@ -330,13 +361,13 @@ export class KodiPlaylistCard extends LitElement {
             .remove-button ha-icon {
                 --icon-size: 20px;
             }
-                .version-footer {
-            text-align: right;
-            font-size: 0.7em;
-            color: var(--secondary-text-color);
-            padding: 8px;
-            opacity: 0.6;
-        }
+            .version-footer {
+                text-align: right;
+                font-size: 0.7em;
+                color: var(--secondary-text-color);
+                padding: 8px;
+                opacity: 0.6;
+            }
         `;
     }
 
@@ -562,24 +593,47 @@ export class KodiPlaylistCard extends LitElement {
                       </div>
                   `
                 : this._items.length === 0
-                  ? html`
-                        <div class="empty-state">
-                            <ha-icon icon="mdi:playlist-music"></ha-icon>
-                            <div>Empty playlist</div>
-                        </div>
-                    `
-                  : html`
-                        <div class="playlist-container">
-                            ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
-                        </div>
-                    `}
-                    ${showVersion ? html`
-                <div class="version-footer">
-                    Version: ${CARD_VERSION}
-                </div>
-            ` : ""}
+                ? html`
+                      <div class="empty-state">
+                          <ha-icon icon="mdi:playlist-music"></ha-icon>
+                          <div>Empty playlist</div>
+                      </div>
+                  `
+                : html`
+                      <div class="card-content">
+        <ul 
+            class="playlist-items-container" 
+            style="${this._getContainerStyle()}">
+            ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
+        </ul>
+    </div>
+                  `}
+            ${showVersion ? html` <div class="version-footer">Version: ${CARD_VERSION}</div> ` : ""}
         `;
     }
+
+private _getContainerStyle() {
+    // 1. Si scroll désactivé, on laisse tout s'afficher
+    if (!this._config?.items_container_scrollable) {
+        return "overflow-y: visible; display: flex; flex-direction: column;";
+    }
+
+    // 2. On récupère le nombre d'items (DÉBOGAGE : on force une valeur pour tester)
+    const count = Number(this._config?.visible_items_count || 5);
+    const heightPerItem = 60;
+    const totalHeight = count * heightPerItem;
+
+    // 3. On affiche le calcul dans la console F12 pour voir ce qui se passe
+    console.log("Calcul :", count, "items *", heightPerItem, "px =", totalHeight, "px");
+
+    // 4. On retourne la valeur calculée
+    return `
+        overflow-y: auto !important;
+        max-height: ${totalHeight}px !important;
+        display: flex;
+        flex-direction: column;
+    `;
+}
 
     private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const thumbUrl = this._getItemThumbnailUrl(item);
@@ -589,8 +643,22 @@ export class KodiPlaylistCard extends LitElement {
 
         const isPlaying = index === this._currentIndex;
 
+        const showSeparator = this._config?.show_line_separator ?? true;
+    const hideLast = this._config?.hide_last_line_separator ?? false;
+    const outlineColor = this._config?.outline_color || "var(--divider-color)";
+
+    const itemClasses = [
+        "playlist-item",
+        isPlaying ? "active" : "",
+        showSeparator ? "with-separator" : "",
+        hideLast ? "hide-last" : ""
+    ].join(" ");
+    
+
         return html`
-            <li class="playlist-item ${isPlaying ? "active" : ""}">
+            <li 
+            class="${itemClasses}" 
+            style="${showSeparator ? `--outline-color: ${outlineColor};` : ""}">
                 ${this._renderThumbnailButton(thumbUrl, icon, index, isPlaying)}
                 <div class="track-info">
                     <span class="track-title">${item.title || "Unknown"}</span>
@@ -618,13 +686,26 @@ export class KodiPlaylistCard extends LitElement {
         itemIndex: number,
         isPlaying: boolean,
     ) {
+        const showBorder = this._config?.show_thumbnail_border ?? false;
+        const showOverlay = this._config?.show_thumbnail_overlay ?? false;
+        const showImage = this._config?.show_thumbnail ?? true; // true par défaut
+        const outlineColor = this._config?.outline_color || "var(--divider-color)";
+
+        // Style inline pour la bordure dynamique
+        const buttonStyle = showBorder ? `border: 1px solid ${outlineColor};` : "";
+
         return html`
             <div
-                class="thumbnail-button ${isPlaying ? "disabled" : ""}"
+                class="thumbnail-button ${isPlaying ? "disabled" : ""} ${showBorder ? "with-border" : ""}"
+                style="${buttonStyle}"
                 @click="${() => this._playItem(itemIndex)}"
                 title="${isPlaying ? "Currently playing" : "Play"}">
-                ${this._renderThumbnailContent(thumbnailUrl, icon)}
-                ${!isPlaying ? html`<div class="play-overlay"><ha-icon icon="mdi:play-circle"></ha-icon></div>` : ""}
+                ${showImage
+                    ? this._renderThumbnailContent(thumbnailUrl, icon)
+                    : html`<div class="thumb-placeholder"><ha-icon icon="${icon}"></ha-icon></div>`}
+                ${!isPlaying && showOverlay
+                    ? html`<div class="play-overlay"><ha-icon icon="mdi:play-circle"></ha-icon></div>`
+                    : ""}
             </div>
         `;
     }
