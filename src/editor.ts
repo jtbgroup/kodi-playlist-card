@@ -1,248 +1,88 @@
-import { EditorField, EDITOR_SCHEMA, DEFAULT_CONFIG, KodiPlaylistCardConfig } from "./types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { html, LitElement, TemplateResult } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { fireEvent, HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 
-/**
- * Editor class for managing Kodi Playlist Card configuration
- * Structure prepared for implementing UI editor functionality
- */
-export class KodiPlaylistCardEditor {
-    private _schema: EditorField[] = EDITOR_SCHEMA;
-    private _config: KodiPlaylistCardConfig;
-    private _changedFields: Set<keyof KodiPlaylistCardConfig> = new Set();
+import { KodiPlaylistCardConfig } from "./types";
 
-    constructor(config: KodiPlaylistCardConfig) {
-        this._config = { ...config };
+@customElement("kodi-playlist-card-editor")
+export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEditor {
+    @property({ attribute: false }) public hass?: HomeAssistant;
+    @state() private _config?: KodiPlaylistCardConfig;
+
+    public setConfig(config: KodiPlaylistCardConfig): void {
+        this._config = config;
     }
 
-    /**
-     * Get the editor schema (field definitions)
-     */
-    getSchema(): EditorField[] {
-        return this._schema;
+    private _schema = [
+        {
+            name: "entity",
+            selector: { entity: { domain: "sensor" } },
+        },
+        {
+            name: "title",
+            selector: { text: {} },
+        },
+        { name: "show_version", selector: { boolean: {} } },
+        {
+            type: "grid",
+            name: "",
+            schema: [
+                { name: "show_thumbnail", selector: { boolean: {} } },
+                { name: "show_thumbnail_overlay", selector: { boolean: {} } },
+                { name: "show_thumbnail_border", selector: { boolean: {} } },
+
+                { name: "show_line_separator", selector: { boolean: {} } },
+                { name: "hide_last_line_separator", selector: { boolean: {} } },
+               
+               { name: "items_container_scrollable", selector: { boolean: {} } },
+            ],
+        },
+        {
+            name: "outline_color",
+            selector: { color_rgb: {} },
+        },
+ 
+        {
+            name: "visible_items_count",
+            selector: { number: { min: 0, mode: "box" } },
+        },
+    ];
+
+    private _computeLabel = (schema: { name: string }): string => {
+        const labels: Record<string, string> = {
+            entity: "Entity",
+            title: "Title",
+            show_thumbnail: "Show Thumbnail",
+            show_thumbnail_overlay: "Show Thumbnail Overlay",
+            show_thumbnail_border: "Show Thumbnail Border",
+            show_line_separator: "Show line separator",
+            hide_last_line_separator: "Hide last line separator",
+            items_container_scrollable: "Make container scrollable",
+            visible_items_count: "Number of visible items",
+            outline_color: "Outline Color (optional)",
+        };
+        return labels[schema.name] ?? schema.name;
+    };
+
+    protected render(): TemplateResult | void {
+        if (!this.hass || !this._config) return html``;
+
+        return html`
+            <ha-form
+                .hass=${this.hass}
+                .data=${this._config}
+                .schema=${this._schema}
+                .computeLabel=${this._computeLabel}
+                @value-changed=${this._valueChanged}>
+            </ha-form>
+        `;
     }
 
-    /**
-     * Get a specific field from the schema
-     */
-    getField(key: keyof KodiPlaylistCardConfig): EditorField | undefined {
-        return this._schema.find(field => field.key === key);
-    }
-
-    /**
-     * Get all fields of a specific type
-     */
-    getFieldsByType(type: EditorField["type"]): EditorField[] {
-        return this._schema.filter(field => field.type === type);
-    }
-
-    /**
-     * Get the current configuration
-     */
-    getConfig(): KodiPlaylistCardConfig {
-        return { ...this._config };
-    }
-
-    /**
-     * Get a specific config value
-     */
-    getConfigValue(key: keyof KodiPlaylistCardConfig): any {
-        return this._config[key];
-    }
-
-    /**
-     * Update a configuration value
-     * Tracks changed fields for potential UI updates
-     */
-    setConfigValue(key: keyof KodiPlaylistCardConfig, value: any): void {
-        const oldValue = this._config[key];
-        
-        // Only update if value actually changed
-        if (oldValue !== value) {
-            (this._config[key] as any) = value;
-            this._changedFields.add(key);
-        }
-    }
-
-    /**
-     * Update multiple configuration values at once
-     */
-    updateConfig(updates: Partial<KodiPlaylistCardConfig>): void {
-        Object.entries(updates).forEach(([key, value]) => {
-            this.setConfigValue(key as keyof KodiPlaylistCardConfig, value);
-        });
-    }
-
-    /**
-     * Reset a field to its default value
-     */
-    resetField(key: keyof KodiPlaylistCardConfig): void {
-        const field = this.getField(key);
-        if (field && field.default !== undefined) {
-            this.setConfigValue(key, field.default as any);
-        }
-    }
-
-    /**
-     * Reset all fields to defaults
-     */
-    resetAll(): void {
-        this._config = { ...(DEFAULT_CONFIG as any) } as KodiPlaylistCardConfig;
-        this._changedFields.clear();
-    }
-
-    /**
-     * Get which fields have been changed
-     */
-    getChangedFields(): Array<keyof KodiPlaylistCardConfig> {
-        return Array.from(this._changedFields);
-    }
-
-    /**
-     * Clear the changed fields tracker
-     */
-    clearChangedFields(): void {
-        this._changedFields.clear();
-    }
-
-    /**
-     * Check if a field has been modified
-     */
-    isFieldChanged(key: keyof KodiPlaylistCardConfig): boolean {
-        return this._changedFields.has(key);
-    }
-
-    /**
-     * Validate the configuration
-     * Returns an object with validation errors, or empty object if valid
-     */
-    validate(): Record<string, string> {
-        const errors: Record<string, string> = {};
-
-        // Validate required fields
-        if (!this._config.entry_id) {
-            errors.entry_id = "Entity ID is required";
-        }
-
-        // Validate outline_color format if provided
-        if (this._config.outline_color) {
-            if (!this._isValidColor(this._config.outline_color)) {
-                errors.outline_color = "Invalid color format (use color name, rgb(), or #hex)";
-            }
-        }
-
-        if (this._config.visible_items_count && (this._config.visible_items_count < 1)) {
-        errors.visible_items_count = "Must be at least 1";
-    }
-    
-        // Validate height format if scrollable
-        // if (this._config.items_container_scrollable && this._config.items_container_height) {
-        //     if (!this._isValidDimension(this._config.items_container_height)) {
-        //         errors.items_container_height = "Invalid dimension format (use px, em, rem, vh, etc.)";
-        //     }
-        // }
-
-        return errors;
-    }
-
-    /**
-     * Check if there are any validation errors
-     */
-    isValid(): boolean {
-        return Object.keys(this.validate()).length === 0;
-    }
-
-    /**
-     * Export configuration as YAML string (for manual editing)
-     */
-    toYAML(): string {
-        let yaml = "type: custom:kodi-playlist-card\n";
-        
-        // Sort keys for readability
-        const keys = Object.keys(this._config).sort() as Array<keyof KodiPlaylistCardConfig>;
-        
-        for (const key of keys) {
-            const value = this._config[key];
-            if (value !== undefined && value !== null) {
-                yaml += `${key}: ${this._formatYAMLValue(value)}\n`;
-            }
-        }
-        
-        return yaml;
-    }
-
-    /**
-     * Import configuration from YAML object
-     */
-    fromYAML(obj: Record<string, any>): void {
-        const config: Partial<KodiPlaylistCardConfig> = {};
-        
-        for (const [key, value] of Object.entries(obj)) {
-            if (key !== "type" && EDITOR_SCHEMA.some(f => f.key === key)) {
-                config[key as keyof KodiPlaylistCardConfig] = value;
-            }
-        }
-        
-        this.updateConfig(config as KodiPlaylistCardConfig);
-    }
-
-    /**
-     * Get configuration as JSON object
-     */
-    toJSON(): KodiPlaylistCardConfig {
-        return { ...this._config };
-    }
-
-    /**
-     * Import configuration from JSON object
-     */
-    fromJSON(obj: Partial<KodiPlaylistCardConfig>): void {
-        this.updateConfig(obj as any);
-    }
-
-    /**
-     * Helper: Check if a string is a valid CSS color
-     */
-    private _isValidColor(color: string): boolean {
-        // Named colors, hex, rgb, rgba
-        const colorRegex = /^(#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgb\(.*\)|rgba\(.*\)|[a-zA-Z]+)$/;
-        return colorRegex.test(color.trim());
-    }
-
-  
-
-    /**
-     * Helper: Format a value for YAML output
-     */
-    private _formatYAMLValue(value: any): string {
-        if (typeof value === "string") {
-            // Quote strings that contain special characters
-            if (value.includes(" ") || value.includes(":") || value.includes("#")) {
-                return `"${value}"`;
-            }
-            return value;
-        }
-        if (typeof value === "boolean") {
-            return value ? "true" : "false";
-        }
-        if (typeof value === "number") {
-            return value.toString();
-        }
-        return JSON.stringify(value);
+    private _valueChanged(ev: CustomEvent): void {
+        if (!this._config || !this.hass) return;
+        this._config = ev.detail.value;
+        fireEvent(this, "config-changed", { config: this._config });
     }
 }
 
-/**
- * Helper function to create a new editor instance
- */
-export function createEditor(config: KodiPlaylistCardConfig): KodiPlaylistCardEditor {
-    return new KodiPlaylistCardEditor(config);
-}
-
-/**
- * Helper function to get an empty editor with defaults
- */
-export function createEmptyEditor(): KodiPlaylistCardEditor {
-    return new KodiPlaylistCardEditor({
-        entry_id: "",
-        ...(DEFAULT_CONFIG as any),
-    } as KodiPlaylistCardConfig);
-}
