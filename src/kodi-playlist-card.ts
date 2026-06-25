@@ -9,11 +9,9 @@ import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
-import { KodiMediaSensorEvent, KodiUnavailableEvent, PlaylistItem, PlaylistUpdateEvent } from "./types";
+import {  PlaylistItem,  } from "./types";
 
 const CARD_VERSION = "5.0.0";
-
-
 
 @customElement("kodi-playlist-card")
 export class KodiPlaylistCard extends LitElement {
@@ -474,38 +472,54 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    private _subscribePlaylist(): void {
-        // Strict verification
-        if (!this.hass?.connection || !this._resolvedEntryId || !this._resolvedKodiEntityId) {
-            console.warn("Kodi card: Subscription différé (IDs manquants)");
+private async _subscribePlaylist(): Promise<void> {
+        if (!this.hass?.connection || !this._resolvedEntryId) {
             return;
         }
 
-        this._unsubscribePlaylistListener = this.hass.connection.subscribeMessage<KodiMediaSensorEvent>(
-            (message: KodiMediaSensorEvent) => this._handlePlaylistEvent(message),
-            {
-                type: "kodi_media_sensors/playlist_subscribe",
-                entry_id: this._resolvedEntryId, // Utilisez l'ID résolu
-                kodi_entity_id: this._resolvedKodiEntityId,
-            },
-        );
-    }
+        try {
+            this._unsubscribePlaylistListener = this.hass.connection.subscribeMessage(
+                (message: any) => {
+                    // 1. Gestion de la réponse initiale (one-shot) ou poussée
+                    if (message.type === "playlist_initial_state" || message.type === "playlist_update") {
+                        this._items = message.items || [];
+                        
+                        // ✅ CORRECTION : Utilisation de current_index renvoyé par le backend Python
+                        this._currentIndex = message.current_index ?? -1; 
+                        this.requestUpdate();
+                    }
+                },
+                {
+                    type: "kodi_media_sensors/playlist_subscribe",
+                    entry_id: this._resolvedEntryId,
+                    kodi_entity_id: this._resolvedKodiEntityId,
+                } as any
+            );
 
-    private _handlePlaylistEvent(message: KodiMediaSensorEvent): void {
-        console.log("Kodi card: Message received", message);
+            // Attendre que la souscription soit bien active
+            await this._unsubscribePlaylistListener;
 
-        if (message.type === "playlist_update") {
-            this._items = message.items || [];
-            this._thumbnailLoadingSet.clear();
-            console.log("Kodi card: Playlist updated", this._items.length);
-
-           
-        } else if (message.type === "kodi_unavailable") {
-            this._items = [];
-            this._thumbnailLoadingSet.clear();
-            console.log("Kodi card: Kodi is unavailable");
+        } catch (err) {
+            console.error("❌ Error subscribing to playlist updates:", err);
+            this._sensorState = "unavailable";
         }
     }
+
+    // private _handlePlaylistEvent(message: KodiMediaSensorEvent): void {
+    //     console.log("Kodi card: Message received", message);
+
+    //     if (message.type === "playlist_update") {
+    //         this._items = message.items || [];
+    //         this._thumbnailLoadingSet.clear();
+    //         console.log("Kodi card: Playlist updated", this._items.length);
+
+           
+    //     } else if (message.type === "kodi_unavailable") {
+    //         this._items = [];
+    //         this._thumbnailLoadingSet.clear();
+    //         console.log("Kodi card: Kodi is unavailable");
+    //     }
+    // }
 
     private _playItem(itemIndex: number): void {
         if (itemIndex === this._currentIndex) {
@@ -521,7 +535,7 @@ export class KodiPlaylistCard extends LitElement {
         console.log("Kodi card: Playing item at index", itemIndex);
 
         this.hass.connection.sendMessage({
-            type: "kodi_media_sensors/playlist_play_item",
+            type: "kodi_media_sensors/playlist_goto_index",
             entry_id: this._resolvedEntryId,
             kodi_entity_id: this._resolvedKodiEntityId,
             index: itemIndex,
@@ -710,7 +724,7 @@ export class KodiPlaylistCard extends LitElement {
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
         const genre = this._getItemGenre(item);
-        const isPlaying = index === this._currentTrackId;
+        const isPlaying = index === this._currentIndex;
 
         const dragClasses = [
             "playlist-item",
