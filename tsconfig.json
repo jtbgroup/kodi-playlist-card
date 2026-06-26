@@ -5,7 +5,9 @@
         "moduleResolution": "node",
         "ignoreDeprecations": "6.0",
         "lib": ["es2022", "dom", "dom.iterable"],
-        "noEmit": true,
+        "noEmit": false,                 // 🛠️ MODIFIÉ : Autorise la génération pour Rollup
+        "sourceMap": false,              // 🛠️ AJOUTÉ : Désactive les plans de sources
+        "inlineSourceMap": false,        // 🛠️ AJOUTÉ : Évite d'injecter du code map
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
@@ -15,5 +17,6 @@
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "useDefineForClassFields": false
-    }
+    },
+    "exclude": ["node_modules", "dist"]  // 🛠️ AJOUTÉ : Sécurité de build
 }

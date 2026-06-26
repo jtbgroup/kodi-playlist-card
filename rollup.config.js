@@ -18,6 +18,8 @@ const plugins = [
     // 2. Compile TypeScript
     typescript({
         tsconfig: "./tsconfig.json",
+        declaration: false,
+        sourceMap: false,
     }),
 
     // 3. Resolve node modules
@@ -42,11 +44,12 @@ const plugins = [
 
 export default [
     {
-        input: ["src/kodi-playlist-card.ts", "src/kodi-playlist-card-editor.ts"],
+        input: ["src/kodi-playlist-card.ts", "src/editor.ts"],
         output: {
             dir: "dist",
             format: "es",
             entryFileNames: "kodi-playlist-card.js",
+            sourcemap: false,
         },
         plugins: [...plugins],
     },
