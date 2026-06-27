@@ -3,9 +3,11 @@ import { customElement, property } from "lit/decorators.js";
 import { PlaylistItem as PlaylistItemType, KodiPlaylistCardConfig } from "../types";
 import { buildMetadataString, formatDuration, formatGenre, getItemIcon } from "../utils";
 import "./thumbnail-button";
+import { HomeAssistant } from "custom-card-helpers";
 
 @customElement("kodi-playlist-item")
 export class KodiPlaylistItem extends LitElement {
+  @property({ attribute: false }) hass?: HomeAssistant; 
   @property({ type: Object }) item!: PlaylistItemType;
   @property({ type: Number }) index!: number;
   @property({ type: Boolean }) isPlaying = false;

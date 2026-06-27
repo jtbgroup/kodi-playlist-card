@@ -9,48 +9,32 @@ import litCss from "rollup-plugin-lit-css";
 const dev = process.env.ROLLUP_WATCH;
 
 const plugins = [
-    // 1. Convert SCSS to Lit CSS Results
     litCss({
         include: ["**/*.scss"],
         uglify: !dev,
     }),
-
-    // 2. Compile TypeScript
     typescript({
         tsconfig: "./tsconfig.json",
         declaration: false,
         sourceMap: false,
     }),
-
-    // 3. Resolve node modules
     nodeResolve({
         browser: true,
     }),
-
-    // 4. Handle CommonJS modules
     commonjs(),
-
-    // 5. Parse JSON
     json(),
-
-    // 6. Transpile with Babel for broader compatibility
     babel({
         exclude: "node_modules/**",
     }),
-
-    // 7. Minify for production
     !dev && terser(),
-];
+].filter(Boolean);
 
-export default [
-    {
-        input: ["src/kodi-playlist-card.ts", "src/editor.ts"],
-        output: {
-            dir: "dist",
-            format: "es",
-            entryFileNames: "kodi-playlist-card.js",
-            sourcemap: false,
-        },
-        plugins: [...plugins],
+export default {
+    input: "src/kodi-playlist-card.ts", 
+    output: {
+        file: "dist/kodi-playlist-card.js",  
+        format: "es",
+        sourcemap: false,
     },
-];
+    plugins: plugins,
+};
