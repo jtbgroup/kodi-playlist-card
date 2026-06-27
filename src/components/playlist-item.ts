@@ -47,7 +47,7 @@ export class KodiPlaylistItem extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
+      width: 12px;
       height: 32px;
       cursor: grab;
       color: var(--secondary-text-color);

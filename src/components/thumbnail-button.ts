@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { playlistCssVars } from "../styles/variables";
 
 @customElement("kodi-thumbnail-button")
 export class KodiThumbnailButton extends LitElement {
@@ -11,13 +12,15 @@ export class KodiThumbnailButton extends LitElement {
   @property() outlineColor = "var(--divider-color)";
 
   static styles = css`
+   ${playlistCssVars}
+
     :host {
       display: block;
     }
     .thumbnail-button {
       position: relative;
-      width: 45px;
-      height: 45px;
+      width: var(--kms-card-listitem-icon-width);
+      height: var(--kms-card-listitem-icon-height);
       flex-shrink: 0;
       cursor: pointer;
       border-radius: 4px;

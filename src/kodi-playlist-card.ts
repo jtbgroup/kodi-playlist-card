@@ -1,8 +1,5 @@
 /**
  * KODI PLAYLIST CARD - Frontend Component
- * 
- * Corrected version: sends item_id and item_name to play_item instead of index
- * Uses entry_id resolution from sensor attributes
  */
 
 import { LitElement, html, css, PropertyValues } from "lit";
@@ -10,6 +7,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
 import { KodiMediaSensorEvent, KodiUnavailableEvent, PlaylistItem, PlaylistUpdateEvent } from "./types";
+import { playlistCssVars } from "./styles/variables";
 
 const CARD_VERSION = "5.0.0";
 
@@ -20,7 +18,7 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _config?: any;
     @state() private _items: PlaylistItem[] = [];
     @state() private _currentIndex = -1;
-    @state() private _playlistCurrentIndex = -1;  // ✅ NEW: Current index from websocket
+    @state() private _playlistCurrentIndex = -1; // ✅ NEW: Current index from websocket
 
     @state() private _draggedIndex = -1;
     @state() private _dragOverIndex = -1;
@@ -126,6 +124,8 @@ export class KodiPlaylistCard extends LitElement {
 
     static get styles() {
         return css`
+            ${playlistCssVars}
+
             :host {
                 display: block;
                 background: var(--ha-card-background, var(--card-background-color, #ffffff));
@@ -306,76 +306,15 @@ export class KodiPlaylistCard extends LitElement {
             .playlist-item.hide-last.with-separator:last-child {
                 border-bottom: none;
             }
-            
+
             .playlist-item:hover {
                 background: var(--secondary-background-color);
             }
-            
+
             .playlist-item.active {
                 background: rgba(3, 169, 244, 0.1);
                 border-left: 4px solid var(--accent-color);
                 padding-left: 12px;
-            }
-
-            .thumbnail-button {
-                position: relative;
-                width: 45px;
-                height: 45px;
-                flex-shrink: 0;
-                cursor: pointer;
-                border-radius: 4px;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: var(--secondary-background-color);
-            }
-
-            .thumbnail-button.disabled {
-                cursor: not-allowed;
-                opacity: 0.6;
-            }
-
-            .track-thumb {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                border-radius: 4px;
-            }
-
-            .thumb-placeholder {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: var(--secondary-background-color);
-                border-radius: 4px;
-            }
-
-            .play-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: rgba(0, 0, 0, 0.4);
-                opacity: 0;
-                transition: opacity 0.2s ease-in-out;
-                border-radius: 4px;
-            }
-
-            .play-overlay ha-icon {
-                --icon-size: 24px;
-                color: white;
-                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-            }
-
-            .thumbnail-button:not(.disabled):hover .play-overlay {
-                opacity: 1;
             }
 
             .track-info {
@@ -486,9 +425,14 @@ export class KodiPlaylistCard extends LitElement {
 
         if (message.type === "playlist_update") {
             this._items = message.items || [];
-            this._playlistCurrentIndex = message.current_index ?? -1;  // ✅ Store current_index
+            this._playlistCurrentIndex = message.current_index ?? -1; // ✅ Store current_index
             this._thumbnailLoadingSet.clear();
-            console.log("Kodi card: Playlist updated", this._items.length, "current index:", this._playlistCurrentIndex);
+            console.log(
+                "Kodi card: Playlist updated",
+                this._items.length,
+                "current index:",
+                this._playlistCurrentIndex,
+            );
         } else if (message.type === "kodi_unavailable") {
             this._items = [];
             this._playlistCurrentIndex = -1;
@@ -498,7 +442,8 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _playItem(itemIndex: number): void {
-        if (itemIndex === this._playlistCurrentIndex) {  // ✅ Use playlist current index
+        if (itemIndex === this._playlistCurrentIndex) {
+            // ✅ Use playlist current index
             console.log("Kodi card: Item is already playing");
             return;
         }
@@ -543,7 +488,6 @@ export class KodiPlaylistCard extends LitElement {
 
         console.log("Kodi card: Playing item", { itemIndex, itemId, itemName });
 
-        // ✅ FIXED: Send item_id and item_name instead of index, no kodi_entity_id needed
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_play_item",
             entry_id: this._resolvedEntryId,
@@ -553,7 +497,8 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _removeItem(itemIndex: number): void {
-        if (itemIndex === this._playlistCurrentIndex) {  // ✅ Use playlist current index
+        if (itemIndex === this._playlistCurrentIndex) {
+            // ✅ Use playlist current index
             console.log("Kodi card: Cannot remove the currently playing item");
             return;
         }
@@ -568,7 +513,6 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        // ✅ FIXED: No kodi_entity_id needed
         const message = {
             type: "kodi_media_sensors/playlist_remove_item",
             entry_id: this._resolvedEntryId,
@@ -700,7 +644,7 @@ export class KodiPlaylistCard extends LitElement {
                           </ul>
                       </div>
                   `}
-            ${showVersion ? html` <div class="version-footer">Version: ${CARD_VERSION}</div> ` : ""}
+            ${showVersion ? html` <div class="version-footer">Version: ${CARD_VERSION}</div> ` : ""} YEEEEE
         `;
     }
 
@@ -728,7 +672,7 @@ export class KodiPlaylistCard extends LitElement {
         const metadata = this._getItemMetadata(item);
         const icon = this._getItemIcon(item);
         const genre = this._getItemGenre(item);
-        const isPlaying = index === this._playlistCurrentIndex;  // ✅ Compare with playlist current index
+        const isPlaying = index === this._playlistCurrentIndex; // ✅ Compare with playlist current index
 
         const dragClasses = [
             "playlist-item",
@@ -919,7 +863,8 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        if (fromIndex === this._playlistCurrentIndex) {  // ✅ Use playlist current index
+        if (fromIndex === this._playlistCurrentIndex) {
+            // ✅ Use playlist current index
             console.warn("Cannot reorder currently playing item");
             this.requestUpdate();
             return;
