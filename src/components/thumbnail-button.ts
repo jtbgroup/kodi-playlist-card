@@ -1,6 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { playlistCssVars } from "../styles/variables";
+// import { playlistCssVars } from "../styles/variables";
 
 @customElement("kodi-thumbnail-button")
 export class KodiThumbnailButton extends LitElement {
@@ -12,8 +12,6 @@ export class KodiThumbnailButton extends LitElement {
   @property() outlineColor = "var(--divider-color)";
 
   static styles = css`
-   ${playlistCssVars}
-
     :host {
       display: block;
     }
