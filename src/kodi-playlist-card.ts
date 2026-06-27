@@ -7,9 +7,9 @@ import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
-import { KodiMediaSensorEvent, KodiUnavailableEvent, PlaylistItem, PlaylistUpdateEvent } from "./types";
-import "./components/thumbnail-button";
-import "./components/playlist-item";
+import { KodiMediaSensorEvent, PlaylistItem } from "./types";
+import "./components/index";
+import { getThumbnailUrl } from "./utils/thumbnail";
 
 const CARD_VERSION = "5.0.0";
 
@@ -19,7 +19,6 @@ export class KodiPlaylistCard extends LitElement {
 
     @state() private _config?: any;
     @state() private _items: PlaylistItem[] = [];
-    @state() private _currentIndex = -1;
     @state() private _playlistCurrentIndex = -1; // ✅ NEW: Current index from websocket
 
     @state() private _draggedIndex = -1;
@@ -27,10 +26,8 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _isDragging = false;
 
     private _unsubscribePlaylistListener?: Promise<() => void>;
-    @state() private _thumbnailCache: Map<string, string> = new Map();
     private _thumbnailLoadingSet: Set<string> = new Set();
     @state() private _resolvedEntryId?: string;
-    // @state() private _resolvedKodiEntityId?: string;
 
     @state() private _sensorState = "unavailable";
     @state() private _currentTrackId = -1;
@@ -126,7 +123,6 @@ export class KodiPlaylistCard extends LitElement {
 
     static get styles() {
         return css`
-
             :host {
                 display: block;
                 background: var(--ha-card-background, var(--card-background-color, #ffffff));
@@ -139,76 +135,6 @@ export class KodiPlaylistCard extends LitElement {
                 justify-content: space-between;
                 align-items: center;
                 padding: 16px;
-            }
-            .card-title {
-                margin: 0;
-                font-size: 1.25rem;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .kodi-icon {
-                color: var(--accent-color);
-            }
-
-            .status-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                transition: background 0.3s ease;
-            }
-
-            .status-dot.fixed-green {
-                background: var(--success-color);
-            }
-
-            .status-dot.fixed-orange {
-                background: var(--warning-color);
-            }
-
-            .status-dot.fixed-red {
-                background: var(--error-color);
-            }
-
-            .status-dot.flashing-green {
-                background: var(--success-color);
-                animation: pulse-dot 1s infinite;
-            }
-
-            .item-action {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 40px;
-                margin-left: auto;
-            }
-
-            .playing-marker {
-                color: var(--accent-color);
-                --icon-size: 24px;
-                animation: pulse-marker 1.5s infinite;
-            }
-
-            @keyframes pulse-dot {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.3;
-                }
-            }
-
-            @keyframes pulse-marker {
-                0%,
-                100% {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-                50% {
-                    transform: scale(1.1);
-                    opacity: 0.8;
-                }
             }
 
             .playlist-container {
@@ -246,138 +172,6 @@ export class KodiPlaylistCard extends LitElement {
                 border-radius: 3px;
             }
 
-            // .playlist-item {
-            //     display: flex;
-            //     align-items: center;
-            //     gap: 12px;
-            //     padding: 8px 16px;
-            //     border-bottom: 1px solid transparent;
-            //     transition: all 0.2s ease;
-            //     user-select: none;
-            //     position: relative;
-            // }
-
-            // .playlist-item.dragging {
-            //     opacity: 0.5;
-            //     background: var(--secondary-background-color);
-            //     border-left: 4px solid var(--warning-color);
-            //     padding-left: calc(12px - 4px);
-            // }
-
-            // .playlist-item.drag-over {
-            //     background: rgba(3, 169, 244, 0.15);
-            //     border-top: 2px solid var(--primary-color);
-            //     padding-top: calc(8px - 2px);
-            //     margin-top: 2px;
-            // }
-
-            // .drag-handle {
-            //     display: flex;
-            //     align-items: center;
-            //     justify-content: center;
-            //     width: 32px;
-            //     height: 32px;
-            //     cursor: grab;
-            //     color: var(--secondary-text-color);
-            //     opacity: 0;
-            //     transition: opacity 0.2s;
-            //     flex-shrink: 0;
-            // }
-
-            // .drag-handle:active {
-            //     cursor: grabbing;
-            // }
-
-            // .playlist-item:not(.active):hover .drag-handle {
-            //     opacity: 1;
-            // }
-
-            // .playlist-item.active {
-            //     cursor: not-allowed;
-            // }
-
-            // .playlist-item.active .drag-handle {
-            //     display: none;
-            // }
-
-            // .playlist-item.with-separator {
-            //     border-bottom: 1px solid var(--outline-color);
-            // }
-
-            // .playlist-item.hide-last.with-separator:last-child {
-            //     border-bottom: none;
-            // }
-
-            // .playlist-item:hover {
-            //     background: var(--secondary-background-color);
-            // }
-
-            // .playlist-item.active {
-            //     background: rgba(3, 169, 244, 0.1);
-            //     border-left: 4px solid var(--accent-color);
-            //     padding-left: 12px;
-            // }
-
-            // .track-info {
-            //     display: flex;
-            //     flex-direction: column;
-            //     flex-grow: 1;
-            //     min-width: 0;
-            // }
-            // .track-title {
-            //     font-weight: 500;
-            //     white-space: nowrap;
-            //     overflow: hidden;
-            //     text-overflow: ellipsis;
-            // }
-            // .track-meta {
-            //     font-size: 0.8rem;
-            //     color: var(--secondary-text-color);
-            //     white-space: nowrap;
-            //     overflow: hidden;
-            //     text-overflow: ellipsis;
-            // }
-            // .track-duration {
-            //     font-size: 0.85rem;
-            //     color: var(--secondary-text-color);
-            //     flex-shrink: 0;
-            // }
-            // .track-genre {
-            //     font-size: 0.8rem;
-            //     color: var(--secondary-text-color);
-            //     font-style: italic;
-            //     margin-top: 2px;
-            // }
-
-            // .remove-button {
-            //     flex-shrink: 0;
-            //     cursor: pointer;
-            //     background: transparent;
-            //     border: none;
-            //     padding: 8px;
-            //     display: flex;
-            //     align-items: center;
-            //     justify-content: center;
-            //     color: var(--secondary-text-color);
-            //     transition: all 0.2s ease;
-            //     opacity: 0.5;
-            //     border-radius: 4px;
-            //     user-select: none;
-            // }
-
-            // .remove-button:hover {
-            //     color: var(--error-color);
-            //     background: rgba(255, 0, 0, 0.1);
-            //     transform: scale(1.1);
-            // }
-
-            .remove-button:active {
-                transform: scale(0.95);
-            }
-
-            .remove-button ha-icon {
-                --icon-size: 20px;
-            }
             .version-footer {
                 text-align: right;
                 font-size: 0.7em;
@@ -411,7 +205,6 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        // ✅ FIXED: Only send entry_id, backend will resolve kodi_entity_id
         this._unsubscribePlaylistListener = this.hass.connection.subscribeMessage<KodiMediaSensorEvent>(
             (message: KodiMediaSensorEvent) => this._handlePlaylistEvent(message),
             {
@@ -444,7 +237,6 @@ export class KodiPlaylistCard extends LitElement {
 
     private _playItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            // ✅ Use playlist current index
             console.log("Kodi card: Item is already playing");
             return;
         }
@@ -499,7 +291,6 @@ export class KodiPlaylistCard extends LitElement {
 
     private _removeItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            // ✅ Use playlist current index
             console.log("Kodi card: Cannot remove the currently playing item");
             return;
         }
@@ -530,77 +321,6 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    private _getItemThumbnailUrl(item: PlaylistItem): string | undefined {
-        const itemType = (item as any).type;
-
-        if (itemType === "song" || itemType === "music") {
-            const albumId = (item as any).albumid;
-            if (albumId) {
-                return `/api/media_player_proxy/media_player.kodi/browse_media/album/${albumId}`;
-            }
-        }
-
-        if (itemType === "movie" || itemType === "episode" || itemType === "video") {
-            const poster = (item as any).poster;
-            if (poster && poster !== "") {
-                return poster;
-            }
-        }
-
-        return item.thumbnail;
-    }
-
-    private _getItemMetadata(item: PlaylistItem): string {
-        const itemType = (item as any).type;
-
-        if (itemType === "song" || itemType === "music") {
-            const artist = Array.isArray(item.artist) ? item.artist.join(", ") : item.artist || "Unknown Artist";
-            const album = item.album ? ` • ${item.album}` : "";
-            const year = item.year ? ` (${item.year})` : "";
-            return `${artist}${album}${year}`;
-        }
-
-        if (itemType === "episode") {
-            const showTitle = (item as any).showtitle || "Unknown Show";
-            const season = (item as any).season ?? "?";
-            const episode = (item as any).episode ?? "?";
-            return `${showTitle} • S${season}E${episode}`;
-        }
-
-        return "";
-    }
-
-    private _getItemGenre(item: PlaylistItem): string {
-        const genre = (item as any).genre;
-        if (!genre) return "";
-        if (Array.isArray(genre)) {
-            return genre.length > 0 ? genre.join(", ") : "";
-        }
-        return genre;
-    }
-
-    private _getItemIcon(item: PlaylistItem): string {
-        const itemType = (item as any).type;
-
-        if (itemType === "song" || itemType === "music") {
-            return "mdi:music";
-        }
-        if (itemType === "movie") {
-            return "mdi:movie";
-        }
-        if (itemType === "episode") {
-            return "mdi:television";
-        }
-        return "mdi:play";
-    }
-
-    private _formatDuration(seconds: number | undefined): string {
-        if (!seconds) return "";
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
-    }
-
     protected render() {
         let statusClass = "fixed-green";
 
@@ -615,13 +335,13 @@ export class KodiPlaylistCard extends LitElement {
         }
 
         const showVersion = this._config?.show_version ?? false;
+        const playlist_length = this._items.length;
 
         return html`
             <div class="card-header">
-                <h3 class="card-title">
-                    <ha-icon class="kodi-icon" icon="mdi:kodi"></ha-icon> ${this._config?.title || "Kodi Playlist"}
-                </h3>
-                <div class="status-dot ${statusClass}"></div>
+                <kodi-card-header
+                    .title="${this._config?.title ?? "Kodi Playlist"}"
+                    .statusState="${this._sensorState}"></kodi-card-header>
             </div>
 
             ${this._sensorState == "off"
@@ -641,7 +361,9 @@ export class KodiPlaylistCard extends LitElement {
                 : html`
                       <div class="card-content">
                           <ul class="playlist-items-container" style="${this._getContainerStyle()}">
-                              ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
+                              ${this._items.map((item, index) =>
+                                  this._renderPlaylistItem(item, index, playlist_length),
+                              )}
                           </ul>
                       </div>
                   `}
@@ -658,8 +380,6 @@ export class KodiPlaylistCard extends LitElement {
         const heightPerItem = 60;
         const totalHeight = count * heightPerItem;
 
-        console.debug("Count :", count, "items *", heightPerItem, "px =", totalHeight, "px");
-
         return `
         overflow-y: auto !important;
         max-height: ${totalHeight}px !important;
@@ -668,106 +388,52 @@ export class KodiPlaylistCard extends LitElement {
     `;
     }
 
-    private _renderPlaylistItem(item: PlaylistItem, index: number) {
-    const isPlaying = index === this._playlistCurrentIndex;
-    const outlineColor = this._config?.outline_color || "var(--divider-color)";
-    
-    return html`
-        <kodi-playlist-item
-            .item="${item}"
-            .index="${index}"
-            .isPlaying="${isPlaying}"
-            .isDragging="${this._draggedIndex === index}"
-            .isDragOver="${this._dragOverIndex === index}"
-            .config="${this._config}"
-            .cachedThumbnail="${this._thumbnailCache.get(item.thumbnail || "")}"
-            .hass="${this.hass}"
-            draggable="${!isPlaying}"
-            @dragstart="${(e: DragEvent) => this._handleDragStart(e, index)}"
-            @dragover="${(e: DragEvent) => this._handleDragOver(e, index)}"
-            @dragleave="${() => this._handleDragLeave()}"
-            @drop="${(e: DragEvent) => this._handleDrop(e, index)}"
-            @play-item="${(e: CustomEvent) => this._playItem(e.detail.index)}"
-            @remove-item="${(e: CustomEvent) => this._removeItem(e.detail.index)}">
-        </kodi-playlist-item>
-    `;
-}
-    // private _renderPlaylistItem(item: PlaylistItem, index: number) {
-    //     const thumbUrl = this._getItemThumbnailUrl(item);
-    //     const metadata = this._getItemMetadata(item);
-    //     const icon = this._getItemIcon(item);
-    //     const genre = this._getItemGenre(item);
-    //     const isPlaying = index === this._playlistCurrentIndex; // ✅ Compare with playlist current index
+    private _getOutlineColor(): string {
+        const color = this._config.outline_color;
+        if (!color) return "var(--divider-color)";
 
-    //     const dragClasses = [
-    //         "playlist-item",
-    //         isPlaying ? "active" : "",
-    //         this._draggedIndex === index ? "dragging" : "",
-    //         this._dragOverIndex === index ? "drag-over" : "",
-    //         this._config?.show_line_separator ? "with-separator" : "",
-    //         this._config?.hide_last_line_separator ? "hide-last" : "",
-    //     ]
-    //         .filter(Boolean)
-    //         .join(" ");
+        // Si HA renvoie un tableau [255, 0, 0] (via l'éditeur visuel)
+        if (Array.isArray(color)) {
+            const result = `rgb(${color.join(",")})`;
+            return result;
+        }
 
-    //     return html`
-    //         <li
-    //             class="${dragClasses}"
-    //             draggable="${!isPlaying}"
-    //             @dragstart="${(e: DragEvent) => this._handleDragStart(e, index)}"
-    //             @dragover="${(e: DragEvent) => this._handleDragOver(e, index)}"
-    //             @dragleave="${() => this._handleDragLeave()}"
-    //             @drop="${(e: DragEvent) => this._handleDrop(e, index)}"
-    //             style="${this._config?.show_line_separator
-    //                 ? `--outline-color: ${this._config?.outline_color || "var(--divider-color)"}`
-    //                 : ""}">
-    //             ${!isPlaying
-    //                 ? html`
-    //                       <div class="drag-handle" title="Drag to reorder">
-    //                           <ha-icon icon="mdi:drag"></ha-icon>
-    //                       </div>
-    //                   `
-    //                 : ""}
-    //             ${this._renderThumbnailButton(thumbUrl, icon, index, isPlaying)}
-    //             <div class="track-info">
-    //                 <span class="track-title">${item.title || "Unknown"}</span>
-    //                 ${genre ? html`<span class="track-genre">${genre}</span>` : ""}
-    //                 ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
-    //             </div>
-    //             ${item.duration ? html`<span class="track-duration">${this._formatDuration(item.duration)}</span>` : ""}
+        // Si l'utilisateur a tapé "#FF0000" ou "red" en YAML
+        return color;
+    }
 
-    //             <div class="item-action">
-    //                 ${isPlaying
-    //                     ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
-    //                     : html`<div class="remove-button" @click="${() => this._removeItem(index)}" title="Remove">
-    //                           <ha-icon icon="mdi:trash-can"></ha-icon>
-    //                       </div>`}
-    //             </div>
-    //         </li>
-    //     `;
-    // }
-
-
-    private _renderThumbnailButton(
-        thumbnailUrl: string | undefined,
-        icon = "mdi:music",
-        itemIndex: number,
-        isPlaying: boolean,
-    ) {
-        const outlineColor = this._config?.outline_color || "var(--divider-color)";
+    private _renderPlaylistItem(item: PlaylistItem, index: number, playlistLength: number) {
+        const isPlaying = index === this._playlistCurrentIndex;
+        const thumbnailUrl = getThumbnailUrl(item);
+        let showLineSeparator = this._config.show_line_separator;
+        if (showLineSeparator) {
+            if (index + 1 >= playlistLength) {
+                showLineSeparator = !this._config.hide_last_line_separator;
+            }
+        }
 
         return html`
-            <kodi-thumbnail-button
-            .hass="${this.hass}"
-                .url="${thumbnailUrl}"
-                .icon="${icon}"
+            <kodi-playlist-item
+                .hass="${this.hass}"
+                .item="${item}"
+                .index="${index}"
+                .thumbnailUrl="${thumbnailUrl}"
                 .isPlaying="${isPlaying}"
-                .showBorder="${this._config?.show_thumbnail_border ?? false}"
-                .showImage="${this._config?.show_thumbnail ?? true}" 
-                .showOverlay="${this._config?.show_thumbnail_overlay ?? false}"
-                .outlineColor="${outlineColor}"
-                @play="${() => this._playItem(itemIndex)}">
-            </kodi-thumbnail-button>
+                .showLineSeparator="${showLineSeparator}"
+                .isDragging="${this._draggedIndex === index}"
+                .isDragOver="${this._dragOverIndex === index}"
+                .outlineColor="${this._getOutlineColor()}"
+                .showThumbnailBorder="${this._config?.show_thumbnail_border ?? false}"
+                .showThumbnailImage="${this._config?.show_thumbnail ?? true}"
+                .showThumbnailOverlay="${this._config?.show_thumbnail_overlay ?? true}"
+                draggable="${!isPlaying}"
+                @dragstart="${(e: DragEvent) => this._handleDragStart(e, index)}"
+                @dragover="${(e: DragEvent) => this._handleDragOver(e, index)}"
+                @dragleave="${() => this._handleDragLeave()}"
+                @drop="${(e: DragEvent) => this._handleDrop(e, index)}"
+                @play-item="${(e: CustomEvent) => this._playItem(e.detail.index)}"
+                @remove-item="${(e: CustomEvent) => this._removeItem(e.detail.index)}">
+            </kodi-playlist-item>
         `;
     }
 
@@ -818,7 +484,6 @@ export class KodiPlaylistCard extends LitElement {
         }
 
         if (fromIndex === this._playlistCurrentIndex) {
-            // ✅ Use playlist current index
             console.warn("Cannot reorder currently playing item");
             this.requestUpdate();
             return;
@@ -837,7 +502,6 @@ export class KodiPlaylistCard extends LitElement {
 
         console.log("📡 Sending reorder request:", { fromIndex, toIndex });
 
-        // ✅ FIXED: No kodi_entity_id needed
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_reorder",
             entry_id: this._resolvedEntryId,

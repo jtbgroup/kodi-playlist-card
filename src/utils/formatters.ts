@@ -12,12 +12,18 @@ export function buildMetadataString(item: PlaylistItem): string {
   const itemType = item.type;
 
   if (itemType === "song" || itemType === "music") {
-    const artist = Array.isArray(item.artist) 
-      ? item.artist.join(", ") 
-      : item.artist || "Unknown Artist";
-    const album = item.album ? ` • ${item.album}` : "";
-    const year = item.year ? ` (${item.year})` : "";
-    return `${artist}${album}${year}`;
+        const parts: string[] = [];
+
+        if (item.year) {
+            parts.push(`(${item.year})`);
+        }
+        if (item.artist) {
+            parts.push(Array.isArray(item.artist) ? item.artist.join(", ") : item.artist);
+        }
+        if (item.album) {
+            parts.push(item.album);
+        }
+        return parts.length > 0 ? parts.join(" • ") : "";
   }
 
   if (itemType === "episode") {

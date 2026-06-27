@@ -7,16 +7,24 @@ import { HomeAssistant } from "custom-card-helpers";
 
 @customElement("kodi-playlist-item")
 export class KodiPlaylistItem extends LitElement {
-  @property({ attribute: false }) hass?: HomeAssistant; 
-  @property({ type: Object }) item!: PlaylistItemType;
-  @property({ type: Number }) index!: number;
-  @property({ type: Boolean }) isPlaying = false;
-  @property({ type: Boolean }) isDragging = false;
-  @property({ type: Boolean }) isDragOver = false;
-  @property({ type: Object }) config!: KodiPlaylistCardConfig;
-  @property() cachedThumbnail?: string;
+    @property({ attribute: false }) hass?: HomeAssistant;
+    @property({ type: Object }) item!: PlaylistItemType;
+    @property({ type: Number }) index!: number;
+    @property() thumbnailUrl?: string;
+    @property({ type: Boolean }) isPlaying = false;
+    @property({ type: Boolean }) isDragging = false;
+    @property({ type: Boolean }) isDragOver = false;
+    @property({ type: Boolean }) showLineSeparator = false;
+    @property({ type: String }) outlineColor = "var(--divider-color)";
+    // @property({ type: Object }) config!: KodiPlaylistCardConfig;
 
-  static styles = css`
+    @property({ type: Boolean }) showThumbnailBorder = false;
+    @property({ type: Boolean }) showThumbnailImage = false;
+    @property({ type: Boolean }) showThumbnailOverlay = false;
+
+    // @property() cachedThumbnail?: string;
+
+    static styles = css`
     :host { display: block; }
     .playlist-item {
       display: flex;
@@ -62,10 +70,44 @@ export class KodiPlaylistItem extends LitElement {
     .playlist-item.active .drag-handle { display: none; }
     .playlist-item.with-separator { border-bottom: 1px solid var(--outline-color); }
     .track-info { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
-    .track-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-meta, .track-genre, .track-duration { font-size: 0.8rem; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-genre { font-style: italic; margin-top: 2px; }
-    .track-duration { flex-shrink: 0; font-size: 0.85rem; }
+    
+    .track-title {
+        color: var(--secondary-text-color);
+        font-weight: 500;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .track-genre {
+        font-style: italic;
+        margin-top: 2px;
+        font-size: 0.8rem;
+        color: var(--secondary-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .track-subtext {
+        color: var(--secondary-text-color);
+        font-size: 0.8rem;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .track-duration {
+        color: var(--secondary-text-color);
+        font-size: 0.8rem;
+        font-family: monospace;
+        margin-left: 12px;
+        flex-shrink: 0;
+    }
+          
+   
     .item-action { display: flex; align-items: center; justify-content: center; width: 40px; margin-left: auto; }
     .playing-marker { color: var(--accent-color); animation: pulse-marker 1.5s infinite; }
     .remove-button {
@@ -78,66 +120,82 @@ export class KodiPlaylistItem extends LitElement {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.1); opacity: 0.8; }
     }
+        .remove-button:active {
+                transform: scale(0.95);
+            }
+
+            .remove-button ha-icon {
+                --icon-size: 20px;
+            }
   `;
 
-  protected render() {
-    const metadata = buildMetadataString(this.item);
-    const icon = getItemIcon(this.item);
-    const genre = formatGenre(this.item.genre);
+    protected render() {
+        const icon = getItemIcon(this.item);
+        const title = this.item.title || "";
+        const genre = this.item.genre ? formatGenre(this.item.genre): "";
+        const subtext = buildMetadataString(this.item);
 
-    const classes = [
-      "playlist-item",
-      this.isPlaying ? "active" : "",
-      this.isDragging ? "dragging" : "",
-      this.isDragOver ? "drag-over" : "",
-      this.config.show_line_separator ? "with-separator" : "",
-    ].filter(Boolean).join(" ");
+        const classes = [
+            "playlist-item",
+            this.isPlaying ? "active" : "",
+            this.isDragging ? "dragging" : "",
+            this.isDragOver ? "drag-over" : "",
+            this.showLineSeparator ? "with-separator" : "",
+        ]
+            .filter(Boolean)
+            .join(" ");
 
-    return html`
-      <div 
-        class="${classes}"
-        style="--outline-color: ${this.config.outline_color || "var(--divider-color)"}">
-        
-        ${!this.isPlaying
-          ? html`<div class="drag-handle" title="Drag to reorder"><ha-icon icon="mdi:drag"></ha-icon></div>`
-          : ""}
+        return html`
+            <div class="${classes}" style="--outline-color: ${this.outlineColor || "var(--divider-color)"}">
+                ${!this.isPlaying
+                    ? html`<div class="drag-handle" title="Drag to reorder"><ha-icon icon="mdi:drag"></ha-icon></div>`
+                    : ""}
 
-        <kodi-thumbnail-button
-          .url="${this.config.show_thumbnail ? this.cachedThumbnail : undefined}"
-          .icon="${icon}"
-          .isPlaying="${this.isPlaying}"
-          .showBorder="${this.config.show_thumbnail_border ?? false}"
-          .showOverlay="${this.config.show_thumbnail_overlay ?? true}"
-          .outlineColor="${this.config.outline_color || "var(--divider-color)"}"
-          @play="${this._dispatchPlay}">
-        </kodi-thumbnail-button>
+                <kodi-thumbnail-button
+                    .hass="${this.hass}"
+                    .url="${this.thumbnailUrl}"
+                    .icon="${icon}"
+                    .isPlaying="${this.isPlaying}"
+                    .showBorder="${this.showThumbnailBorder}"
+                    .showImage="${this.showThumbnailImage}"
+                    .showOverlay="${this.showThumbnailOverlay}"
+                    .outlineColor="${this.outlineColor}"
+                    @play="${this._dispatchPlay}">
+                </kodi-thumbnail-button>
 
-        <div class="track-info">
-          <span class="track-title">${this.item.title || "Unknown"}</span>
-          ${genre ? html`<span class="track-genre">${genre}</span>` : ""}
-          ${metadata ? html`<span class="track-meta">${metadata}</span>` : ""}
-        </div>
-
-        ${this.item.duration ? html`<span class="track-duration">${formatDuration(this.item.duration)}</span>` : ""}
-
-        <div class="item-action">
-          ${this.isPlaying
-            ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
-            : html`
-                <div class="remove-button" @click="${this._dispatchRemove}" title="Remove">
-                  <ha-icon icon="mdi:trash-can"></ha-icon>
+                <div class="track-info">
+                    <div class="track-title">${title}</div>
+                    <div class="track-genre">${genre}</div>
+                    <div class="track-subtext">${subtext}</div>
                 </div>
-              `}
-        </div>
-      </div>
-    `;
-  }
 
-  private _dispatchPlay() {
-    this.dispatchEvent(new CustomEvent("play-item", { detail: { index: this.index }, bubbles: true, composed: true }));
-  }
+                ${this.item.duration
+                    ? html`<span class="track-duration">${formatDuration(this.item.duration)}</span>`
+                    : ""}
 
-  private _dispatchRemove() {
-    this.dispatchEvent(new CustomEvent("remove-item", { detail: { index: this.index }, bubbles: true, composed: true }));
-  }
+                <div class="item-action">
+                    ${this.isPlaying
+                        ? html`<ha-icon icon="mdi:volume-high" class="playing-marker"></ha-icon>`
+                        : html`
+                              <div class="remove-button" @click="${this._dispatchRemove}" title="Remove">
+                                  <ha-icon icon="mdi:trash-can"></ha-icon>
+                              </div>
+                          `}
+                </div>
+            </div>
+        `;
+    }
+
+    private _dispatchPlay() {
+        this.dispatchEvent(
+            new CustomEvent("play-item", { detail: { index: this.index }, bubbles: true, composed: true }),
+        );
+    }
+
+    private _dispatchRemove() {
+        this.dispatchEvent(
+            new CustomEvent("remove-item", { detail: { index: this.index }, bubbles: true, composed: true }),
+        );
+    }
 }
+

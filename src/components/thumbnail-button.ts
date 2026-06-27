@@ -23,8 +23,8 @@ export class KodiThumbnailButton extends LitElement {
 
     .thumbnail-button {
       position: relative;
-      width:60px
-      height: 60px
+      width:60px;
+      height: 60px;
       flex-shrink: 0;
       cursor: pointer;
       border-radius: 4px;
@@ -86,8 +86,8 @@ export class KodiThumbnailButton extends LitElement {
     }
   `;
 
-  protected updated(changedProperties: PropertyValues) {
-    if (changedProperties.has("url") && this.url) {
+protected updated(changedProperties: PropertyValues) {
+    if ((changedProperties.has("url") || changedProperties.has("hass")) && this.url && this.hass) {
       this._loadThumbnail();
     }
   }
@@ -106,20 +106,25 @@ export class KodiThumbnailButton extends LitElement {
     if (this.url.startsWith("/")) {
       try {
         const response = await this.hass.fetchWithAuth(this.url);
+        
         if (!response.ok) {
-          console.warn(`Failed to load thumbnail: ${this.url} (${response.status})`);
           return;
         }
 
         const blob = await response.blob();
+        
         this._cachedUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
+          reader.onloadend = () => {
+             resolve(reader.result as string);
+          };
+          reader.onerror = (e) => {
+             reject(e);
+          };
           reader.readAsDataURL(blob);
         });
       } catch (err) {
-        console.error(`Error loading thumbnail ${this.url}:`, err);
+        console.error(`[Thumbnail Debug] Exception raised during fetch :`, err);
       }
     }
   }

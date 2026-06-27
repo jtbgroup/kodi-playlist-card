@@ -12,6 +12,7 @@ export class KodiCardHeader extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: 16px;
+      width: 100%;
     }
     .card-title {
       margin: 0;
