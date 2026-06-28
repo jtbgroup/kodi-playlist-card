@@ -10,7 +10,7 @@ export class KodiPlaylistItem extends LitElement {
     @property({ attribute: false }) hass?: HomeAssistant;
     @property({ type: Object }) item!: PlaylistItemType;
     @property({ type: Number }) index!: number;
-    @property() thumbnailUrl?: string;
+   @property() cachedThumbnailUrl?: string;
     @property({ type: Boolean }) isPlaying = false;
     @property({ type: Boolean }) isDragging = false;
     @property({ type: Boolean }) isDragOver = false;
@@ -153,7 +153,7 @@ export class KodiPlaylistItem extends LitElement {
 
                 <kodi-thumbnail-button
                     .hass="${this.hass}"
-                    .url="${this.thumbnailUrl}"
+                    .thumbnailUrl="${this.cachedThumbnailUrl}"
                     .icon="${icon}"
                     .isPlaying="${this.isPlaying}"
                     .showBorder="${this.showThumbnailBorder}"

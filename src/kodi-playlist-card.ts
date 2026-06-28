@@ -10,6 +10,7 @@ import "./editor";
 import { KodiMediaSensorEvent, PlaylistItem } from "./types";
 import "./components/index";
 import { getThumbnailUrl } from "./utils/thumbnail";
+import { ThumbnailService } from "./services";
 
 const CARD_VERSION = "5.0.0";
 
@@ -26,12 +27,12 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _isDragging = false;
 
     private _unsubscribePlaylistListener?: Promise<() => void>;
-    private _thumbnailLoadingSet: Set<string> = new Set();
     @state() private _resolvedEntryId?: string;
 
     @state() private _sensorState = "unavailable";
     @state() private _currentTrackId = -1;
     @state() private _currentTrackType = "";
+    private _thumbnailService?: ThumbnailService;
 
     static getConfigElement(): LovelaceCardEditor {
         return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
@@ -60,12 +61,16 @@ export class KodiPlaylistCard extends LitElement {
         this._config = config;
     }
 
-    // willUpdate : Reads the state before rendering the card
     protected willUpdate(changedProperties: PropertyValues) {
         super.willUpdate(changedProperties);
 
-        // update internal variables on HA triggers
-        if (changedProperties.has("hass") || changedProperties.has("_config")) {
+        if (changedProperties.has("hass")) {
+            if (!this._thumbnailService && this.hass) {
+                this._thumbnailService = new ThumbnailService(this.hass);
+            }
+        }
+
+        if (changedProperties.has("_config")) {
             this._resolveConfig();
             this._fetchSensorState();
         }
@@ -215,22 +220,41 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _handlePlaylistEvent(message: KodiMediaSensorEvent): void {
-        console.log("Kodi card: Message received", message);
+        console.log("🔍 MESSAGE REÇU:", JSON.stringify(message, null, 2)); // ← FULL DUMP
+        console.log("Current track:", {
+            trackId: this._currentTrackId,
+            trackType: this._currentTrackType,
+        });
 
         if (message.type === "playlist_update") {
             this._items = message.items || [];
-            this._playlistCurrentIndex = message.current_index ?? -1; // ✅ Store current_index
-            this._thumbnailLoadingSet.clear();
+            this._playlistCurrentIndex = message.current_index ?? -1;
+
+            console.log(
+                "📋 Playlist items types:",
+                this._items.map(i => i.type),
+            );
+            console.log("📋 Playlist length:", this._items.length);
+
+            this._items = message.items || [];
+            this._playlistCurrentIndex = message.current_index ?? -1;
+
             console.log(
                 "Kodi card: Playlist updated",
                 this._items.length,
-                "current index:",
+                "items, current index:",
                 this._playlistCurrentIndex,
             );
+
+            this._items.forEach(item => {
+                const url = this._thumbnailService?.getThumbnailUrl(item);
+                if (url && !this._thumbnailService?.getThumbnailFromCache(url)) {
+                    this._thumbnailService?.loadThumbnailForItem(item, () => this.requestUpdate());
+                }
+            });
         } else if (message.type === "kodi_unavailable") {
             this._items = [];
             this._playlistCurrentIndex = -1;
-            this._thumbnailLoadingSet.clear();
             console.log("Kodi card: Kodi is unavailable");
         }
     }
@@ -361,9 +385,7 @@ export class KodiPlaylistCard extends LitElement {
                 : html`
                       <div class="card-content">
                           <ul class="playlist-items-container" style="${this._getContainerStyle()}">
-                              ${this._items.map((item, index) =>
-                                  this._renderPlaylistItem(item, index, playlist_length),
-                              )}
+                              ${this._items.map((item, index) => this._renderPlaylistItem(item, index))}
                           </ul>
                       </div>
                   `}
@@ -402,14 +424,18 @@ export class KodiPlaylistCard extends LitElement {
         return color;
     }
 
-    private _renderPlaylistItem(item: PlaylistItem, index: number, playlistLength: number) {
+    private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const isPlaying = index === this._playlistCurrentIndex;
-        const thumbnailUrl = getThumbnailUrl(item);
+
+        // ✅ Récupère l'URL théorique ET le cache base64
+        const thumbnailUrl = this._thumbnailService?.getThumbnailUrl(item);
+        const cachedThumbnailUrl = thumbnailUrl
+            ? this._thumbnailService?.getThumbnailFromCache(thumbnailUrl)
+            : undefined;
+
         let showLineSeparator = this._config.show_line_separator;
-        if (showLineSeparator) {
-            if (index + 1 >= playlistLength) {
-                showLineSeparator = !this._config.hide_last_line_separator;
-            }
+        if (showLineSeparator && index + 1 >= this._items.length) {
+            showLineSeparator = !this._config.hide_last_line_separator;
         }
 
         return html`
@@ -417,7 +443,7 @@ export class KodiPlaylistCard extends LitElement {
                 .hass="${this.hass}"
                 .item="${item}"
                 .index="${index}"
-                .thumbnailUrl="${thumbnailUrl}"
+                .cachedThumbnailUrl="${cachedThumbnailUrl}"
                 .isPlaying="${isPlaying}"
                 .showLineSeparator="${showLineSeparator}"
                 .isDragging="${this._draggedIndex === index}"
