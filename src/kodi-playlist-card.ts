@@ -306,10 +306,9 @@ export class KodiPlaylistCard extends LitElement {
         console.log("Kodi card: Playing item", { itemIndex, itemId, itemName });
 
         this.hass.connection.sendMessage({
-            type: "kodi_media_sensors/playlist_play_item",
+            type: "kodi_media_sensors/playlist_goto_index",
             entry_id: this._resolvedEntryId,
-            item_id: itemId,
-            item_name: itemName,
+            index: itemIndex,
         } as any);
     }
 
