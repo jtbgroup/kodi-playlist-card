@@ -58,3 +58,27 @@ export function getItemIcon(item: PlaylistItem): string {
   }
   return "mdi:play";
 }
+
+
+export function getAspectRatio(item: PlaylistItem | undefined): string {
+    if (!item || !item.type) return "1 / 1";
+    
+    switch (item.type) {
+      case "movie":
+        return "2/3"; 
+      case "episode":
+        return "16 / 9";
+      default:
+        return "1 / 1";
+    }
+  }
+
+  export function convertOutlineColor(color: string): string {
+        if (!color) return "var(--divider-color)";
+
+        if (Array.isArray(color)) {
+            return `rgb(${color.join(",")})`;
+        }
+
+        return color;
+    }

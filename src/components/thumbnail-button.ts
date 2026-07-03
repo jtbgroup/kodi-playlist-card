@@ -1,19 +1,27 @@
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, html, css, PropertyValues } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { ThumbnailService } from "../services/thumbnail.service";
+import { PlaylistItem } from "../types";
 
 /**
- * Bouton thumbnail simplifié - reçoit l'URL déjà résolue et cachée du ThumbnailService.
- * Responsabilité: affichage uniquement, pas de chargement.
+ * Bouton thumbnail intelligent - prend en charge son propre chargement d'image
+ * via le ThumbnailService sans provoquer de re-rendu global du parent.
  */
 @customElement("kodi-thumbnail-button")
 export class KodiThumbnailButton extends LitElement {
-  @property() thumbnailUrl?: string;
+  @property({ type: Object }) item?: PlaylistItem;
+  @property({ type: Object }) thumbnailService?: ThumbnailService;
+
   @property() icon = "mdi:music";
   @property({ type: Boolean }) isPlaying = false;
   @property({ type: Boolean }) showImage = true;
   @property({ type: Boolean }) showBorder = false;
   @property({ type: Boolean }) showOverlay = true;
   @property() outlineColor = "var(--divider-color)";
+
+  // États locaux isolés
+  @state() private _thumbnailUrl?: string;
+  @state() private _isLoaded = false;
 
   static styles = css`
     :host {
@@ -22,8 +30,7 @@ export class KodiThumbnailButton extends LitElement {
 
     .thumbnail-button {
       position: relative;
-      width: 60px;
-      height: 60px;
+      /* 💡 Les dimensions et le ratio sont injectés dynamiquement via l'attribut style */
       flex-shrink: 0;
       cursor: pointer;
       border-radius: 4px;
@@ -85,8 +92,70 @@ export class KodiThumbnailButton extends LitElement {
     }
   `;
 
+  protected willUpdate(changedProperties: PropertyValues) {
+    super.willUpdate(changedProperties);
+    
+    if (
+      changedProperties.has("item") || 
+      changedProperties.has("thumbnailService") || 
+      changedProperties.has("showImage")
+    ) {
+      this._loadImage();
+    }
+  }
+
+  private async _loadImage() {
+    this._thumbnailUrl = undefined;
+    this._isLoaded = false;
+
+    if (!this.showImage || !this.item || !this.thumbnailService) return;
+
+    const url = this.thumbnailService.getThumbnailUrl(this.item);
+    if (!url) return;
+
+    const cachedUrl = this.thumbnailService.getFromCache(url);
+    if (cachedUrl) {
+      this._thumbnailUrl = cachedUrl;
+      this._isLoaded = true;
+      return;
+    }
+
+    const loadedUrl = await this.thumbnailService.load(url);
+    if (loadedUrl) {
+      this._thumbnailUrl = loadedUrl;
+      this._isLoaded = true;
+    }
+  }
+
+  /**
+   * 🚀 Calcule les dimensions et le ratio adaptés au type de média
+   */
+  private _getDimensionStyles(): string {
+    if (!this.item || !this.item.type) {
+      return "width: 60px; height: 60px; aspect-ratio: 1 / 1;";
+    }
+
+    switch (this.item.type) {
+      case "movie":
+        // 🎬 Pour les films : Largeur fixe à 60px, la hauteur s'adapte au format portrait (2/3 -> 90px)
+        return "width: 60px; height: 90px; aspect-ratio: 2 / 3;";
+      case "episode":
+        // 📺 Pour les épisodes : Hauteur fixe à 60px, la largeur s'adapte au format paysage (16/9 -> 106px)
+        // (Évite qu'un épisode à 60px de large ne fasse que 34px de haut, ce qui serait trop petit)
+        return "width: 106px; height: 60px; aspect-ratio: 16 / 9;";
+      default:
+        // 🎵 Musique et autres : Carré parfait de 60x60
+        return "width: 60px; height: 60px; aspect-ratio: 1 / 1;";
+    }
+  }
+
   protected render() {
-    const buttonStyle = this.showBorder ? `--outline-color: ${this.outlineColor}` : "";
+    // Récupération des styles géométriques (width, height, aspect-ratio)
+    let buttonStyle = this._getDimensionStyles();
+    
+    if (this.showBorder) {
+      buttonStyle += ` --outline-color: ${this.outlineColor};`;
+    }
 
     return html`
       <div
@@ -95,8 +164,8 @@ export class KodiThumbnailButton extends LitElement {
         @click="${this._handleClick}"
         title="${this.isPlaying ? "Currently playing" : "Play"}">
 
-        ${this.showImage && this.thumbnailUrl
-          ? html`<img class="track-thumb" src="${this.thumbnailUrl}" alt="Thumbnail" />`
+        ${this._isLoaded && this._thumbnailUrl
+          ? html`<img class="track-thumb" src="${this._thumbnailUrl}" alt="Thumbnail" />`
           : html`<div class="thumb-placeholder"><ha-icon icon="${this.icon}"></ha-icon></div>`}
 
         ${!this.isPlaying && this.showOverlay

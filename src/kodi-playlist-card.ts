@@ -1,6 +1,6 @@
 /**
  * KODI PLAYLIST CARD - Frontend Component
- * 
+ *
  * Refactorisation v2 :
  * - ThumbnailService singleton initialized une seule fois
  * - Méthode privée _ensureThumbnailService() appelée aux moments clés
@@ -12,9 +12,10 @@ import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
-import { KodiMediaSensorEvent, PlaylistItem } from "./types";
+import { KodiMediaSensorEvent, KodiPlaylistCardConfig, PlaylistItem } from "./types";
 import "./components/index";
 import { ThumbnailService } from "./services";
+import { convertOutlineColor } from "./utils/formatters";
 
 const CARD_VERSION = "5.0.0";
 
@@ -22,7 +23,7 @@ const CARD_VERSION = "5.0.0";
 export class KodiPlaylistCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
 
-    @state() private _config?: any;
+    @state() private _config?: KodiPlaylistCardConfig;
     @state() private _items: PlaylistItem[] = [];
     @state() private _playlistCurrentIndex = -1;
 
@@ -32,12 +33,12 @@ export class KodiPlaylistCard extends LitElement {
 
     private _unsubscribePlaylistListener?: Promise<() => void>;
     @state() private _resolvedEntryId?: string;
+    @state() private _resolvedKodiEntityId?: string;
 
     @state() private _sensorState = "unavailable";
     @state() private _currentTrackId = -1;
     @state() private _currentTrackType = "";
-    
-    // 🔑 Service singleton créé une fois et réutilisé
+
     private _thumbnailService?: ThumbnailService;
 
     static getConfigElement(): LovelaceCardEditor {
@@ -67,16 +68,21 @@ export class KodiPlaylistCard extends LitElement {
         this._config = config;
     }
 
+    private _initializeServices(): void {
+        if (this._resolvedEntryId && this.hass) {
+            if (!this._thumbnailService) {
+                this._thumbnailService = new ThumbnailService(this.hass, this._resolvedKodiEntityId);
+            }
+        }
+    }
+
     protected willUpdate(changedProperties: PropertyValues) {
         super.willUpdate(changedProperties);
 
-        if (changedProperties.has("hass")) {
-            this._ensureThumbnailService();
-        }
-
-        if (changedProperties.has("_config")) {
+        if (changedProperties.has("hass") || changedProperties.has("_config")) {
             this._resolveConfig();
             this._fetchSensorState();
+            this._initializeServices();
         }
     }
 
@@ -88,16 +94,6 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    /**
-     * S'assure que le ThumbnailService est initialisé.
-     * Appelé une seule fois quand hass devient disponible.
-     */
-    private _ensureThumbnailService(): void {
-        if (!this._thumbnailService && this.hass) {
-            this._thumbnailService = new ThumbnailService(this.hass);
-        }
-    }
-
     private _resolveConfig(): void {
         if (!this.hass || !this._config?.entity) return;
 
@@ -105,6 +101,7 @@ export class KodiPlaylistCard extends LitElement {
 
         if (entityState?.attributes) {
             this._resolvedEntryId = entityState.attributes.config_entry_id;
+            this._resolvedKodiEntityId = entityState.attributes.kodi_entity_id;
         }
     }
 
@@ -233,30 +230,14 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     private _handlePlaylistEvent(message: KodiMediaSensorEvent): void {
-
         if (message.type === "playlist_update") {
             this._items = message.items || [];
             this._playlistCurrentIndex = message.current_index ?? -1;
-            this._preloadThumbnails();
         } else if (message.type === "kodi_unavailable") {
             this._items = [];
             this._playlistCurrentIndex = -1;
             console.log("Kodi card: Kodi is unavailable");
         }
-    }
-
-    /**
-     * Précharge les miniatures des éléments visibles.
-     */
-    private _preloadThumbnails(): void {
-        if (!this._thumbnailService) return;
-
-        this._items.forEach(item => {
-            const url = this._thumbnailService!.getItemThumbnail(item);
-            if (url && !this._thumbnailService!.getFromCache(url)) {
-                this._thumbnailService!.load(url, () => this.requestUpdate());
-            }
-        });
     }
 
     private _playItem(itemIndex: number): void {
@@ -344,6 +325,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
     protected render() {
+        console.log(this._items);
         let statusClass = "fixed-green";
 
         if (this._sensorState === "off") {
@@ -407,29 +389,23 @@ export class KodiPlaylistCard extends LitElement {
     `;
     }
 
-    private _getOutlineColor(): string {
-        const color = this._config.outline_color;
-        if (!color) return "var(--divider-color)";
+    // private _getOutlineColor(): string {
+    //     const color = this._config.outline_color;
+    //     if (!color) return "var(--divider-color)";
 
-        if (Array.isArray(color)) {
-            return `rgb(${color.join(",")})`;
-        }
+    //     if (Array.isArray(color)) {
+    //         return `rgb(${color.join(",")})`;
+    //     }
 
-        return color;
-    }
+    //     return color;
+    // }
 
     private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const isPlaying = index === this._playlistCurrentIndex;
 
-        // 🔑 Utiliser getItemThumbnail du service
-        const thumbnailUrl = this._thumbnailService?.getItemThumbnail(item);
-        const cachedThumbnailUrl = thumbnailUrl
-            ? this._thumbnailService?.getFromCache(thumbnailUrl)
-            : undefined;
-
-        let showLineSeparator = this._config.show_line_separator;
+        let showLineSeparator = this._config?.show_line_separator;
         if (showLineSeparator && index + 1 >= this._items.length) {
-            showLineSeparator = !this._config.hide_last_line_separator;
+            showLineSeparator = !this._config?.hide_last_line_separator;
         }
 
         return html`
@@ -437,12 +413,12 @@ export class KodiPlaylistCard extends LitElement {
                 .hass="${this.hass}"
                 .item="${item}"
                 .index="${index}"
-                .cachedThumbnailUrl="${cachedThumbnailUrl}"
+                .thumbnailService="${this._thumbnailService}"
                 .isPlaying="${isPlaying}"
                 .showLineSeparator="${showLineSeparator}"
                 .isDragging="${this._draggedIndex === index}"
                 .isDragOver="${this._dragOverIndex === index}"
-                .outlineColor="${this._getOutlineColor()}"
+                .outlineColor="${convertOutlineColor(this._config?.outline_color || "var(--divider-color)")}"
                 .showThumbnailBorder="${this._config?.show_thumbnail_border ?? false}"
                 .showThumbnailImage="${this._config?.show_thumbnail ?? true}"
                 .showThumbnailOverlay="${this._config?.show_thumbnail_overlay ?? true}"

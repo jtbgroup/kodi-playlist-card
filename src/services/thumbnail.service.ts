@@ -17,38 +17,61 @@ export class ThumbnailService {
     private readonly _thumbnailCache: Map<string, string> = new Map();
     private readonly _loadingQueue: Map<string, Promise<string | undefined>> = new Map();
 
-    constructor(private hass: HomeAssistant) {}
+    private hass: HomeAssistant;
+    // 💡 Uniformisé en kodiEntityId (CamelCase) partout
+    public kodiEntityId: string | undefined;
+
+    constructor(hass: HomeAssistant, kodiEntityId: string | undefined) {
+        this.hass = hass;
+        this.kodiEntityId = kodiEntityId;
+    }
+
+    private _cleanKodiUrl(url: any): string | undefined {
+        if (typeof url !== "string") return undefined;
+        if (url.startsWith("image://http")) {
+            return decodeURIComponent(url.replace("image://", ""));
+        }
+        return url;
+    }
 
     /**
      * Résout l'URL appropriée pour une miniature selon le type de média.
      * Gère les différentes sources possibles (poster, albumid, thumbnail).
      */
-    public getItemThumbnail(item: PlaylistItem,   options: ThumbnailOptions = {} ): string | undefined {
+    public getThumbnailUrl(item: PlaylistItem): string | undefined {
         const itemType = item.type;
-          const mediaPlayerId = options.mediaPlayerId || "media_player.kodi";
+        // Extraire la source d'image brute potentielle
+        const rawArt = item.art?.poster || item.art?.thumb || item.thumbnail;
+        // 💡 Correction : On nettoie l'URL immédiatement pour TOUS les cas de figure
+        const cleanedArt = this._cleanKodiUrl(rawArt);
 
         // Musique : utiliser l'albumid si disponible
         if (itemType === "song" || itemType === "music") {
             if (item.albumid) {
-                return `/api/media_player_proxy/${mediaPlayerId}/browse_media/album/${String(item.albumid)}`;
+                return `/api/media_player_proxy/${this.kodiEntityId}/browse_media/album/${String(item.albumid)}`;
             }
         }
 
         // Vidéo : préférer le poster
         if (itemType === "movie" || itemType === "video") {
-            if (item.poster && item.poster !== "") {
-                return String(item.poster);
+            if (cleanedArt && cleanedArt.startsWith("http")) {
+                return cleanedArt;
             }
+
+            if (!this.kodiEntityId) {
+                console.warn(
+                    "[ThumbnailService] kodiEntityId est undefined, impossible de générer l'URL proxy pour le film",
+                );
+                return "";
+            }
+            return `/api/media_player_proxy/${this.kodiEntityId}/browse_media/movie/${item.id}`;
         }
 
-
-         if (itemType === "episode") {
-            console.log("In CONDITION : " + item.art?.poster + " / " + item.art?.thumb + " / " + item.thumbnail);
-            const art = item.art?.poster || item.art?.thumb || item.thumbnail;
-            if (typeof art === "string" && art.startsWith("image://http")) {
-                return decodeURIComponent(art.replace("image://", ""));
+        if (itemType === "episode") {
+            if (cleanedArt && cleanedArt.startsWith("http")) {
+                return cleanedArt;
             }
-         }
+        }
 
         // Fallback : thumbnail générique
         return item.thumbnail ? String(item.thumbnail) : undefined;
@@ -58,10 +81,9 @@ export class ThumbnailService {
      * Charge une miniature et la cache.
      * Les URL distantes (http/https) sont utilisées directement.
      * Les URL locales (/) sont converties en base64.
-     * 
-     * @returns URL déjà cachée (base64 pour local, URL pour distant)
+     * * @returns URL déjà cachée (base64 pour local, URL pour distant)
      */
-    public async load(url: string, onUpdate: () => void): Promise<string | undefined> {
+    public async load(url: string): Promise<string | undefined> {
         // Retourner immédiatement si déjà en cache
         if (this._thumbnailCache.has(url)) {
             return this._thumbnailCache.get(url);
@@ -72,8 +94,8 @@ export class ThumbnailService {
             return await this._loadingQueue.get(url);
         }
 
-        // Créer la promesse de chargement
-        const loadPromise = this._performLoad(url, onUpdate);
+        // Créer la promesse de chargement (sans callback global !)
+        const loadPromise = this._performLoad(url);
         this._loadingQueue.set(url, loadPromise);
 
         const result = await loadPromise;
@@ -82,7 +104,7 @@ export class ThumbnailService {
         return result;
     }
 
-    private async _performLoad(url: string, onUpdate: () => void): Promise<string | undefined> {
+    private async _performLoad(url: string): Promise<string | undefined> {
         try {
             let cachedUrl: string;
 
@@ -104,8 +126,6 @@ export class ThumbnailService {
             console.info(`Kodi Playlist: Erreur lors du chargement de la miniature ${url}`, error);
             this._thumbnailCache.set(url, "");
             return undefined;
-        } finally {
-            onUpdate();
         }
     }
 
@@ -156,3 +176,4 @@ export class ThumbnailService {
         });
     }
 }
+

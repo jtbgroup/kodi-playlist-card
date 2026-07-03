@@ -1,4 +1,5 @@
 export interface PlaylistItem {
+    id: number;
     title?: string;
     artist?: string | string[];
     album?: string;
