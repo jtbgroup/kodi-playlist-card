@@ -2,6 +2,8 @@
 
 ## 5.0.0
 
+***BREAKING CHANGES***
+
 - new development to fit with the new kodi-media sensor integration (version 6.0.0)
 
 ## 4.5.1

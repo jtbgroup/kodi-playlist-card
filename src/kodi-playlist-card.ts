@@ -236,13 +236,13 @@ export class KodiPlaylistCard extends LitElement {
         } else if (message.type === "kodi_unavailable") {
             this._items = [];
             this._playlistCurrentIndex = -1;
-            console.log("Kodi card: Kodi is unavailable");
+            console.debug("Kodi card: Kodi is unavailable");
         }
     }
 
     private _playItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            console.log("Kodi card: Item is already playing");
+            console.debug("Kodi card: Item is already playing");
             return;
         }
 
@@ -283,7 +283,7 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        console.log("Kodi card: Playing item", { itemIndex, itemId, itemName });
+        console.debug("Kodi card: Playing item", { itemIndex, itemId, itemName });
 
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_goto_index",
@@ -294,7 +294,7 @@ export class KodiPlaylistCard extends LitElement {
 
     private _removeItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            console.log("Kodi card: Cannot remove the currently playing item");
+            console.debug("Kodi card: Cannot remove the currently playing item");
             return;
         }
 
@@ -314,18 +314,15 @@ export class KodiPlaylistCard extends LitElement {
             index: itemIndex,
         };
 
-        console.log("Kodi card: Sending remove message:", message);
 
         try {
             this.hass.connection.sendMessage(message as any);
-            console.log("Message sent successfully");
         } catch (error) {
             console.error("Error sending message:", error);
         }
     }
 
     protected render() {
-        console.log(this._items);
         let statusClass = "fixed-green";
 
         if (this._sensorState === "off") {
@@ -389,16 +386,6 @@ export class KodiPlaylistCard extends LitElement {
     `;
     }
 
-    // private _getOutlineColor(): string {
-    //     const color = this._config.outline_color;
-    //     if (!color) return "var(--divider-color)";
-
-    //     if (Array.isArray(color)) {
-    //         return `rgb(${color.join(",")})`;
-    //     }
-
-    //     return color;
-    // }
 
     private _renderPlaylistItem(item: PlaylistItem, index: number) {
         const isPlaying = index === this._playlistCurrentIndex;
@@ -442,7 +429,7 @@ export class KodiPlaylistCard extends LitElement {
             event.dataTransfer.setData("text/plain", fromIndex.toString());
         }
 
-        console.log("🎯 Drag start from index:", fromIndex);
+        console.debug("Drag start from index:", fromIndex);
         this.requestUpdate();
     }
 
@@ -472,7 +459,7 @@ export class KodiPlaylistCard extends LitElement {
         this._dragOverIndex = -1;
         this._isDragging = false;
 
-        console.log(`📦 Drop: ${fromIndex} → ${toIndex}`);
+        console.debug(`Drop: ${fromIndex} → ${toIndex}`);
 
         if (fromIndex === -1 || fromIndex === toIndex) {
             this.requestUpdate();
@@ -496,7 +483,7 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        console.log("📡 Sending reorder request:", { fromIndex, toIndex });
+        console.debug("Sending reorder request:", { fromIndex, toIndex });
 
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_reorder",

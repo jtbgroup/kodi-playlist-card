@@ -28,10 +28,14 @@ export class ThumbnailService {
 
     private _cleanKodiUrl(url: any): string | undefined {
         if (typeof url !== "string") return undefined;
-        if (url.startsWith("image://http")) {
-            return decodeURIComponent(url.replace("image://", ""));
+         let result = url;
+        if (result.startsWith("image://http")) {
+            result = decodeURIComponent(result.replace("image://", ""));
         }
-        return url;
+        if(result.endsWith("/")){
+            result = result.substring(0, result.length-1);
+        }
+        return result;
     }
 
     /**
@@ -53,7 +57,7 @@ export class ThumbnailService {
         }
 
         // Vidéo : préférer le poster
-        if (itemType === "movie" || itemType === "video") {
+        if (itemType === "movie" || itemType === "video" || itemType === "musicvideo") {
             if (cleanedArt && cleanedArt.startsWith("http")) {
                 return cleanedArt;
             }

@@ -127,9 +127,6 @@ export class KodiThumbnailButton extends LitElement {
     }
   }
 
-  /**
-   * 🚀 Calcule les dimensions et le ratio adaptés au type de média
-   */
   private _getDimensionStyles(): string {
     if (!this.item || !this.item.type) {
       return "width: 60px; height: 60px; aspect-ratio: 1 / 1;";
@@ -137,20 +134,16 @@ export class KodiThumbnailButton extends LitElement {
 
     switch (this.item.type) {
       case "movie":
-        // 🎬 Pour les films : Largeur fixe à 60px, la hauteur s'adapte au format portrait (2/3 -> 90px)
         return "width: 60px; height: 90px; aspect-ratio: 2 / 3;";
       case "episode":
-        // 📺 Pour les épisodes : Hauteur fixe à 60px, la largeur s'adapte au format paysage (16/9 -> 106px)
-        // (Évite qu'un épisode à 60px de large ne fasse que 34px de haut, ce qui serait trop petit)
+      case "musicvideo":
         return "width: 106px; height: 60px; aspect-ratio: 16 / 9;";
       default:
-        // 🎵 Musique et autres : Carré parfait de 60x60
         return "width: 60px; height: 60px; aspect-ratio: 1 / 1;";
     }
   }
 
   protected render() {
-    // Récupération des styles géométriques (width, height, aspect-ratio)
     let buttonStyle = this._getDimensionStyles();
     
     if (this.showBorder) {
