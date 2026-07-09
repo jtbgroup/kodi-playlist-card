@@ -1,4 +1,5 @@
 // src/utils/formatters.ts
+import { ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSIC, ITEMTYPE_SONG } from "../const";
 import { PlaylistItem } from "../types";
 
 export function formatDuration(seconds: number | undefined): string {
@@ -11,7 +12,7 @@ export function formatDuration(seconds: number | undefined): string {
 export function buildMetadataString(item: PlaylistItem): string {
   const itemType = item.type;
 
-  if (itemType === "song" || itemType === "music") {
+  if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
         const parts: string[] = [];
 
         if (item.year) {
@@ -26,7 +27,7 @@ export function buildMetadataString(item: PlaylistItem): string {
         return parts.length > 0 ? parts.join(" • ") : "";
   }
 
-  if (itemType === "episode") {
+  if (itemType === ITEMTYPE_EPISODE) {
     const showTitle = item.showtitle || "Unknown Show";
     const season = item.season ?? "?";
     const episode = item.episode ?? "?";
@@ -47,13 +48,13 @@ export function formatGenre(genre: string | string[] | undefined): string {
 export function getItemIcon(item: PlaylistItem): string {
   const itemType = item.type;
 
-  if (itemType === "song" || itemType === "music") {
+  if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
     return "mdi:music";
   }
-  if (itemType === "movie") {
+  if (itemType === ITEMTYPE_MOVIE) {
     return "mdi:movie";
   }
-  if (itemType === "episode") {
+  if (itemType === ITEMTYPE_EPISODE) {
     return "mdi:television";
   }
   return "mdi:play";
@@ -64,9 +65,9 @@ export function getAspectRatio(item: PlaylistItem | undefined): string {
     if (!item || !item.type) return "1 / 1";
     
     switch (item.type) {
-      case "movie":
+      case ITEMTYPE_MOVIE:
         return "2/3"; 
-      case "episode":
+      case ITEMTYPE_EPISODE:
         return "16 / 9";
       default:
         return "1 / 1";

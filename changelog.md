@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.1
+
+- Code reorganization: removed unused services, externilized css
+
 ## 5.0.0
 
 ***BREAKING CHANGES***

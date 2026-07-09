@@ -8,7 +8,7 @@
  * - Load des thumbnails au moment du rendu
  */
 
-import { LitElement, html, css, PropertyValues } from "lit";
+import { LitElement, html, css, PropertyValues, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
@@ -16,8 +16,8 @@ import { KodiMediaSensorEvent, KodiPlaylistCardConfig, PlaylistItem } from "./ty
 import "./components/index";
 import { ThumbnailService } from "./services";
 import { convertOutlineColor } from "./utils/formatters";
-
-const CARD_VERSION = "5.0.0";
+import { playlistCardCSS } from "./styles/playlist-card.style";
+import {CARD_VERSION, ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO, ITEMTYPE_SONG} from "./const";
 
 @customElement("kodi-playlist-card")
 export class KodiPlaylistCard extends LitElement {
@@ -40,6 +40,10 @@ export class KodiPlaylistCard extends LitElement {
     @state() private _currentTrackType = "";
 
     private _thumbnailService?: ThumbnailService;
+
+      static get styles(): CSSResultGroup {
+            return [playlistCardCSS];
+        }
 
     static getConfigElement(): LovelaceCardEditor {
         return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
@@ -137,66 +141,6 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
-    static get styles() {
-        return css`
-            :host {
-                display: block;
-                background: var(--ha-card-background, var(--card-background-color, #ffffff));
-                border-radius: var(--ha-card-border-radius, 12px);
-                border: 1px solid var(--divider-color);
-                overflow: hidden;
-            }
-            .card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 16px;
-            }
-
-            .playlist-container {
-                overflow-y: auto;
-            }
-            .empty-state {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-direction: column;
-                gap: 12px;
-                padding: 40px 16px;
-                color: var(--secondary-text-color);
-                text-align: center;
-            }
-            .empty-state ha-icon {
-                --icon-size: 48px;
-                opacity: 0.5;
-            }
-
-            .playlist-items-container {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                box-sizing: border-box;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .playlist-items-container::-webkit-scrollbar {
-                width: 6px;
-            }
-            .playlist-items-container::-webkit-scrollbar-thumb {
-                background-color: var(--divider-color);
-                border-radius: 3px;
-            }
-
-            .version-footer {
-                text-align: right;
-                font-size: 0.7em;
-                color: var(--secondary-text-color);
-                padding: 8px;
-                opacity: 0.6;
-            }
-        `;
-    }
 
     public connectedCallback(): void {
         super.connectedCallback();
@@ -261,16 +205,16 @@ export class KodiPlaylistCard extends LitElement {
         let itemId: number | undefined;
         let itemName: string | undefined;
 
-        if (itemType === "song" || itemType === "music") {
+        if (itemType === ITEMTYPE_SONG || itemType === "music") {
             itemId = (item as any).id;
             itemName = "songid";
-        } else if (itemType === "movie") {
+        } else if (itemType === ITEMTYPE_MOVIE) {
             itemId = (item as any).id;
             itemName = "movieid";
-        } else if (itemType === "episode") {
+        } else if (itemType === ITEMTYPE_EPISODE) {
             itemId = (item as any).id;
             itemName = "episodeid";
-        } else if (itemType === "musicvideo") {
+        } else if (itemType === ITEMTYPE_MUSICVIDEO) {
             itemId = (item as any).id;
             itemName = "musicvideoid";
         } else {

@@ -1,5 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { PlaylistItem } from "../types";
+import { ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSIC, ITEMTYPE_MUSICVIDEO, ITEMTYPE_SONG, ITEMTYPE_VIDEO } from "../const";
 
 /**
  * Service gérant le chargement et la mise en cache des miniatures.
@@ -50,14 +51,14 @@ export class ThumbnailService {
         const cleanedArt = this._cleanKodiUrl(rawArt);
 
         // Musique : utiliser l'albumid si disponible
-        if (itemType === "song" || itemType === "music") {
+        if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
             if (item.albumid) {
                 return `/api/media_player_proxy/${this.kodiEntityId}/browse_media/album/${String(item.albumid)}`;
             }
         }
 
         // Vidéo : préférer le poster
-        if (itemType === "movie" || itemType === "video" || itemType === "musicvideo") {
+        if (itemType === ITEMTYPE_MOVIE || itemType === ITEMTYPE_VIDEO || itemType === ITEMTYPE_MUSICVIDEO) {
             if (cleanedArt && cleanedArt.startsWith("http")) {
                 return cleanedArt;
             }
@@ -71,7 +72,7 @@ export class ThumbnailService {
             return `/api/media_player_proxy/${this.kodiEntityId}/browse_media/movie/${item.id}`;
         }
 
-        if (itemType === "episode") {
+        if (itemType === ITEMTYPE_EPISODE) {
             if (cleanedArt && cleanedArt.startsWith("http")) {
                 return cleanedArt;
             }

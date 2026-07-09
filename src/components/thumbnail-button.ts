@@ -1,7 +1,9 @@
-import { LitElement, html, css, PropertyValues } from "lit";
+import { LitElement, html, css, PropertyValues, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { ThumbnailService } from "../services/thumbnail.service";
 import { PlaylistItem } from "../types";
+import {thumbnailButtonCSS} from "../styles/thumbnail-button.style"
+import { ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO } from "../const";
 
 /**
  * Bouton thumbnail intelligent - prend en charge son propre chargement d'image
@@ -23,74 +25,10 @@ export class KodiThumbnailButton extends LitElement {
   @state() private _thumbnailUrl?: string;
   @state() private _isLoaded = false;
 
-  static styles = css`
-    :host {
-      display: block;
-    }
+  static get styles(): CSSResultGroup {
+          return [thumbnailButtonCSS];
+      }
 
-    .thumbnail-button {
-      position: relative;
-      /* 💡 Les dimensions et le ratio sont injectés dynamiquement via l'attribut style */
-      flex-shrink: 0;
-      cursor: pointer;
-      border-radius: 4px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--secondary-background-color);
-    }
-
-    .thumbnail-button.disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .thumbnail-button.with-border {
-      border: 1px solid var(--outline-color);
-    }
-
-    .track-thumb {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-
-    .thumb-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--secondary-background-color);
-      border-radius: 4px;
-    }
-
-    .play-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-      border-radius: 4px;
-    }
-
-    .play-overlay ha-icon {
-      --icon-size: 24px;
-      color: white;
-    }
-
-    .thumbnail-button:not(.disabled):hover .play-overlay {
-      opacity: 1;
-    }
-  `;
 
   protected willUpdate(changedProperties: PropertyValues) {
     super.willUpdate(changedProperties);
@@ -133,10 +71,10 @@ export class KodiThumbnailButton extends LitElement {
     }
 
     switch (this.item.type) {
-      case "movie":
+      case ITEMTYPE_MOVIE:
         return "width: 60px; height: 90px; aspect-ratio: 2 / 3;";
-      case "episode":
-      case "musicvideo":
+      case ITEMTYPE_EPISODE:
+      case ITEMTYPE_MUSICVIDEO:
         return "width: 106px; height: 60px; aspect-ratio: 16 / 9;";
       default:
         return "width: 60px; height: 60px; aspect-ratio: 1 / 1;";
