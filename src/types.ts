@@ -1,4 +1,20 @@
-export interface PlaylistItem {
+export interface KodiPlaylistCardConfig {
+  type: string;
+  entity: string;
+  title?: string;
+  show_thumbnail?: boolean;
+  show_thumbnail_overlay?: boolean;
+  show_thumbnail_border?: boolean;
+  show_line_separator?: boolean;
+  hide_last_line_separator?: boolean;
+  outline_color?: string;
+  items_container_scrollable?: boolean;
+  items_container_height?: string;
+  visible_items_count?: number | string;
+  show_version?: boolean;
+}
+
+export interface PlaylistItemType {
     id: number;
     title?: string;
     artist?: string | string[];
@@ -21,7 +37,7 @@ export interface PlaylistItem {
 
 export interface PlaylistUpdateEvent {
     type: "playlist_initial_state" | "playlist_update";
-    items: PlaylistItem[];
+    items: PlaylistItemType[];
     current_index: number;
 }
 

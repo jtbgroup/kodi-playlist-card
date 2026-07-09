@@ -7,7 +7,6 @@ export const thumbnailButtonCSS = css`
 
     .thumbnail-button {
         position: relative;
-        /* 💡 Les dimensions et le ratio sont injectés dynamiquement via l'attribut style */
         flex-shrink: 0;
         cursor: pointer;
         border-radius: 4px;

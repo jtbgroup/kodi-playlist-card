@@ -1,17 +1,17 @@
 import { LitElement, html, css, PropertyValues, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { ThumbnailService } from "../services/thumbnail.service";
-import { PlaylistItem } from "../types";
+import { PlaylistItemType } from "../types";
 import {thumbnailButtonCSS} from "../styles/thumbnail-button.style"
 import { ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO } from "../const";
 
 /**
- * Bouton thumbnail intelligent - prend en charge son propre chargement d'image
- * via le ThumbnailService sans provoquer de re-rendu global du parent.
+ * Smart thumbnail button - supports its own image loading
+ * via ThumbnailService without causing a global parent rerender.
  */
 @customElement("kodi-thumbnail-button")
 export class KodiThumbnailButton extends LitElement {
-  @property({ type: Object }) item?: PlaylistItem;
+  @property({ type: Object }) item?: PlaylistItemType;
   @property({ type: Object }) thumbnailService?: ThumbnailService;
 
   @property() icon = "mdi:music";
@@ -21,7 +21,7 @@ export class KodiThumbnailButton extends LitElement {
   @property({ type: Boolean }) showOverlay = true;
   @property() outlineColor = "var(--divider-color)";
 
-  // États locaux isolés
+  // Isolated local state
   @state() private _thumbnailUrl?: string;
   @state() private _isLoaded = false;
 

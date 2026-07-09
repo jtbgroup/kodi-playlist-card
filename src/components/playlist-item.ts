@@ -1,10 +1,11 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { PlaylistItem as PlaylistItemType, KodiPlaylistCardConfig } from "../types";
+import { PlaylistItemType } from "../types";
+// import { KodiPlaylistCardConfig } from "../types2";
 import { buildMetadataString, formatDuration, formatGenre, getItemIcon } from "../utils/formatters";
 import "./thumbnail-button";
 import { HomeAssistant } from "custom-card-helpers";
-import { ThumbnailService } from "../services";
+import { ThumbnailService } from "../services/thumbnail.service";
 import { playlistItemCSS } from "../styles/playlist-item.style";
 
 @customElement("kodi-playlist-item")

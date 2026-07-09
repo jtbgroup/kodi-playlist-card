@@ -61,6 +61,7 @@ export class KodiPlaylistCardEditor extends LitElement implements LovelaceCardEd
             items_container_scrollable: "Make container scrollable",
             visible_items_count: "Number of visible items",
             outline_color: "Outline Color (optional)",
+            show_version: "Show card version"
         };
         return labels[schema.name] ?? schema.name;
     };

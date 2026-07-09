@@ -1,20 +1,10 @@
-/**
- * KODI PLAYLIST CARD - Frontend Component
- *
- * Refactorisation v2 :
- * - ThumbnailService singleton initialized une seule fois
- * - Méthode privée _ensureThumbnailService() appelée aux moments clés
- * - Pas de getThumbnailUrl exporté, utiliser getItemThumbnail directement
- * - Load des thumbnails au moment du rendu
- */
-
 import { LitElement, html, css, PropertyValues, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
-import { KodiMediaSensorEvent, KodiPlaylistCardConfig, PlaylistItem } from "./types";
+import {  KodiPlaylistCardConfig, KodiMediaSensorEvent, PlaylistItemType  } from "./types";
 import "./components/index";
-import { ThumbnailService } from "./services";
+import { ThumbnailService } from "./services/thumbnail.service";
 import { convertOutlineColor } from "./utils/formatters";
 import { playlistCardCSS } from "./styles/playlist-card.style";
 import {CARD_VERSION, ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO, ITEMTYPE_SONG} from "./const";
@@ -24,7 +14,7 @@ export class KodiPlaylistCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
 
     @state() private _config?: KodiPlaylistCardConfig;
-    @state() private _items: PlaylistItem[] = [];
+    @state() private _items: PlaylistItemType[] = [];
     @state() private _playlistCurrentIndex = -1;
 
     @state() private _draggedIndex = -1;
@@ -331,7 +321,7 @@ export class KodiPlaylistCard extends LitElement {
     }
 
 
-    private _renderPlaylistItem(item: PlaylistItem, index: number) {
+    private _renderPlaylistItem(item: PlaylistItemType, index: number) {
         const isPlaying = index === this._playlistCurrentIndex;
 
         let showLineSeparator = this._config?.show_line_separator;

@@ -1,6 +1,6 @@
 // src/utils/formatters.ts
 import { ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSIC, ITEMTYPE_SONG } from "../const";
-import { PlaylistItem } from "../types";
+import { PlaylistItemType } from "../types";
 
 export function formatDuration(seconds: number | undefined): string {
   if (!seconds || isNaN(seconds)) return "";
@@ -9,7 +9,7 @@ export function formatDuration(seconds: number | undefined): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-export function buildMetadataString(item: PlaylistItem): string {
+export function buildMetadataString(item: PlaylistItemType): string {
   const itemType = item.type;
 
   if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
@@ -45,7 +45,7 @@ export function formatGenre(genre: string | string[] | undefined): string {
   return genre;
 }
 
-export function getItemIcon(item: PlaylistItem): string {
+export function getItemIcon(item: PlaylistItemType): string {
   const itemType = item.type;
 
   if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
@@ -61,7 +61,7 @@ export function getItemIcon(item: PlaylistItem): string {
 }
 
 
-export function getAspectRatio(item: PlaylistItem | undefined): string {
+export function getAspectRatio(item: PlaylistItemType | undefined): string {
     if (!item || !item.type) return "1 / 1";
     
     switch (item.type) {
