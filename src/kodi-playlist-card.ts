@@ -2,12 +2,12 @@ import { LitElement, html, css, PropertyValues, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import "./editor";
-import {  KodiPlaylistCardConfig, KodiMediaSensorEvent, PlaylistItemType  } from "./types";
+import { KodiPlaylistCardConfig, KodiMediaSensorEvent, PlaylistItemType } from "./types";
 import "./components/index";
 import { ThumbnailService } from "./services/thumbnail.service";
 import { convertOutlineColor } from "./utils/formatters";
 import { playlistCardCSS } from "./styles/playlist-card.style";
-import {CARD_VERSION, ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO, ITEMTYPE_SONG} from "./const";
+import { CARD_VERSION, ITEMTYPE_EPISODE, ITEMTYPE_MOVIE, ITEMTYPE_MUSICVIDEO, ITEMTYPE_SONG } from "./const";
 
 @customElement("kodi-playlist-card")
 export class KodiPlaylistCard extends LitElement {
@@ -31,9 +31,9 @@ export class KodiPlaylistCard extends LitElement {
 
     private _thumbnailService?: ThumbnailService;
 
-      static get styles(): CSSResultGroup {
-            return [playlistCardCSS];
-        }
+    static get styles(): CSSResultGroup {
+        return [playlistCardCSS];
+    }
 
     static getConfigElement(): LovelaceCardEditor {
         return document.createElement("kodi-playlist-card-editor") as LovelaceCardEditor;
@@ -99,6 +99,13 @@ export class KodiPlaylistCard extends LitElement {
         }
     }
 
+    private _isItemPlaying(item: any, index: number): boolean {
+        if (this._currentTrackId !== -1) {
+            return item.id === this._currentTrackId;
+        }
+        return index === this._playlistCurrentIndex;
+    }
+
     private _fetchSensorState(): void {
         if (!this.hass || !this._config?.entity) {
             this._sensorState = "unavailable";
@@ -130,7 +137,6 @@ export class KodiPlaylistCard extends LitElement {
             this._currentTrackType = "";
         }
     }
-
 
     public connectedCallback(): void {
         super.connectedCallback();
@@ -248,7 +254,6 @@ export class KodiPlaylistCard extends LitElement {
             index: itemIndex,
         };
 
-
         try {
             this.hass.connection.sendMessage(message as any);
         } catch (error) {
@@ -320,9 +325,8 @@ export class KodiPlaylistCard extends LitElement {
     `;
     }
 
-
     private _renderPlaylistItem(item: PlaylistItemType, index: number) {
-        const isPlaying = index === this._playlistCurrentIndex;
+        const isPlaying = this._isItemPlaying(item, index);
 
         let showLineSeparator = this._config?.show_line_separator;
         if (showLineSeparator && index + 1 >= this._items.length) {
@@ -427,3 +431,4 @@ export class KodiPlaylistCard extends LitElement {
         } as any);
     }
 }
+
