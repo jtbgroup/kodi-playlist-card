@@ -125,12 +125,6 @@ export class KodiPlaylistCard extends LitElement {
                 this._currentTrackId = -1;
                 this._currentTrackType = "";
             }
-
-            console.debug("[Kodi Card] Sensor state:", {
-                state: this._sensorState,
-                currentTrackId: this._currentTrackId,
-                currentTrackType: this._currentTrackType,
-            });
         } else {
             this._sensorState = "unavailable";
             this._currentTrackId = -1;
@@ -176,13 +170,11 @@ export class KodiPlaylistCard extends LitElement {
         } else if (message.type === "kodi_unavailable") {
             this._items = [];
             this._playlistCurrentIndex = -1;
-            console.debug("Kodi card: Kodi is unavailable");
         }
     }
 
     private _playItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            console.debug("Kodi card: Item is already playing");
             return;
         }
 
@@ -223,7 +215,6 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        console.debug("Kodi card: Playing item", { itemIndex, itemId, itemName });
 
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_goto_index",
@@ -234,7 +225,6 @@ export class KodiPlaylistCard extends LitElement {
 
     private _removeItem(itemIndex: number): void {
         if (itemIndex === this._playlistCurrentIndex) {
-            console.debug("Kodi card: Cannot remove the currently playing item");
             return;
         }
 
@@ -367,7 +357,6 @@ export class KodiPlaylistCard extends LitElement {
             event.dataTransfer.setData("text/plain", fromIndex.toString());
         }
 
-        console.debug("Drag start from index:", fromIndex);
         this.requestUpdate();
     }
 
@@ -397,7 +386,6 @@ export class KodiPlaylistCard extends LitElement {
         this._dragOverIndex = -1;
         this._isDragging = false;
 
-        console.debug(`Drop: ${fromIndex} → ${toIndex}`);
 
         if (fromIndex === -1 || fromIndex === toIndex) {
             this.requestUpdate();
@@ -421,7 +409,6 @@ export class KodiPlaylistCard extends LitElement {
             return;
         }
 
-        console.debug("Sending reorder request:", { fromIndex, toIndex });
 
         this.hass.connection.sendMessage({
             type: "kodi_media_sensors/playlist_reorder",
