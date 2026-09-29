@@ -1,7 +1,6 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { PlaylistItemType } from "../types";
-// import { KodiPlaylistCardConfig } from "../types2";
 import { buildMetadataString, formatDuration, formatGenre, getItemIcon } from "../utils/formatters";
 import "./thumbnail-button";
 import { HomeAssistant } from "custom-card-helpers";

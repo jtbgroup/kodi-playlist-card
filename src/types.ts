@@ -9,7 +9,6 @@ export interface KodiPlaylistCardConfig {
   hide_last_line_separator?: boolean;
   outline_color?: string;
   items_container_scrollable?: boolean;
-  items_container_height?: string;
   visible_items_count?: number | string;
   show_version?: boolean;
 }

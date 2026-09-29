@@ -40,14 +40,12 @@ export class ThumbnailService {
         const rawArt = item.art?.poster || item.art?.thumb || item.thumbnail;
         const cleanedArt = this._cleanKodiUrl(rawArt);
 
-        // Music: use albumid when available
         if (itemType === ITEMTYPE_SONG || itemType === ITEMTYPE_MUSIC) {
             if (item.albumid) {
                 return `/api/media_player_proxy/${this.kodiEntityId}/browse_media/album/${String(item.albumid)}`;
             }
         }
 
-        // Video: prefer the poster
         if (itemType === ITEMTYPE_MOVIE || itemType === ITEMTYPE_VIDEO || itemType === ITEMTYPE_MUSICVIDEO) {
             if (cleanedArt && cleanedArt.startsWith("http")) {
                 return cleanedArt;
@@ -68,7 +66,6 @@ export class ThumbnailService {
             }
         }
 
-        // Fallback: generic thumbnail
         return item.thumbnail ? String(item.thumbnail) : undefined;
     }
 
@@ -76,7 +73,7 @@ export class ThumbnailService {
      * Loads a thumbnail and caches it.
      * Remote URLs (http/https) are used directly.
      * Local URLs (/) are converted to base64.
-     * * @returns cached URL (base64 for local, URL for remote)
+    * @returns Cached URL (base64 for local images, original URL for remote images).
      */
     public async load(url: string): Promise<string | undefined> {
         if (this._thumbnailCache.has(url)) {
@@ -101,10 +98,8 @@ export class ThumbnailService {
             let cachedUrl: string;
 
             if (url.startsWith("http")) {
-                // Remote URL: use it directly
                 cachedUrl = url;
             } else if (url.startsWith("/")) {
-                // Local URL: convert it to base64
                 const base64 = await this._loadLocalImageAsBase64(url);
                 cachedUrl = base64 ?? "";
             } else {

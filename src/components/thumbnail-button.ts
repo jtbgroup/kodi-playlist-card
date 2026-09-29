@@ -21,7 +21,6 @@ export class KodiThumbnailButton extends LitElement {
   @property({ type: Boolean }) showOverlay = true;
   @property() outlineColor = "var(--divider-color)";
 
-  // Isolated local state
   @state() private _thumbnailUrl?: string;
   @state() private _isLoaded = false;
 

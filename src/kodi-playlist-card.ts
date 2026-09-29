@@ -50,7 +50,6 @@ export class KodiPlaylistCard extends LitElement {
             hide_last_line_separator: false,
             outline_color: "white",
             items_container_scrollable: false,
-            items_container_height: "300px",
             show_version: false,
         };
     }
